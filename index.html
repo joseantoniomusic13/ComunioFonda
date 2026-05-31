@@ -668,6 +668,23 @@
                 <div class="flex flex-col gap-2 mt-1">
                   <input type="datetime-local" id="admin-lock-lineups-time" disabled
                     class="glass-input w-full px-2.5 py-1.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-cyan-500/20">
+                  <div class="space-y-0.5">
+                    <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest">Ajustes Rápidos (Rangos de Tiempo):</label>
+                    <select id="admin-lock-presets" disabled class="glass-input w-full px-2 py-1.5 rounded-xl text-[10px] bg-fonda-950 text-white font-bold border-white/5 cursor-pointer">
+                      <option value="">-- Seleccionar Rango / Preset --</option>
+                      <optgroup label="Antes de que Empiece la Jornada 1">
+                        <option value="2026-06-09T21:00">48h antes J1 (09 Jun 21:00)</option>
+                        <option value="2026-06-10T21:00">24h antes J1 (10 Jun 21:00)</option>
+                        <option value="2026-06-11T09:00">12h antes J1 (11 Jun 09:00)</option>
+                        <option value="2026-06-11T20:00">1h antes J1 (11 Jun 20:00)</option>
+                        <option value="2026-06-11T21:00">Inicio J1 (11 Jun 21:00 - Kickoff)</option>
+                      </optgroup>
+                      <optgroup label="Después de que Acabe la Jornada 1">
+                        <option value="2026-06-18T21:00">Fin J1 / Inicio J2 (18 Jun 21:00)</option>
+                        <option value="2026-06-25T21:00">Fin J2 / Inicio J3 (25 Jun 21:00)</option>
+                      </optgroup>
+                    </select>
+                  </div>
                   <div class="grid grid-cols-2 gap-2">
                     <button id="btn-admin-schedule-lock" disabled
                       class="bg-cyan-500/20 hover:bg-cyan-500 hover:text-slate-950 border border-cyan-500/30 text-cyan-400 font-extrabold py-2 rounded-xl text-[9px] transition cursor-pointer flex items-center justify-center gap-1">
@@ -902,6 +919,10 @@
           class="px-5 py-2.5 rounded-xl font-bold text-sm bg-transparent border border-white/5 text-slate-400 hover:text-slate-200 flex items-center gap-2 cursor-pointer transition">
           <i data-lucide="bar-chart-3" class="w-4 h-4 text-amber-400 animate-pulse"></i> Estadísticas de Mánager
         </button>
+        <button id="btn-tab-packs"
+          class="px-5 py-2.5 rounded-xl font-bold text-sm bg-transparent border border-white/5 text-slate-400 hover:text-slate-200 flex items-center gap-2 cursor-pointer transition">
+          <i data-lucide="package" class="w-4 h-4 text-purple-400"></i> Colección de Cromos
+        </button>
       </div>
 
       <!-- ================= PESTAÑA A: MI PLANTILLA ================= -->
@@ -1078,8 +1099,7 @@
 
             <!-- Tabla Leaderboard -->
             <div class="space-y-2 pt-2 border-t border-white/5">
-              <div class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Clasificación General
-              </div>
+              <div class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">CLASIFICACIÓN JORNADA</div>
 
               <div id="league-standings-list" class="space-y-1.5 max-h-48 overflow-y-auto text-xs">
                 <!-- Cargado dinámicamente -->
@@ -1272,17 +1292,20 @@
 
           <!-- Controles de Incidencias en Tablero Visual -->
           <div class="space-y-4 bg-fonda-900/60 p-5 rounded-2xl border border-white/5">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/5 pb-3">
               <div>
                 <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Seleccionar Selección /
-                  País</label>
-                <p class="text-[10px] text-slate-500 font-bold mt-0.5">Escoge un país para ver y calificar a sus
-                  futbolistas convocados</p>
+                  País o Buscar</label>
+                <p class="text-[10px] text-slate-500 font-bold mt-0.5">Escoge un país o busca directamente a cualquier futbolista globalmente</p>
               </div>
-              <select id="sim-country-select"
-                class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20 w-full sm:w-64 cursor-pointer">
-                <!-- Se cargará por JS -->
-              </select>
+              <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <input type="text" id="sim-player-search" placeholder="🔍 Buscar jugador por nombre..." 
+                  class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white border-white/10 w-full sm:w-64" />
+                <select id="sim-country-select"
+                  class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20 w-full sm:w-64 cursor-pointer">
+                  <!-- Se cargará por JS -->
+                </select>
+              </div>
             </div>
 
             <div>
@@ -1451,9 +1474,14 @@
               <p class="text-slate-400 text-xs">Comunícate con los rivales de la liga y lee los anuncios oficiales de la
                 administración.</p>
             </div>
-            <div
-              class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-extrabold text-[10px]">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Vivo
+            <div class="flex items-center gap-2">
+              <button id="btn-admin-clear-chat" class="hidden bg-rose-500/10 hover:bg-rose-600 hover:text-white border border-rose-500/25 text-rose-400 py-1.5 px-2.5 rounded-xl text-[10px] font-black uppercase transition cursor-pointer flex items-center gap-1 shadow-sm">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Borrar Chat
+              </button>
+              <div
+                class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-extrabold text-[10px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Vivo
+              </div>
             </div>
           </div>
 
@@ -1649,9 +1677,206 @@
 
       </div>
 
+      <!-- ================= PESTAÑA G: APERTURA DE SOBRES Y COLECCIÓN ================= -->
+      <div id="panel-packs" class="w-full hidden flex flex-col gap-6 text-left">
+
+        <!-- Header con estadísticas -->
+        <div class="glass-panel p-5 rounded-3xl border border-white/5">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <h3 class="text-2xl font-black text-white flex items-center gap-2.5">
+                <i data-lucide="book-image" class="w-6 h-6 text-amber-400"></i>
+                Álbum Panini · Copa del Mundo 2026
+              </h3>
+              <p class="text-slate-400 text-xs">Abre sobres, colecciona cromos y pégalos en tu álbum. ¡Intercambia los repetidos con otros mánagers!</p>
+            </div>
+            <div class="glass-panel px-5 py-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 shrink-0 min-w-[220px] space-y-1.5">
+              <div class="flex justify-between items-center text-[10px] font-black uppercase text-amber-300">
+                <span>Álbum Completado</span>
+                <span id="album-percentage" class="text-amber-400 text-sm">0%</span>
+              </div>
+              <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-white/5">
+                <div id="album-progress-bar" class="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+              </div>
+              <p class="text-[9px] text-slate-400 font-bold uppercase">
+                <span id="album-collected-count" class="text-white font-black">0</span> / <span id="album-total-count" class="text-white font-black">0</span> cromos pegados
+                · <span id="album-deck-count" class="text-purple-300 font-black">0</span> en mazo
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-Tabs del módulo -->
+        <div class="flex flex-wrap gap-1 bg-fonda-950/80 p-1 rounded-2xl border border-white/5 w-fit">
+          <button id="packs-tab-shop" onclick="switchPacksTab('shop')" class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer bg-amber-500 text-slate-950">🎴 Sobres</button>
+          <button id="packs-tab-album" onclick="switchPacksTab('album')" class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">📖 Álbum</button>
+          <button id="packs-tab-deck" onclick="switchPacksTab('deck')" class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">🃏 Mi Mazo</button>
+          <button id="packs-tab-trade" onclick="switchPacksTab('trade')" class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">🔄 Intercambios</button>
+        </div>
+
+        <!-- ===== PANEL SHOP ===== -->
+        <div id="packs-panel-shop" class="flex flex-col gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+
+            <!-- Sobre Bronce -->
+            <div class="glass-panel rounded-3xl border border-amber-700/30 bg-gradient-to-b from-amber-950/30 to-slate-950 overflow-hidden flex flex-col">
+              <div class="relative h-52 flex items-center justify-center p-4 cursor-pointer group" onclick="openPackVisual('bronze')">
+                <img src="img/sobres/bronze.png" alt="Sobre Bronce" class="h-44 object-contain drop-shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(180,83,9,0.6)] group-active:scale-95 relative z-10">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none"></div>
+              </div>
+              <div class="p-4 flex flex-col gap-3 flex-1">
+                <div>
+                  <h4 class="text-sm font-black text-amber-700 uppercase tracking-wider">Sobre Bronce</h4>
+                  <p class="text-[10px] text-slate-400 mt-0.5">3 cromos · Alta probabilidad de Comunes</p>
+                </div>
+                <div class="space-y-1 text-[9px]">
+                  <div class="flex justify-between text-slate-400 font-bold"><span>⚪ Común</span><span class="text-slate-300 font-black">80%</span></div>
+                  <div class="flex justify-between text-blue-400 font-bold"><span>🔵 Medio</span><span class="font-black">18%</span></div>
+                  <div class="flex justify-between text-amber-400 font-bold"><span>👑 Estrella</span><span class="font-black">2%</span></div>
+                </div>
+                <div class="flex gap-2 mt-auto">
+                  <button onclick="openPackVisual('bronze')" class="flex-1 bg-amber-900/40 hover:bg-amber-800/60 border border-amber-700/40 text-amber-400 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">Abrir x1</button>
+                  <button onclick="openPackMulti('bronze', 5)" class="flex-1 bg-amber-900/20 hover:bg-amber-900/40 border border-amber-700/20 text-amber-600 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">x5 ⚡</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sobre Plata -->
+            <div class="glass-panel rounded-3xl border border-slate-400/30 bg-gradient-to-b from-slate-700/20 to-slate-950 overflow-hidden flex flex-col">
+              <div class="relative h-52 flex items-center justify-center p-4 cursor-pointer group" onclick="openPackVisual('plata')">
+                <img src="img/sobres/plata.png" alt="Sobre Plata" class="h-44 object-contain drop-shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(148,163,184,0.5)] group-active:scale-95 relative z-10">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none"></div>
+              </div>
+              <div class="p-4 flex flex-col gap-3 flex-1">
+                <div>
+                  <h4 class="text-sm font-black text-slate-300 uppercase tracking-wider">Sobre Plata</h4>
+                  <p class="text-[10px] text-slate-400 mt-0.5">3 cromos · Equilibrio entre rarezas</p>
+                </div>
+                <div class="space-y-1 text-[9px]">
+                  <div class="flex justify-between text-slate-400 font-bold"><span>⚪ Común</span><span class="text-slate-300 font-black">60%</span></div>
+                  <div class="flex justify-between text-blue-400 font-bold"><span>🔵 Medio</span><span class="font-black">30%</span></div>
+                  <div class="flex justify-between text-amber-400 font-bold"><span>👑 Estrella</span><span class="font-black">10%</span></div>
+                </div>
+                <div class="flex gap-2 mt-auto">
+                  <button onclick="openPackVisual('plata')" class="flex-1 bg-slate-600/30 hover:bg-slate-600/50 border border-slate-500/30 text-slate-300 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">Abrir x1</button>
+                  <button onclick="openPackMulti('plata', 5)" class="flex-1 bg-slate-600/10 hover:bg-slate-600/30 border border-slate-500/10 text-slate-500 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">x5 ⚡</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sobre Oro -->
+            <div class="glass-panel rounded-3xl border border-amber-400/40 bg-gradient-to-b from-amber-500/20 to-slate-950 overflow-hidden flex flex-col shadow-[0_0_40px_rgba(245,158,11,0.15)]">
+              <div class="relative h-52 flex items-center justify-center p-4 cursor-pointer group" onclick="openPackVisual('gold')">
+                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(245,158,11,0.15)_0%,_transparent_70%)] animate-pulse pointer-events-none"></div>
+                <img src="img/sobres/gold.png" alt="Sobre Oro" class="h-44 object-contain drop-shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_40px_rgba(245,158,11,0.8)] group-active:scale-95 relative z-10">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none"></div>
+              </div>
+              <div class="p-4 flex flex-col gap-3 flex-1">
+                <div>
+                  <h4 class="text-sm font-black text-amber-400 uppercase tracking-wider flex items-center gap-1"><i data-lucide="crown" class="w-3.5 h-3.5"></i> Sobre Oro</h4>
+                  <p class="text-[10px] text-slate-400 mt-0.5">3 cromos · Garantiza al menos 1 bueno</p>
+                </div>
+                <div class="space-y-1 text-[9px]">
+                  <div class="flex justify-between text-slate-400 font-bold"><span>⚪ Común</span><span class="text-slate-300 font-black">40%</span></div>
+                  <div class="flex justify-between text-blue-400 font-bold"><span>🔵 Medio</span><span class="font-black">40%</span></div>
+                  <div class="flex justify-between text-amber-400 font-bold"><span>👑 Estrella</span><span class="font-black">20%</span></div>
+                </div>
+                <div class="flex gap-2 mt-auto">
+                  <button onclick="openPackVisual('gold')" class="flex-1 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 border border-amber-400/30 text-slate-950 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95 shadow-lg shadow-amber-500/20">✨ Abrir x1</button>
+                  <button onclick="openPackMulti('gold', 5)" class="flex-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/20 text-amber-400 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">x5 ⚡</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Zona de revelación de cartas -->
+          <div id="pack-reveal-zone" class="glass-panel p-6 rounded-3xl border border-white/5 bg-slate-950/70 min-h-[300px] flex flex-col justify-center items-center relative overflow-hidden">
+            <div id="pack-reveal-placeholder" class="text-center space-y-4 py-6">
+              <div class="flex justify-center gap-3 opacity-25 select-none pointer-events-none">
+                <img src="img/sobres/bronze.png" class="h-20 object-contain -rotate-12">
+                <img src="img/sobres/gold.png" class="h-28 object-contain animate-bounce">
+                <img src="img/sobres/plata.png" class="h-20 object-contain rotate-12">
+              </div>
+              <p class="text-sm text-slate-400 font-black uppercase tracking-widest mt-2">Haz clic en un sobre para abrirlo</p>
+              <p class="text-[10px] text-slate-600">Recibirás 3 cromos aleatorios según el tipo de sobre elegido</p>
+            </div>
+            <div id="pack-cards-grid" class="hidden w-full grid grid-cols-3 gap-4 max-w-lg mx-auto"></div>
+            <button id="btn-open-again" class="hidden mt-5 px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-black text-xs rounded-xl uppercase transition cursor-pointer active:scale-95" onclick="resetPackReveal()">🔄 Abrir otro sobre</button>
+          </div>
+        </div>
+
+        <!-- ===== PANEL ÁLBUM por Selección Nacional ===== -->
+        <div id="packs-panel-album" class="hidden flex flex-col gap-5">
+          <div class="glass-panel p-5 rounded-3xl border border-white/5">
+            <h4 class="text-base font-black text-white flex items-center gap-2 mb-4"><i data-lucide="book-open" class="w-5 h-5 text-amber-400"></i> Mi Álbum por Selección</h4>
+            <div id="album-country-nav" class="flex flex-wrap gap-2"></div>
+          </div>
+          <div id="album-country-page" class="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-fonda-900/40 to-fonda-950/60">
+            <div class="text-center text-slate-500 text-sm py-12 flex flex-col items-center gap-2">
+              <i data-lucide="mouse-pointer-click" class="w-8 h-8 opacity-40"></i>
+              Selecciona una selección arriba para ver su página del álbum
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== PANEL MI MAZO ===== -->
+        <div id="packs-panel-deck" class="hidden flex flex-col gap-5">
+          <div class="glass-panel p-5 rounded-3xl border border-white/5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <div>
+                <h4 class="text-base font-black text-white flex items-center gap-2"><i data-lucide="layers" class="w-5 h-5 text-purple-400"></i> Mi Mazo de Cromos</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Cartas sin pegar. Puedes pegarlas en el álbum o intercambiar las repetidas.</p>
+              </div>
+              <div class="flex items-center gap-1 bg-fonda-950 p-1 rounded-xl border border-white/5 shrink-0">
+                <button class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer bg-purple-500 text-white" data-filter="all">Todos</button>
+                <button class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white" data-filter="comun">Comunes</button>
+                <button class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white" data-filter="medio">Medios</button>
+                <button class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white" data-filter="estrella">Estrellas</button>
+              </div>
+            </div>
+            <div id="deck-cards-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"></div>
+          </div>
+        </div>
+
+        <!-- ===== PANEL INTERCAMBIOS ===== -->
+        <div id="packs-panel-trade" class="hidden flex flex-col gap-5">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="glass-panel p-5 rounded-3xl border border-white/5 space-y-4">
+              <h4 class="text-base font-black text-white flex items-center gap-2"><i data-lucide="arrow-left-right" class="w-5 h-5 text-emerald-400"></i> Proponer Intercambio</h4>
+              <div class="space-y-3">
+                <div>
+                  <label class="text-[10px] text-slate-400 font-black uppercase block mb-1">Ofreces (de tu mazo):</label>
+                  <select id="trade-offer-select" class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10">
+                    <option value="">— Selecciona un cromo que ofreces —</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[10px] text-slate-400 font-black uppercase block mb-1">Buscas:</label>
+                <select id="trade-want-select" class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10">
+                    <option value="">— Selecciona el cromo que buscas —</option>
+                  </select>
+                </div>
+                <button id="btn-create-trade" onclick="createTradeOffer()" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs rounded-xl uppercase transition cursor-pointer hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2">
+                  <i data-lucide="send" class="w-3.5 h-3.5"></i> Publicar Oferta
+                </button>
+              </div>
+            </div>
+            <div class="glass-panel p-5 rounded-3xl border border-white/5 space-y-3">
+              <h4 class="text-base font-black text-white flex items-center gap-2"><i data-lucide="rss" class="w-5 h-5 text-amber-400"></i> Intercambios de la Liga</h4>
+              <div id="trade-offers-list" class="space-y-2 max-h-80 overflow-y-auto pr-1">
+                <div class="text-center text-slate-500 text-xs py-8 italic">Cargando intercambios...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </section>
 
   </main>
+
+
 
   <!-- ================= FOOTER ================= -->
   <footer class="w-full py-6 text-center border-t border-white/5 bg-fonda-950/40 text-xs text-slate-500">
@@ -1890,6 +2115,8 @@
     let swapActiveSourceId = null;
     let currentActiveLeagueData = null;
     let currentActiveLeague = "";
+    let lastFetchedStandingsUsers = [];
+    let currentStandingsTab = "general"; // "general" o "jornada"
 
     // --- CONTROL DE VISTAS DE AUTENTICACIÓN ---
     const authChoices = document.getElementById("auth-choices");
@@ -2040,6 +2267,7 @@
     const btnTabBets = document.getElementById("btn-tab-bets");
     const btnTabChat = document.getElementById("btn-tab-chat");
     const btnTabManagerStats = document.getElementById("btn-tab-manager-stats");
+    const btnTabPacks = document.getElementById("btn-tab-packs");
 
     const panelSquad = document.getElementById("panel-squad");
     const panelMarket = document.getElementById("panel-market");
@@ -2047,6 +2275,7 @@
     const panelBets = document.getElementById("panel-bets");
     const panelChat = document.getElementById("panel-chat");
     const panelManagerStats = document.getElementById("panel-manager-stats");
+    const panelPacks = document.getElementById("panel-packs");
 
     function resetTabButtons() {
       const defaultClass = "px-5 py-2.5 rounded-xl font-bold text-sm bg-transparent border border-white/5 text-slate-400 hover:text-slate-200 flex items-center gap-2 cursor-pointer transition";
@@ -2056,6 +2285,7 @@
       btnTabBets.className = defaultClass;
       btnTabChat.className = defaultClass;
       if (btnTabManagerStats) btnTabManagerStats.className = defaultClass;
+      if (btnTabPacks) btnTabPacks.className = defaultClass;
 
       panelSquad.classList.add("hidden");
       panelMarket.classList.add("hidden");
@@ -2063,6 +2293,7 @@
       panelBets.classList.add("hidden");
       panelChat.classList.add("hidden");
       if (panelManagerStats) panelManagerStats.classList.add("hidden");
+      if (panelPacks) panelPacks.classList.add("hidden");
     }
 
     function switchDashboardTab(tabId) {
@@ -2105,6 +2336,10 @@
         if (btnTabManagerStats) btnTabManagerStats.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-gold/10 border border-gold/30 text-gold flex items-center gap-2 cursor-pointer transition";
         if (panelManagerStats) panelManagerStats.classList.remove("hidden");
         renderManagerStatsPanel();
+      } else if (tabId === "packs") {
+        if (btnTabPacks) btnTabPacks.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center gap-2 cursor-pointer transition";
+        if (panelPacks) panelPacks.classList.remove("hidden");
+        initPacksModule();
       }
     }
 
@@ -2114,6 +2349,7 @@
     btnTabBets.addEventListener("click", () => switchDashboardTab("bets"));
     btnTabChat.addEventListener("click", () => switchDashboardTab("chat"));
     if (btnTabManagerStats) btnTabManagerStats.addEventListener("click", () => switchDashboardTab("manager-stats"));
+    if (btnTabPacks) btnTabPacks.addEventListener("click", () => switchDashboardTab("packs"));
 
     // --- ESCUCHAS DE FILTRADO DEL MERCADO ---
     const posFilters = {
@@ -3627,9 +3863,6 @@
               listUsers.push(docSnap.data());
             });
 
-            // Ordenar por puntos de la jornada actual descendente (Clasificación por Jornadas)
-            listUsers.sort((a, b) => (b.puntos_jornada_actual || 0) - (a.puntos_jornada_actual || 0));
-
             renderLeagueStandingsList(listUsers);
           }
         }
@@ -3645,6 +3878,8 @@
         });
       }
     });
+
+
 
     // Cambiar / Salir de Liga Activa
     document.getElementById("btn-switch-league").addEventListener("click", async () => {
@@ -3746,11 +3981,20 @@
       }
     }
 
-    // Renderizar clasificaciones de la liga
+    // Renderizar clasificaciones de la liga (Solo Clasificación Jornada con Total debajo)
     function renderLeagueStandingsList(usersList) {
+      if (usersList) {
+        lastFetchedStandingsUsers = usersList;
+      }
+
+      const listToRender = [...lastFetchedStandingsUsers];
+
+      // Ordenar por puntos de la jornada actual de forma descendente
+      listToRender.sort((a, b) => (b.puntos_jornada_actual || 0) - (a.puntos_jornada_actual || 0));
+
       leagueStandingsList.innerHTML = "";
 
-      usersList.forEach((usr, index) => {
+      listToRender.forEach((usr, index) => {
         const isSelf = usr.uid === currentUser.uid;
 
         const usrDiv = document.createElement("div");
@@ -3761,16 +4005,19 @@
         usrDiv.setAttribute("title", "Haz clic para ver la plantilla de este mánager");
 
         const rankClass = index === 0 ? "bg-gold text-slate-950" : "bg-fonda-800 text-slate-400";
+
         usrDiv.innerHTML = `
           <div class="flex w-full items-center justify-between gap-2">
             <div class="flex items-center gap-2 truncate">
               <span class="font-extrabold text-[10px] px-1.5 py-0.5 rounded ${rankClass}">${index + 1}</span>
               <div>
                 <p class="font-bold text-[11px] truncate">${usr.nombre_usuario}</p>
-                <p class="text-[9px] text-slate-500 truncate">${usr.nombre_equipo}</p>
+                <p class="text-[9px] text-slate-400 font-medium truncate">
+                  ${usr.nombre_equipo || "Sin equipo"} <span class="text-slate-500 font-bold ml-1">• Total: ${usr.puntos_totales || 0} pts</span>
+                </p>
               </div>
             </div>
-            <span class="font-black text-xs shrink-0">${usr.puntos_jornada_actual || 0} PTS</span>
+            <span class="font-black text-xs text-gold shrink-0">${usr.puntos_jornada_actual || 0} PTS</span>
           </div>
         `;
 
@@ -3791,59 +4038,42 @@
     async function recalcularYGuardarPuntuacionManager() {
       if (!currentUser || !currentUserTeam || firestorePlayersList.length === 0) return;
 
-      const titulares = currentUserTeam.alineacion.titulares || {};
-      const suplentes = currentUserTeam.alineacion.suplentes || {};
-      const capitanId = currentUserTeam.capitan_id || "";
+      const activeJornada = currentActiveLeagueData?.jornada_activa || "Jornada 1";
 
-      let totalPuntos = 0;
+      // 1. Mapear listado plano de firestorePlayersList a un mapa llave-valor para el motor
+      const livePlayers = {};
+      firestorePlayersList.forEach(p => {
+        livePlayers[p.id] = p;
+      });
 
-      const titularesIds = [
-        ...(titulares.portero || []),
-        ...(titulares.defensas || []),
-        ...(titulares.mediocampistas || []),
-        ...(titulares.delanteros || [])
-      ];
+      // 2. Calcular los puntos en vivo de la jornada activa con el motor unificado (considerando chips)
+      const puntosJornadaActiva = calculateTeamJornadaPoints(currentUserTeam, livePlayers, activeJornada);
 
-      titularesIds.forEach(id => {
-        const player = firestorePlayersList.find(p => p.id === id);
-        if (player) {
-          let pts = player.puntos || 0;
-          if (id === capitanId) {
-            pts = pts * 2;
-          }
-          totalPuntos += pts;
+      // 3. Sumar los puntos de jornadas cerradas que ya están consolidados
+      const puntosPorJornada = currentUserTeam.puntos_por_jornada || {};
+      let puntosClosedJornadas = 0;
+      Object.keys(puntosPorJornada).forEach(jName => {
+        if (jName !== activeJornada) {
+          puntosClosedJornadas += puntosPorJornada[jName] || 0;
         }
       });
 
-      // Suplentes del banquillo (Solo los 2 mejores puntúan y dan la mitad de sus puntos)
-      const suplentesIds = [
-        ...(suplentes.portero || []),
-        ...(suplentes.defensas || []),
-        ...(suplentes.mediocampistas || []),
-        ...(suplentes.delanteros || [])
-      ];
+      const totalPuntos = puntosClosedJornadas + puntosJornadaActiva;
 
-      const suplentesConPuntos = [];
-      suplentesIds.forEach(id => {
-        const player = firestorePlayersList.find(p => p.id === id);
-        if (player) {
-          suplentesConPuntos.push({ id: player.id, puntos: player.puntos || 0 });
-        }
-      });
-
-      suplentesConPuntos.sort((a, b) => b.puntos - a.puntos);
-
-      const mejoresSuplentes = suplentesConPuntos.slice(0, 2);
-      mejoresSuplentes.forEach(item => {
-        totalPuntos += Math.round((item.puntos / 2) * 10) / 10;
-      });
-
-      if (currentUserProfile && currentUserProfile.puntos_totales !== totalPuntos) {
+      // 4. Actualizar en Firestore si detectamos algún cambio
+      if (
+        currentUserProfile && 
+        (currentUserProfile.puntos_totales !== totalPuntos || 
+         currentUserProfile.puntos_jornada_actual !== puntosJornadaActiva)
+      ) {
         try {
           const userRef = doc(db, "users", currentUser.uid);
-          await updateDoc(userRef, { puntos_totales: totalPuntos });
+          await updateDoc(userRef, { 
+            puntos_totales: totalPuntos,
+            puntos_jornada_actual: puntosJornadaActiva
+          });
         } catch (err) {
-          console.error("Error al actualizar puntos del mánager:", err);
+          console.error("Error al actualizar puntos del mánager en tiempo real:", err);
         }
       }
     }
@@ -4095,12 +4325,14 @@
         document.getElementById("btn-admin-resolve-auctions").disabled = true;
 
         const lockTimeInput = document.getElementById("admin-lock-lineups-time");
+        const lockPresetsInput = document.getElementById("admin-lock-presets");
         const btnSchedule = document.getElementById("btn-admin-schedule-lock");
         const btnUnlock = document.getElementById("btn-admin-unlock-lineups");
         const btnManualLock = document.getElementById("btn-admin-manual-lock");
         const statusBadge = document.getElementById("admin-lock-status-badge");
 
         if (lockTimeInput) { lockTimeInput.disabled = true; lockTimeInput.value = ""; }
+        if (lockPresetsInput) { lockPresetsInput.disabled = true; lockPresetsInput.value = ""; }
         if (btnSchedule) btnSchedule.disabled = true;
         if (btnUnlock) btnUnlock.disabled = true;
         if (btnManualLock) btnManualLock.disabled = true;
@@ -4135,20 +4367,28 @@
 
           // Habilitar controles de cierre de plantillas
           const lockTimeInput = document.getElementById("admin-lock-lineups-time");
+          const lockPresetsInput = document.getElementById("admin-lock-presets");
           const btnSchedule = document.getElementById("btn-admin-schedule-lock");
           const btnUnlock = document.getElementById("btn-admin-unlock-lineups");
           const btnManualLock = document.getElementById("btn-admin-manual-lock");
 
           if (lockTimeInput) lockTimeInput.disabled = false;
+          if (lockPresetsInput) lockPresetsInput.disabled = false;
           if (btnSchedule) btnSchedule.disabled = false;
           if (btnUnlock) btnUnlock.disabled = false;
           if (btnManualLock) btnManualLock.disabled = false;
 
           if (lockTimeInput) {
             if (data.lineups_lock_time) {
-              lockTimeInput.value = data.lineups_lock_time.substring(0, 16);
+              const isoStr = data.lineups_lock_time.substring(0, 16);
+              lockTimeInput.value = isoStr;
+              if (lockPresetsInput) {
+                // Si la hora programada coincide con uno de nuestros presets, seleccionarlo
+                lockPresetsInput.value = isoStr;
+              }
             } else {
               lockTimeInput.value = "";
+              if (lockPresetsInput) lockPresetsInput.value = "";
             }
           }
 
@@ -4462,7 +4702,7 @@
           renderAddPlayerDropdownFiltered(term);
         }
 
-        // 2. Renderizar lista de jugadores del mánager
+        // 2. Renderizar lista de jugadores del mánager clasificados
         adminSquadEditorPlayersList.innerHTML = "";
         if (ownedIds.length === 0) {
           adminSquadEditorPlayersList.innerHTML = `
@@ -4473,45 +4713,113 @@
           return;
         }
 
+        const titulares = teamData.alineacion?.titulares || {};
+        const suplentes = teamData.alineacion?.suplentes || {};
+        const capitanId = teamData.capitan_id || "";
+        const jugador12Id = teamData.chips?.jugador_12?.jugador_id || "";
+
+        const titularIds = [
+          ...(titulares.portero || []),
+          ...(titulares.defensas || []),
+          ...(titulares.mediocampistas || []),
+          ...(titulares.delanteros || [])
+        ];
+
+        const suplenteIds = [
+          ...(suplentes.portero || []),
+          ...(suplentes.defensas || []),
+          ...(suplentes.mediocampistas || []),
+          ...(suplentes.delanteros || [])
+        ];
+
+        const titularPlayers = [];
+        const suplentePlayers = [];
+        const reservaPlayers = [];
+
         ownedIds.forEach(id => {
           const fPlayer = firestorePlayersList.find(p => p.id === id);
           const staticPlayer = PLAYERS_POOL.find(p => p.id === id);
           const player = fPlayer || staticPlayer;
-
           if (!player) return;
 
-          let posBadge = "";
-          if (player.posicion === "portero") posBadge = `<span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-black uppercase text-[10px]">POR</span>`;
-          else if (player.posicion === "defensa") posBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-black uppercase text-[10px]">DF</span>`;
-          else if (player.posicion === "mediocampista") posBadge = `<span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-black uppercase text-[10px]">MC</span>`;
-          else if (player.posicion === "delantero") posBadge = `<span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 font-black uppercase text-[10px]">DL</span>`;
+          if (titularIds.includes(id)) {
+            titularPlayers.push(player);
+          } else if (suplenteIds.includes(id)) {
+            suplentePlayers.push(player);
+          } else {
+            reservaPlayers.push(player);
+          }
+        });
 
-          const itemDiv = document.createElement("div");
-          itemDiv.className = "flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all duration-300";
-          itemDiv.innerHTML = `
-            <div class="flex items-center gap-3">
-              <span class="text-lg">${player.flag || "⚽"}</span>
-              <div>
-                <div class="font-extrabold text-white text-xs">${player.nombre}</div>
-                <div class="text-[9px] text-slate-400 font-bold uppercase flex items-center gap-1.5 mt-0.5">
-                  ${posBadge} <span>${player.pais || "Mundial"}</span> <span class="text-gold">• ${(player.precio / 1000000).toFixed(1)}M$</span>
+        // Función auxiliar para renderizar un grupo con estilos premium
+        function renderGroupSection(title, players, typeClass, iconDot) {
+          const sectionDiv = document.createElement("div");
+          sectionDiv.className = "space-y-1.5 mb-4";
+          
+          const header = document.createElement("div");
+          header.className = `text-[10px] font-black uppercase tracking-wider py-1 px-3 rounded-lg flex items-center gap-1.5 ${typeClass}`;
+          header.innerHTML = `<span>${iconDot}</span> <span>${title} (${players.length})</span>`;
+          sectionDiv.appendChild(header);
+
+          if (players.length === 0) {
+            const emptyMsg = document.createElement("div");
+            emptyMsg.className = "text-[10px] text-slate-500 italic px-3 py-1.5";
+            emptyMsg.textContent = "Ningún jugador asignado a esta categoría.";
+            sectionDiv.appendChild(emptyMsg);
+          } else {
+            players.forEach(player => {
+              let posBadge = "";
+              if (player.posicion === "portero") posBadge = `<span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-black uppercase text-[10px]">POR</span>`;
+              else if (player.posicion === "defensa") posBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-black uppercase text-[10px]">DF</span>`;
+              else if (player.posicion === "mediocampista") posBadge = `<span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-black uppercase text-[10px]">MC</span>`;
+              else if (player.posicion === "delantero") posBadge = `<span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 font-black uppercase text-[10px]">DL</span>`;
+
+              // Badges de Capitán y 12º Jugador
+              let statusBadges = "";
+              if (player.id === capitanId) {
+                statusBadges += `<span class="px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-black uppercase text-[8px] flex items-center gap-0.5 shadow-sm"><i data-lucide="crown" class="w-2.5 h-2.5"></i> CAPITÁN</span>`;
+              }
+              if (player.id === jugador12Id) {
+                statusBadges += `<span class="px-1.5 py-0.5 rounded bg-purple-500 text-white font-black uppercase text-[8px] flex items-center gap-0.5 shadow-sm"><i data-lucide="zap" class="w-2.5 h-2.5"></i> 12º JUGADOR</span>`;
+              }
+
+              const itemDiv = document.createElement("div");
+              itemDiv.className = "flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all duration-300";
+              itemDiv.innerHTML = `
+                <div class="flex items-center gap-3">
+                  <span class="text-lg">${player.flag || "⚽"}</span>
+                  <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-extrabold text-white text-xs">${player.nombre}</span>
+                      ${statusBadges}
+                    </div>
+                    <div class="text-[9px] text-slate-400 font-bold uppercase flex items-center gap-1.5 mt-0.5">
+                      ${posBadge} <span>${player.pais || "Mundial"}</span> <span class="text-gold">• ${(player.precio / 1000000).toFixed(1)}M$</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <button class="btn-editor-remove-player bg-rose-500/10 hover:bg-rose-500 hover:text-slate-950 text-rose-400 border border-rose-500/20 hover:border-transparent p-2 rounded-xl transition cursor-pointer ${isReadOnly ? 'hidden' : ''}" data-id="${id}" title="Quitar jugador de la plantilla">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
-          `;
+                <button class="btn-editor-remove-player bg-rose-500/10 hover:bg-rose-500 hover:text-slate-950 text-rose-400 border border-rose-500/20 hover:border-transparent p-2 rounded-xl transition cursor-pointer ${isReadOnly ? 'hidden' : ''}" data-id="${player.id}" title="Quitar jugador de la plantilla">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              `;
 
-          if (!isReadOnly) {
-            itemDiv.querySelector(".btn-editor-remove-player").addEventListener("click", () => {
-              removePlayerFromAdminSquad(id, player.nombre);
+              if (!isReadOnly) {
+                itemDiv.querySelector(".btn-editor-remove-player").addEventListener("click", () => {
+                  removePlayerFromAdminSquad(player.id, player.nombre);
+                });
+              }
+
+              sectionDiv.appendChild(itemDiv);
             });
           }
 
-          adminSquadEditorPlayersList.appendChild(itemDiv);
-        });
+          adminSquadEditorPlayersList.appendChild(sectionDiv);
+        }
 
+        // Renderizar las 3 secciones
+        renderGroupSection("Titulares", titularPlayers, "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20", "🟢");
+        renderGroupSection("Suplentes en Banquillo", suplentePlayers, "bg-blue-500/10 text-blue-400 border border-blue-500/20", "🔵");
+        renderGroupSection("Reservas fuera de convocatoria", reservaPlayers, "bg-slate-500/10 text-slate-400 border border-slate-500/20", "⚪");
         lucide.createIcons();
       });
     }
@@ -6296,6 +6604,13 @@
         renderSimulatorPlayersGrid();
       });
 
+      const searchInput = document.getElementById("sim-player-search");
+      if (searchInput) {
+        searchInput.addEventListener("input", () => {
+          renderSimulatorPlayersGrid();
+        });
+      }
+
       renderSimulatorPlayersGrid();
 
       document.getElementById("btn-close-sim-modal").addEventListener("click", () => {
@@ -6339,10 +6654,18 @@
 
           const nuevosPuntos = calcularPuntosJugador(newStats, player.posicion, elim);
 
+          const activeJornada = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+          const prevPuntosJornadas = player.puntos_jornadas || {};
+          const nextPuntosJornadas = {
+            ...prevPuntosJornadas,
+            [activeJornada]: nuevosPuntos
+          };
+
           const playerRef = doc(db, "players", simSelectedPlayerId);
           await updateDoc(playerRef, {
             stats: newStats,
-            puntos: nuevosPuntos
+            puntos: nuevosPuntos,
+            puntos_jornadas: nextPuntosJornadas
           });
 
           showNotification(`⚡ ¡${player.nombre} calificado con ${nuevosPuntos} puntos!`);
@@ -6370,26 +6693,40 @@
     function renderSimulatorPlayersGrid() {
       const grid = document.getElementById("sim-players-grid");
       const select = document.getElementById("sim-country-select");
+      const searchInput = document.getElementById("sim-player-search");
       if (!grid || !select) return;
+      
+      const queryText = searchInput ? searchInput.value.trim().toLowerCase() : "";
       const selectedCountry = select.value;
       grid.innerHTML = "";
 
-      if (!selectedCountry) {
-        grid.innerHTML = `<p class="text-xs text-slate-500 italic col-span-full py-4 text-center">Selecciona un país para mostrar sus jugadores.</p>`;
+      let filteredPlayers = [];
+      const hasQuery = queryText.length > 0;
+
+      if (hasQuery) {
+        // Búsqueda global/local libre por nombre o país
+        filteredPlayers = PLAYERS_POOL.filter(p => 
+          p.nombre.toLowerCase().includes(queryText) || 
+          p.pais.toLowerCase().includes(queryText)
+        ).sort((a, b) => a.nombre.localeCompare(b.nombre));
+      } else {
+        // Filtrar por país seleccionado
+        if (!selectedCountry) {
+          grid.innerHTML = `<p class="text-xs text-slate-500 italic col-span-full py-4 text-center">Selecciona un país o escribe en el buscador para ver jugadores.</p>`;
+          return;
+        }
+        filteredPlayers = PLAYERS_POOL.filter(p => p.pais === selectedCountry).sort((a, b) => {
+          if (a.posicion !== b.posicion) return a.posicion.localeCompare(b.posicion);
+          return a.nombre.localeCompare(b.nombre);
+        });
+      }
+
+      if (filteredPlayers.length === 0) {
+        grid.innerHTML = `<p class="text-xs text-slate-500 italic col-span-full py-4 text-center">No se encontraron jugadores.</p>`;
         return;
       }
 
-      const countryPlayers = PLAYERS_POOL.filter(p => p.pais === selectedCountry).sort((a, b) => {
-        if (a.posicion !== b.posicion) return a.posicion.localeCompare(b.posicion);
-        return a.nombre.localeCompare(b.nombre);
-      });
-
-      if (countryPlayers.length === 0) {
-        grid.innerHTML = `<p class="text-xs text-slate-500 italic col-span-full py-4 text-center">No se encontraron jugadores para este país.</p>`;
-        return;
-      }
-
-      countryPlayers.forEach(p => {
+      filteredPlayers.forEach(p => {
         const liveP = firestorePlayersList.find(fp => fp.id === p.id);
         const puntos = liveP ? (liveP.puntos || 0) : 0;
 
@@ -6418,6 +6755,7 @@
           </div>
           <div>
             <h5 class="text-white text-[11px] font-bold truncate leading-tight mt-1">${p.nombre}</h5>
+            ${hasQuery ? `<span class="text-[8px] text-slate-400 font-bold block mt-0.5">${p.pais}</span>` : ""}
           </div>
           <div class="text-[9px] text-slate-400 font-black bg-white/5 py-1 rounded border border-white/5 uppercase group-hover:bg-gold/10 group-hover:text-gold transition">
             CALIFICAR ⚡
@@ -6598,6 +6936,17 @@
         btn.disabled = false;
       }
     });
+
+    // Cambiar hora según preset seleccionado
+    const lockPresetsSelect = document.getElementById("admin-lock-presets");
+    if (lockPresetsSelect) {
+      lockPresetsSelect.addEventListener("change", () => {
+        const val = lockPresetsSelect.value;
+        if (val) {
+          document.getElementById("admin-lock-lineups-time").value = val;
+        }
+      });
+    }
 
     // Admin Desbloquear Inmediatamente
     document.getElementById("btn-admin-unlock-lineups").addEventListener("click", async () => {
@@ -8039,6 +8388,17 @@
       }
       if (!leagueCode) return;
 
+      // Mostrar/Ocultar botón de borrar chat para el admin de la liga
+      const btnClearChat = document.getElementById("btn-admin-clear-chat");
+      if (btnClearChat) {
+        const isUserAdmin = currentActiveLeagueData?.admin_uid === (currentUser ? currentUser.uid : null);
+        if (isUserAdmin) {
+          btnClearChat.classList.remove("hidden");
+        } else {
+          btnClearChat.classList.add("hidden");
+        }
+      }
+
       const chatContainer = document.getElementById("chat-messages-container");
       chatContainer.innerHTML = `<div class="py-12 text-center text-slate-500 font-bold text-xs"><i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto mb-2 text-gold"></i> Conectando al chat de la liga...</div>`;
       lucide.createIcons();
@@ -8163,6 +8523,42 @@
       chatMsgInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           submitChatMessage();
+        }
+      });
+    }
+
+    // Limpiar Chat de Liga (Admin Only)
+    const btnAdminClearChat = document.getElementById("btn-admin-clear-chat");
+    if (btnAdminClearChat) {
+      btnAdminClearChat.addEventListener("click", async () => {
+        if (!currentActiveLeague) return;
+        const confirmDelete = confirm("⚠️ ¿Estás completamente seguro de que quieres BORRAR TODO el historial de chat de esta liga? Esta acción no se puede deshacer.");
+        if (!confirmDelete) return;
+
+        btnAdminClearChat.disabled = true;
+        btnAdminClearChat.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> Borrando...`;
+        lucide.createIcons();
+
+        try {
+          const snapshot = await db.collection("messages").where("leagueCode", "==", currentActiveLeague).get();
+          if (snapshot.empty) {
+            showNotification("El chat ya está vacío.", "info");
+            return;
+          }
+
+          const batch = db.batch();
+          snapshot.forEach(docSnap => {
+            batch.delete(docSnap.ref);
+          });
+          await batch.commit();
+          showNotification("🧹 Historial del chat de la liga borrado con éxito.", "success");
+        } catch (err) {
+          console.error("Error al borrar historial de chat:", err);
+          showNotification("Error de permisos o base de datos al borrar chat.", "error");
+        } finally {
+          btnAdminClearChat.disabled = false;
+          btnAdminClearChat.innerHTML = `<i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Borrar Chat`;
+          lucide.createIcons();
         }
       });
     }
@@ -8362,6 +8758,645 @@
         } finally {
           btnAdminDeleteLeague.disabled = false;
           btnAdminDeleteLeague.innerHTML = 'Eliminar Liga Completa <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>';
+          lucide.createIcons();
+        }
+      });
+    }
+
+    // ==================== MÓDULO PACKS & ÁLBUM PANINI ====================
+
+    const PACK_CONFIG = {
+      bronze: { probs: { comun: 80, medio: 18, estrella: 2 } },
+      plata:  { probs: { comun: 60, medio: 30, estrella: 10 } },
+      gold:   { probs: { comun: 40, medio: 40, estrella: 20 } }
+    };
+
+    let currentPackType = null;
+    let activeDeckFilter = "all";
+
+    function getPlayerRarity(price) {
+      if (price >= 7000000) return "estrella";
+      if (price >= 3000000) return "medio";
+      return "comun";
+    }
+
+    function generateCromoHTML(player, state = "collected", opts = {}) {
+      // state: "collected" | "missing" | "deck"
+      const rarity = getPlayerRarity(player.precio);
+      let border = "border-slate-700/40", bg = "from-slate-900 to-slate-950", priceColor = "text-slate-400", glow = "";
+      let badge = `<span class="px-1.5 py-0.5 rounded bg-slate-500/10 text-slate-400 font-extrabold text-[7px] tracking-wider border border-slate-500/20">COMÚN</span>`;
+
+      if (rarity === "estrella") {
+        border = "border-amber-500/40"; bg = "from-amber-800/50 via-amber-950/60 to-slate-950"; priceColor = "text-amber-400";
+        glow = "shadow-[0_0_18px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/20";
+        badge = `<span class="px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-black text-[7px] flex items-center gap-0.5">👑 ESTRELLA</span>`;
+      } else if (rarity === "medio") {
+        border = "border-blue-500/30"; bg = "from-indigo-950 via-slate-900 to-slate-950"; priceColor = "text-blue-400";
+        glow = "shadow-[0_0_14px_rgba(59,130,246,0.2)] ring-1 ring-blue-500/20";
+        badge = `<span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-black text-[7px] flex items-center gap-0.5">⚡ MEDIO</span>`;
+      }
+
+      const posMap = { portero: ["POR","teal"], defensa: ["DEF","blue"], mediocampista: ["MED","purple"], delantero: ["DEL","rose"] };
+      const [posLabel, posCol] = posMap[player.posicion] || ["JUG","slate"];
+      const initials = player.nombre.split(" ").map(n => n[0]).join("").substring(0,2).toUpperCase();
+      const missingClass = state === "missing" ? "opacity-25 grayscale" : "";
+      const deckCount = opts.count > 1 ? `<span class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-purple-500 text-white text-[9px] font-black flex items-center justify-center z-20">x${opts.count}</span>` : "";
+      const pegarBtn = state === "deck-in-album" ? `<button onclick="pasteSticker('${player.id}')" class="w-full mt-1.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[8px] uppercase transition active:scale-95 cursor-pointer">📌 Pegar</button>` : "";
+
+      return `
+        <div class="relative group aspect-[3/4.2] w-full rounded-2xl border ${border} bg-gradient-to-b ${bg} p-2.5 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:scale-[1.03] ${glow} ${missingClass}">
+          ${deckCount}
+          <div class="flex items-center justify-between z-10">
+            <span class="px-1.5 py-0.5 rounded font-black text-[8px] uppercase bg-${posCol}-500/10 text-${posCol}-400">${posLabel}</span>
+            <span class="text-xs">${player.flag || "⚽"}</span>
+          </div>
+          <div class="flex-1 flex items-center justify-center z-10">
+            <div class="w-11 h-11 rounded-full bg-white/[0.04] border border-white/5 flex items-center justify-center font-black text-xs text-slate-400 tracking-wider">${initials}</div>
+          </div>
+          <div class="space-y-0.5 z-10 text-center border-t border-white/5 pt-1.5">
+            <p class="text-[9px] font-black text-white truncate uppercase">${player.nombre}</p>
+            <div class="flex justify-between items-center">
+              <span class="text-[7px] text-slate-500 font-bold truncate">${player.pais}</span>
+              <span class="text-[8px] ${priceColor} font-black">${(player.precio/1e6).toFixed(1)}M</span>
+            </div>
+            <div class="flex justify-center pt-0.5">${badge}</div>
+            ${pegarBtn}
+          </div>
+        </div>`;
+    }
+
+    // ---- Tab switcher sub-packs ----
+    window.switchPacksTab = function(tab) {
+      ["shop","album","deck","trade"].forEach(t => {
+        const panel = document.getElementById(`packs-panel-${t}`);
+        const btn   = document.getElementById(`packs-tab-${t}`);
+        if (!panel || !btn) return;
+        if (t === tab) {
+          panel.classList.remove("hidden");
+          btn.className = "px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer bg-amber-500 text-slate-950";
+        } else {
+          panel.classList.add("hidden");
+          btn.className = "px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white";
+        }
+      });
+      if (tab === "album") renderAlbumCountryNav();
+      if (tab === "deck")  renderDeckGrid();
+      if (tab === "trade") initTradePanel();
+    };
+
+    // ---- Pack drawing algorithm ----
+    function drawPack(type, count = 3) {
+      const probs = PACK_CONFIG[type]?.probs || PACK_CONFIG.gold.probs;
+      const pools = {
+        comun:    PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "comun"),
+        medio:    PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "medio"),
+        estrella: PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "estrella"),
+      };
+      const picked = [], pickedIds = [];
+      for (let i = 0; i < count; i++) {
+        const rand = Math.random() * 100;
+        let pool = rand < probs.estrella ? pools.estrella : rand < probs.estrella + probs.medio ? pools.medio : pools.comun;
+        if (!pool.length) pool = PLAYERS_POOL;
+        let chosen, attempts = 0;
+        do { chosen = pool[Math.floor(Math.random() * pool.length)]; attempts++; }
+        while (pickedIds.includes(chosen.id) && attempts < 30);
+        picked.push(chosen); pickedIds.push(chosen.id);
+      }
+      return { players: picked, ids: pickedIds };
+    }
+
+    // ---- Visual single-pack opener ----
+    window.openPackVisual = async function(type) {
+      if (!currentUser || !currentUserProfile) return;
+      currentPackType = type;
+      const placeholder = document.getElementById("pack-reveal-placeholder");
+      const grid = document.getElementById("pack-cards-grid");
+      const again = document.getElementById("btn-open-again");
+
+      // Shake animation on the reveal zone
+      const zone = document.getElementById("pack-reveal-zone");
+      zone.classList.add("animate-pulse");
+      await new Promise(r => setTimeout(r, 300));
+      zone.classList.remove("animate-pulse");
+
+      const { players, ids } = drawPack(type, 3);
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, { user_inventory: arrayUnion(...ids) });
+        if (!currentUserProfile.user_inventory) currentUserProfile.user_inventory = [];
+        ids.forEach(id => { if (!currentUserProfile.user_inventory.includes(id)) currentUserProfile.user_inventory.push(id); });
+
+        if (placeholder) placeholder.classList.add("hidden");
+        if (again) again.classList.remove("hidden");
+        if (grid) {
+          grid.classList.remove("hidden");
+          grid.innerHTML = "";
+          players.forEach((player, idx) => {
+            const wrap = document.createElement("div");
+            wrap.className = "transform scale-0 opacity-0 transition-all duration-500 ease-out";
+            wrap.innerHTML = generateCromoHTML(player, "collected");
+            grid.appendChild(wrap);
+            setTimeout(() => { wrap.classList.remove("scale-0","opacity-0"); wrap.classList.add("scale-100","opacity-100"); }, (idx + 1) * 280);
+          });
+          setTimeout(() => { lucide.createIcons(); updatePacksStats(); }, players.length * 280 + 100);
+        }
+        showNotification(`🎴 ¡Sobre ${type} abierto! +${ids.length} cromos al mazo.`, "success");
+      } catch(err) {
+        console.error("Error abriendo sobre:", err);
+        showNotification("Error al guardar cromos. Inténtalo de nuevo.", "error");
+      }
+    };
+
+    // ---- Multi-pack quick open (x5) ----
+    window.openPackMulti = async function(type, count) {
+      if (!currentUser || !currentUserProfile) return;
+      const totalCards = count * 3;
+      const allIds = [];
+      for (let i = 0; i < count; i++) { const { ids } = drawPack(type, 3); ids.forEach(id => allIds.push(id)); }
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, { user_inventory: arrayUnion(...allIds) });
+        if (!currentUserProfile.user_inventory) currentUserProfile.user_inventory = [];
+        allIds.forEach(id => { if (!currentUserProfile.user_inventory.includes(id)) currentUserProfile.user_inventory.push(id); });
+        updatePacksStats();
+        showNotification(`⚡ ¡${count} sobres ${type} abiertos! +${totalCards} cromos al mazo.`, "success");
+      } catch(err) {
+        console.error("Error en apertura múltiple:", err);
+        showNotification("Error al guardar. Inténtalo de nuevo.", "error");
+      }
+    };
+
+    window.resetPackReveal = function() {
+      const placeholder = document.getElementById("pack-reveal-placeholder");
+      const grid = document.getElementById("pack-cards-grid");
+      const again = document.getElementById("btn-open-again");
+      if (placeholder) placeholder.classList.remove("hidden");
+      if (grid) { grid.classList.add("hidden"); grid.innerHTML = ""; }
+      if (again) again.classList.add("hidden");
+    };
+
+    // ---- Stats updater ----
+    function updatePacksStats() {
+      const inventory = currentUserProfile.user_inventory || [];
+      const album = currentUserProfile.user_album || [];
+      const total = PLAYERS_POOL.length;
+      const pct = total > 0 ? Math.round((album.length / total) * 100) : 0;
+      const el = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+      el("album-percentage", `${pct}%`);
+      el("album-collected-count", album.length);
+      el("album-total-count", total);
+      el("album-deck-count", inventory.length);
+      const bar = document.getElementById("album-progress-bar");
+      if (bar) bar.style.width = `${pct}%`;
+    }
+
+    // ---- Album by country ----
+    function renderAlbumCountryNav() {
+      const nav = document.getElementById("album-country-nav");
+      if (!nav) return;
+      const countries = [...new Set(PLAYERS_POOL.map(p => p.pais))].sort();
+      nav.innerHTML = countries.map(c => {
+        const flag = PLAYERS_POOL.find(p => p.pais === c)?.flag || "";
+        return `<button onclick="renderAlbumCountryPage('${c}')" class="px-3 py-1.5 rounded-xl text-[10px] font-black border border-white/10 bg-white/5 hover:bg-white/10 text-white transition cursor-pointer">${flag} ${c}</button>`;
+      }).join("");
+    }
+
+    window.renderAlbumCountryPage = function(country) {
+      const page = document.getElementById("album-country-page");
+      if (!page) return;
+      const album = currentUserProfile.user_album || [];
+      const deck  = currentUserProfile.user_inventory || [];
+      const players = PLAYERS_POOL.filter(p => p.pais === country).sort((a,b) => b.precio - a.precio);
+      const flag = players[0]?.flag || "";
+      const stuckCount = players.filter(p => album.includes(p.id)).length;
+
+      page.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-white/5">
+            <h4 class="font-black text-white text-lg">${flag} ${country}</h4>
+            <span class="text-[10px] font-black text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">${stuckCount}/${players.length} pegados</span>
+          </div>
+          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+            ${players.map(p => {
+              const inAlbum = album.includes(p.id);
+              const inDeck  = deck.includes(p.id);
+              const state = inAlbum ? "collected" : inDeck ? "deck-in-album" : "missing";
+              return generateCromoHTML(p, state);
+            }).join("")}
+          </div>
+        </div>`;
+      lucide.createIcons();
+    };
+
+    // ---- Paste sticker ----
+    window.pasteSticker = async function(playerId) {
+      if (!currentUser || !currentUserProfile) return;
+      const inventory = currentUserProfile.user_inventory || [];
+      if (!inventory.includes(playerId)) { showNotification("No tienes ese cromo en el mazo.", "error"); return; }
+      const album = currentUserProfile.user_album || [];
+      if (album.includes(playerId)) { showNotification("Ya está pegado en tu álbum.", "error"); return; }
+      try {
+        const newInventory = [...inventory];
+        const idx = newInventory.indexOf(playerId);
+        newInventory.splice(idx, 1);
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, { user_inventory: newInventory, user_album: arrayUnion(playerId) });
+        currentUserProfile.user_inventory = newInventory;
+        if (!currentUserProfile.user_album) currentUserProfile.user_album = [];
+        currentUserProfile.user_album.push(playerId);
+        updatePacksStats();
+        const player = PLAYERS_POOL.find(p => p.id === playerId);
+        const country = player?.pais;
+        if (country) renderAlbumCountryPage(country);
+        showNotification(`📌 ¡${player?.nombre} pegado en el álbum!`, "success");
+      } catch(err) {
+        console.error("Error pegando cromo:", err);
+        showNotification("Error al pegar el cromo.", "error");
+      }
+    };
+
+    // ---- Deck renderer ----
+    function renderDeckGrid() {
+      const grid = document.getElementById("deck-cards-grid");
+      if (!grid) return;
+      const inventory = currentUserProfile?.user_inventory || [];
+      // Count duplicates
+      const countMap = {};
+      inventory.forEach(id => { countMap[id] = (countMap[id] || 0) + 1; });
+      let players = [...new Set(inventory)].map(id => PLAYERS_POOL.find(p => p.id === id)).filter(Boolean);
+      if (activeDeckFilter !== "all") players = players.filter(p => getPlayerRarity(p.precio) === activeDeckFilter);
+      players.sort((a,b) => b.precio - a.precio);
+      if (!players.length) {
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic text-xs">No tienes cromos en el mazo con este filtro.<br>¡Abre sobres para conseguir más!</div>`;
+        return;
+      }
+      grid.innerHTML = players.map(p => generateCromoHTML(p, "deck", { count: countMap[p.id] })).join("");
+      lucide.createIcons();
+      // Deck filter buttons
+      document.querySelectorAll(".btn-deck-filter").forEach(btn => {
+        const fresh = btn.cloneNode(true);
+        btn.parentNode.replaceChild(fresh, btn);
+        fresh.addEventListener("click", () => {
+          document.querySelectorAll(".btn-deck-filter").forEach(b => b.className = "btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white");
+          fresh.className = "btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer bg-purple-500 text-white";
+          activeDeckFilter = fresh.getAttribute("data-filter");
+          renderDeckGrid();
+        });
+      });
+    }
+
+    // ---- Trade panel ----
+    let tradeUnsubscribe = null;
+    function initTradePanel() {
+      if (!currentActiveLeague || !currentUser) return;
+      // Populate offer select (cards in deck)
+      const inventory = currentUserProfile?.user_inventory || [];
+      const offerSel = document.getElementById("trade-offer-select");
+      const wantSel  = document.getElementById("trade-want-select");
+      if (offerSel) {
+        offerSel.innerHTML = `<option value="">— Ofreces —</option>`;
+        [...new Set(inventory)].forEach(id => {
+          const p = PLAYERS_POOL.find(x => x.id === id);
+          if (p) offerSel.innerHTML += `<option value="${p.id}">${p.flag} ${p.nombre} (${getPlayerRarity(p.precio).toUpperCase()})</option>`;
+        });
+      }
+      if (wantSel) {
+        wantSel.innerHTML = `<option value="">— Buscas —</option>`;
+        [...PLAYERS_POOL].sort((a,b) => b.precio - a.precio).forEach(p => {
+          wantSel.innerHTML += `<option value="${p.id}">${p.flag} ${p.nombre}</option>`;
+        });
+      }
+      // Real-time trades listener
+      if (tradeUnsubscribe) tradeUnsubscribe();
+      tradeUnsubscribe = db.collection("trades").where("leagueCode","==",currentActiveLeague).where("status","==","open")
+        .onSnapshot(snap => {
+          const list = document.getElementById("trade-offers-list");
+          if (!list) return;
+          if (snap.empty) { list.innerHTML = `<div class="text-center text-slate-500 text-xs py-8 italic">No hay intercambios activos en la liga.</div>`; return; }
+          list.innerHTML = snap.docs.map(d => {
+            const t = d.data();
+            const offerP = PLAYERS_POOL.find(p => p.id === t.offer_id);
+            const wantP  = PLAYERS_POOL.find(p => p.id === t.want_id);
+            const isOwn  = t.from_uid === currentUser.uid;
+            const canAccept = !isOwn && (currentUserProfile?.user_inventory || []).includes(t.want_id);
+            return `
+              <div class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 text-xs">
+                <div class="flex-1 min-w-0">
+                  <p class="font-black text-white truncate">${t.from_name}</p>
+                  <p class="text-slate-400 text-[10px] truncate">Da: <span class="text-amber-400">${offerP?.flag} ${offerP?.nombre || "?"}</span> · Quiere: <span class="text-emerald-400">${wantP?.flag} ${wantP?.nombre || "?"}</span></p>
+                </div>
+                ${canAccept ? `<button onclick="acceptTrade('${d.id}')" class="shrink-0 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[9px] rounded-lg uppercase transition cursor-pointer active:scale-95">Aceptar</button>` : ""}
+                ${isOwn ? `<button onclick="cancelTrade('${d.id}')" class="shrink-0 px-3 py-1.5 bg-rose-900/40 hover:bg-rose-800/60 text-rose-400 font-black text-[9px] rounded-lg uppercase transition cursor-pointer active:scale-95">Cancelar</button>` : ""}
+              </div>`;
+          }).join("");
+        });
+    }
+
+    window.createTradeOffer = async function() {
+      if (!currentUser || !currentActiveLeague) return;
+      const offerId = document.getElementById("trade-offer-select")?.value;
+      const wantId  = document.getElementById("trade-want-select")?.value;
+      if (!offerId || !wantId) { showNotification("Selecciona ambos cromos para el intercambio.", "error"); return; }
+      if (offerId === wantId) { showNotification("No puedes intercambiar el mismo cromo.", "error"); return; }
+      try {
+        await db.collection("trades").add({
+          leagueCode: currentActiveLeague, from_uid: currentUser.uid,
+          from_name: currentUserProfile.nombre_usuario || "Mánager",
+          offer_id: offerId, want_id: wantId, status: "open",
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showNotification("✅ ¡Oferta publicada! Espera que alguien la acepte.", "success");
+      } catch(err) { console.error(err); showNotification("Error al publicar la oferta.", "error"); }
+    };
+
+    window.acceptTrade = async function(tradeId) {
+      if (!currentUser || !currentUserProfile) return;
+      const snap = await db.collection("trades").doc(tradeId).get();
+      if (!snap.exists) { showNotification("Esta oferta ya no está disponible.", "error"); return; }
+      const t = snap.data();
+      const myInv = [...(currentUserProfile.user_inventory || [])];
+      const theirInv = [t.want_id]; // cards they're offering
+      if (!myInv.includes(t.want_id)) { showNotification("Ya no tienes ese cromo.", "error"); return; }
+      try {
+        // Give my card to them, receive their card
+        const myNewInv = [...myInv]; myNewInv.splice(myNewInv.indexOf(t.want_id), 1);
+        myNewInv.push(t.offer_id);
+        const myRef = doc(db, "users", currentUser.uid);
+        await updateDoc(myRef, { user_inventory: myNewInv });
+        // Update offer owner
+        const theirRef = doc(db, "users", t.from_uid);
+        const theirSnap = await getDoc(theirRef);
+        if (theirSnap.exists()) {
+          const theirData = theirSnap.data();
+          const theirInvArr = [...(theirData.user_inventory || [])];
+          theirInvArr.splice(theirInvArr.indexOf(t.offer_id), 1);
+          theirInvArr.push(t.want_id);
+          await updateDoc(theirRef, { user_inventory: theirInvArr });
+        }
+        await db.collection("trades").doc(tradeId).update({ status: "completed" });
+        currentUserProfile.user_inventory = myNewInv;
+        updatePacksStats();
+        showNotification("🎉 ¡Intercambio completado!", "success");
+      } catch(err) { console.error(err); showNotification("Error en el intercambio.", "error"); }
+    };
+
+    window.cancelTrade = async function(tradeId) {
+      try {
+        await db.collection("trades").doc(tradeId).update({ status: "cancelled" });
+        showNotification("Oferta cancelada.", "success");
+      } catch(err) { showNotification("Error al cancelar.", "error"); }
+    };
+
+    // ---- Main init ----
+    window.initPacksModule = function() {
+      if (!currentUser || !currentUserProfile) return;
+      updatePacksStats();
+      switchPacksTab("shop");
+    };
+
+  </script>
+
+  <!-- Modal de Selección de Sustitución Directa (Fonda Engine) -->
+
+      return "comun";
+    }
+
+    function generateCromoHTML(player, isCollected = true, isReveal = false) {
+      const rarity = getPlayerRarity(player.precio);
+      
+      let bgGradient = "from-slate-850 to-slate-950 border-slate-700/40 text-slate-300";
+      let rarityBadge = `<span class="px-1.5 py-0.5 rounded bg-slate-500/10 text-slate-400 font-extrabold uppercase text-[7px] tracking-wider border border-slate-500/20">Común</span>`;
+      let priceColor = "text-slate-400";
+      let glowClass = "";
+
+      if (rarity === "estrella") {
+        bgGradient = "from-amber-600/60 via-amber-950/80 to-slate-900 border-amber-500/40 text-amber-200";
+        rarityBadge = `<span class="px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-black uppercase text-[7px] tracking-wider flex items-center gap-0.5 shadow-sm shadow-gold/20"><i data-lucide="crown" class="w-2 h-2"></i> ESTRELLA</span>`;
+        priceColor = "text-amber-400";
+        glowClass = "shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/20";
+      } else if (rarity === "medio") {
+        bgGradient = "from-indigo-950 via-slate-900 to-slate-950 border-blue-500/30 text-blue-300";
+        rarityBadge = `<span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-black uppercase text-[7px] tracking-wider flex items-center gap-0.5 shadow-sm shadow-blue-500/10"><i data-lucide="zap" class="w-2 h-2"></i> MEDIO</span>`;
+        priceColor = "text-blue-400";
+        glowClass = "shadow-[0_0_15px_rgba(59,130,246,0.2)] ring-1 ring-blue-500/20";
+      }
+
+      const stateClass = isCollected ? "" : "opacity-20 grayscale blur-[0.5px] hover:blur-none hover:opacity-40 transition duration-300 cursor-not-allowed";
+      const posUpper = player.posicion === "portero" ? "POR" : (player.posicion === "defensa" ? "DEF" : (player.posicion === "mediocampista" ? "MED" : "DEL"));
+      
+      let posColor = "bg-slate-500/10 text-slate-400";
+      if (player.posicion === "portero") posColor = "bg-teal-500/10 text-teal-400";
+      else if (player.posicion === "defensa") posColor = "bg-blue-500/10 text-blue-400";
+      else if (player.posicion === "mediocampista") posColor = "bg-purple-500/10 text-purple-400";
+      else if (player.posicion === "delantero") posColor = "bg-rose-500/10 text-rose-400";
+
+      const initials = player.nombre.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+
+      return `
+        <div class="relative group aspect-[3/4.2] w-full rounded-2xl border ${bgGradient} p-3 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:scale-[1.03] ${glowClass} ${stateClass}">
+          <!-- Top info bar -->
+          <div class="flex items-center justify-between relative z-10">
+            <span class="px-1.5 py-0.5 rounded font-black text-[8px] uppercase ${posColor}">${posUpper}</span>
+            <span class="text-xs shrink-0">${player.flag || "⚽"}</span>
+          </div>
+
+          <!-- Avatar Initials -->
+          <div class="flex-1 flex flex-col justify-center items-center py-2 relative z-10">
+            <div class="w-12 h-12 rounded-full bg-white/[0.03] border border-white/5 flex items-center justify-center font-black text-xs text-slate-400 tracking-wider shadow-inner group-hover:bg-white/[0.06] transition duration-300">
+              ${initials}
+            </div>
+          </div>
+
+          <!-- Metadata Footer -->
+          <div class="space-y-1 relative z-10 border-t border-white/5 pt-2 text-center">
+            <h5 class="text-[10px] font-black text-white truncate leading-none uppercase">${player.nombre}</h5>
+            <div class="flex justify-between items-center gap-1 mt-1">
+              <span class="text-[8px] text-slate-500 font-bold truncate">${player.pais}</span>
+              <span class="text-[9px] ${priceColor} font-black">${(player.precio / 1000000).toFixed(1)}M$</span>
+            </div>
+            <div class="flex justify-center pt-1.5">
+              ${rarityBadge}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    let activeAlbumFilter = "all";
+
+    window.initPacksModule = function() {
+      if (!currentUser || !currentUserProfile) return;
+      
+      const inventory = currentUserProfile.user_inventory || [];
+      
+      // Actualizar contador del álbum
+      const collectedCount = inventory.length;
+      const totalCount = PLAYERS_POOL.length;
+      const percentage = totalCount > 0 ? Math.round((collectedCount / totalCount) * 100) : 0;
+
+      const percentageEl = document.getElementById("album-percentage");
+      const progressBarEl = document.getElementById("album-progress-bar");
+      const collectedCountEl = document.getElementById("album-collected-count");
+      const totalCountEl = document.getElementById("album-total-count");
+
+      if (percentageEl) percentageEl.textContent = `${percentage}%`;
+      if (progressBarEl) progressBarEl.style.width = `${percentage}%`;
+      if (collectedCountEl) collectedCountEl.textContent = collectedCount;
+      if (totalCountEl) totalCountEl.textContent = totalCount;
+
+      renderAlbumGrid();
+      setupAlbumFilters();
+      setupPackOpeningEvent();
+    };
+
+    function renderAlbumGrid() {
+      const grid = document.getElementById("album-cards-grid");
+      if (!grid) return;
+      grid.innerHTML = "";
+
+      const inventory = currentUserProfile.user_inventory || [];
+
+      // Filtrar y ordenar la pool por precio descendente
+      let playersToShow = [...PLAYERS_POOL].sort((a, b) => b.precio - a.precio);
+
+      if (activeAlbumFilter !== "all") {
+        playersToShow = playersToShow.filter(p => getPlayerRarity(p.precio) === activeAlbumFilter);
+      }
+
+      if (playersToShow.length === 0) {
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic text-xs">No hay cromos en esta categoría.</div>`;
+        return;
+      }
+
+      playersToShow.forEach(player => {
+        const isCollected = inventory.includes(player.id);
+        const cardHtml = generateCromoHTML(player, isCollected, false);
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = cardHtml;
+        grid.appendChild(wrapper.firstElementChild);
+      });
+
+      lucide.createIcons();
+    }
+
+    function setupAlbumFilters() {
+      const buttons = document.querySelectorAll(".btn-album-filter");
+      buttons.forEach(btn => {
+        // Remover listeners anteriores para evitar duplicados
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+
+        newBtn.addEventListener("click", () => {
+          buttons.forEach(b => b.className = "btn-album-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white");
+          newBtn.className = "btn-album-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer bg-gold text-slate-950";
+          
+          activeAlbumFilter = newBtn.getAttribute("data-filter");
+          renderAlbumGrid();
+        });
+      });
+    }
+
+    function setupPackOpeningEvent() {
+      const btnOpen = document.getElementById("btn-open-pack");
+      if (!btnOpen) return;
+
+      // Remover listeners anteriores clone-nodeando
+      const newBtn = btnOpen.cloneNode(true);
+      btnOpen.parentNode.replaceChild(newBtn, btnOpen);
+
+      newBtn.addEventListener("click", async () => {
+        if (!currentUser || !currentUserProfile) return;
+
+        newBtn.disabled = true;
+        newBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> ABRIENDO SOBRE...`;
+        lucide.createIcons();
+
+        // 1. Clasificar la pool
+        const poolComunes = PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "comun");
+        const poolMedios = PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "medio");
+        const poolEstrellas = PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "estrella");
+
+        const pickedPlayers = [];
+        const pickedIds = [];
+
+        // 2. Elegir 3 jugadores aleatorios aplicando probabilidades (70% común, 25% medio, 5% estrella)
+        for (let i = 0; i < 3; i++) {
+          const rand = Math.random() * 100;
+          let selectedPool = poolComunes;
+          
+          if (rand >= 95) {
+            selectedPool = poolEstrellas.length > 0 ? poolEstrellas : poolComunes;
+          } else if (rand >= 70) {
+            selectedPool = poolMedios.length > 0 ? poolMedios : poolComunes;
+          }
+
+          // Si la pool elegida está vacía por algún motivo, usar toda la pool
+          if (selectedPool.length === 0) {
+            selectedPool = PLAYERS_POOL;
+          }
+
+          // Elegir jugador asegurando que no se repita en el mismo sobre
+          let attempts = 0;
+          let chosen = null;
+          do {
+            chosen = selectedPool[Math.floor(Math.random() * selectedPool.length)];
+            attempts++;
+          } while (pickedIds.includes(chosen.id) && attempts < 20);
+
+          pickedPlayers.push(chosen);
+          pickedIds.push(chosen.id);
+        }
+
+        // 3. Persistir en Firestore del usuario
+        try {
+          const userRef = doc(db, "users", currentUser.uid);
+          await updateDoc(userRef, {
+            user_inventory: firebase.firestore.FieldValue.arrayUnion(...pickedIds)
+          });
+
+          // Actualizar localmente el inventario
+          if (!currentUserProfile.user_inventory) {
+            currentUserProfile.user_inventory = [];
+          }
+          pickedIds.forEach(id => {
+            if (!currentUserProfile.user_inventory.includes(id)) {
+              currentUserProfile.user_inventory.push(id);
+            }
+          });
+
+          // 4. Animar apertura
+          const placeholder = document.getElementById("pack-reveal-placeholder");
+          const cardsGrid = document.getElementById("pack-cards-grid");
+
+          if (placeholder) placeholder.classList.add("hidden");
+          if (cardsGrid) {
+            cardsGrid.classList.remove("hidden");
+            cardsGrid.innerHTML = "";
+
+            pickedPlayers.forEach((player, idx) => {
+              const cardContainer = document.createElement("div");
+              cardContainer.className = "transform scale-50 opacity-0 transition-all duration-700 ease-out";
+              cardContainer.innerHTML = generateCromoHTML(player, true, true);
+              cardsGrid.appendChild(cardContainer);
+
+              // Animación escalonada premium
+              setTimeout(() => {
+                cardContainer.classList.remove("scale-50", "opacity-0");
+                cardContainer.classList.add("scale-100", "opacity-100");
+              }, (idx + 1) * 350);
+            });
+          }
+
+          // Actualizar el estado del álbum
+          initPacksModule();
+          showNotification("🌟 ¡Has abierto un sobre! Revisa tu colección.", "success");
+
+        } catch (err) {
+          console.error("Error al abrir sobre:", err);
+          showNotification("Error de red al guardar tu sobre de cromos.", "error");
+        } finally {
+          newBtn.disabled = false;
+          newBtn.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4"></i> ABRIR SOBRE DE CROMOS`;
           lucide.createIcons();
         }
       });
