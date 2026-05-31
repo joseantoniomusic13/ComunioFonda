@@ -158,6 +158,14 @@
             <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i>
             <span id="nav-budget" class="text-xs md:text-sm font-extrabold text-emerald-400">100.0M$</span>
           </div>
+          
+          <!-- Fonda Coins Badge -->
+          <div
+            class="glass-panel px-3 py-1.5 rounded-xl border border-purple-500/25 bg-purple-950/15 flex items-center gap-2"
+            title="Tus Fonda Coins (Para Sobres y Apuestas)">
+            <img src="img/logo.jpeg" alt="FC Logo" class="w-3 h-3 rounded-full object-cover border border-purple-500/30 align-middle">
+            <span id="nav-fonda-coins" class="text-xs md:text-sm font-extrabold text-purple-400">0 FC</span>
+          </div>
 
           <!-- Puntos Badge -->
           <div class="glass-panel px-3 py-1.5 rounded-xl border border-gold/25 bg-gold/5 flex items-center gap-2">
@@ -369,72 +377,82 @@
           </p>
         </div>
 
-        <!-- Panel de Unirse por Código (Formulario Directo) -->
-        <div class="w-full bg-slate-900/60 p-6 rounded-2xl border border-white/5 space-y-4 text-left">
-          <div class="text-emerald-400 text-lg font-black flex items-center gap-2">
-            <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-400"></i> Unirse a una Liga por Código
-          </div>
-
-          <div class="space-y-3">
-            <div class="space-y-1">
-              <label for="league-join-code-direct"
-                class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Código de la Liga
-                (Facilitado por el Admin)</label>
-              <input type="text" id="league-join-code-direct"
-                class="glass-input w-full px-4 py-2.5 rounded-xl text-xs uppercase" placeholder="FF-XXXX">
-            </div>
-
-            <div class="space-y-1">
-              <label for="league-join-pass-direct"
-                class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Contraseña de
-                Acceso</label>
-              <input type="password" id="league-join-pass-direct"
-                class="glass-input w-full px-4 py-2.5 rounded-xl text-xs" placeholder="••••••••">
-            </div>
-
-            <div class="space-y-1">
-              <label for="league-join-team-direct"
-                class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nombre de tu Equipo
-                Fantasy</label>
-              <input type="text" id="league-join-team-direct" class="glass-input w-full px-4 py-2.5 rounded-xl text-xs"
-                placeholder="Ej: Fonda Club de Fútbol">
-            </div>
-          </div>
-
-          <button id="btn-join-league-direct"
-            class="w-full bg-emerald-gradient text-slate-950 font-black py-3.5 px-4 rounded-xl text-xs shadow-lg shadow-emerald-500/10 hover:scale-[1.01] active:scale-95 transition duration-200 flex justify-center items-center gap-2 cursor-pointer mt-4">
-            Unirse a Liga y Crear 11 Cracks <i data-lucide="sparkles" class="w-4 h-4"></i>
-          </button>
-        </div>
-
-        <!-- Explorador de Ligas (Opcional Toggled) -->
-        <div class="w-full">
-          <button type="button"
-            onclick="const list = document.getElementById('server-leagues-explorer-box'); list.classList.toggle('hidden'); const chev = document.getElementById('explore-chevron'); if(list.classList.contains('hidden')){chev.classList.remove('rotate-180')}else{chev.classList.add('rotate-180')}"
-            class="text-xs text-slate-400 hover:text-slate-200 font-bold transition flex items-center justify-center gap-1 mx-auto py-2 cursor-pointer">
-            <i data-lucide="compass" class="w-3.5 h-3.5"></i> Explorar Ligas Activas en el Servidor <i
-              id="explore-chevron" data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-300"></i>
-          </button>
-
-          <div id="server-leagues-explorer-box"
-            class="hidden w-full bg-slate-900/60 p-4 rounded-xl border border-white/5 text-left mt-2 space-y-2">
-            <p class="text-[10px] text-slate-500 font-bold">Haz clic en "Seleccionar" en cualquier liga del servidor
-              para rellenar automáticamente el formulario de arriba.</p>
-            <div id="all-server-leagues-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-              <div class="text-[10px] text-slate-500 text-center font-bold py-4">Cargando ligas del servidor...</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Mis Ligas Activas (Solo se muestra si tiene ligas) -->
+        <!-- Mis Ligas Activas (Solo se muestra si tiene ligas, ahora en primer lugar) -->
         <div id="mis-ligas-container" class="w-full hidden">
-          <div class="border-t border-white/5 pt-5">
+          <div class="w-full">
             <h4
               class="text-xs font-black uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-center gap-1.5">
               <i data-lucide="list" class="w-3.5 h-3.5"></i> Mis Ligas Activas
             </h4>
             <div id="mis-ligas-list" class="space-y-2 max-h-56 overflow-y-auto">
               <!-- Rellenado dinámicamente -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón para Mostrar/Ocultar Panel de Unirse (se muestra solo si el usuario ya tiene ligas) -->
+        <button id="btn-toggle-join-form" type="button"
+          onclick="const panel = document.getElementById('join-league-form-panel'); panel.classList.toggle('hidden'); const arrow = this.querySelector('.arrow-toggle'); if(panel.classList.contains('hidden')){arrow.classList.remove('rotate-180')}else{arrow.classList.add('rotate-180')}"
+          class="hidden w-full py-2.5 rounded-xl border border-dashed border-emerald-500/30 text-emerald-400 hover:text-emerald-350 bg-emerald-950/5 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-2">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> Unirse o Crear otra Liga <i data-lucide="chevron-down" class="arrow-toggle w-3.5 h-3.5 transition-transform duration-300"></i>
+        </button>
+
+        <!-- Panel contenedor para unir/explorar ligas (se ocultará si ya tiene ligas) -->
+        <div id="join-league-form-panel" class="w-full space-y-4">
+          <!-- Panel de Unirse por Código (Formulario Directo) -->
+          <div class="w-full bg-slate-900/60 p-6 rounded-2xl border border-white/5 space-y-4 text-left">
+            <div class="text-emerald-400 text-lg font-black flex items-center gap-2">
+              <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-400"></i> Unirse a una Liga por Código
+            </div>
+
+            <div class="space-y-3">
+              <div class="space-y-1">
+                <label for="league-join-code-direct"
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Código de la Liga
+                  (Facilitado por el Admin)</label>
+                <input type="text" id="league-join-code-direct"
+                  class="glass-input w-full px-4 py-2.5 rounded-xl text-xs uppercase" placeholder="FF-XXXX">
+              </div>
+
+              <div class="space-y-1">
+                <label for="league-join-pass-direct"
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Contraseña de
+                  Acceso</label>
+                <input type="password" id="league-join-pass-direct"
+                  class="glass-input w-full px-4 py-2.5 rounded-xl text-xs" placeholder="••••••••">
+              </div>
+
+              <div class="space-y-1">
+                <label for="league-join-team-direct"
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nombre de tu Equipo
+                  Fantasy</label>
+                <input type="text" id="league-join-team-direct" class="glass-input w-full px-4 py-2.5 rounded-xl text-xs"
+                  placeholder="Ej: Fonda Club de Fútbol">
+              </div>
+            </div>
+
+            <button id="btn-join-league-direct"
+              class="w-full bg-emerald-gradient text-slate-950 font-black py-3.5 px-4 rounded-xl text-xs shadow-lg shadow-emerald-500/10 hover:scale-[1.01] active:scale-95 transition duration-200 flex justify-center items-center gap-2 cursor-pointer mt-4">
+              Unirse a Liga y Crear 11 Cracks <i data-lucide="sparkles" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Explorador de Ligas (Opcional Toggled) -->
+          <div class="w-full">
+            <button type="button"
+              onclick="const list = document.getElementById('server-leagues-explorer-box'); list.classList.toggle('hidden'); const chev = document.getElementById('explore-chevron'); if(list.classList.contains('hidden')){chev.classList.remove('rotate-180')}else{chev.classList.add('rotate-180')}"
+              class="text-xs text-slate-400 hover:text-slate-200 font-bold transition flex items-center justify-center gap-1 mx-auto py-2 cursor-pointer">
+              <i data-lucide="compass" class="w-3.5 h-3.5"></i> Explorar Ligas Activas en el Servidor <i
+                id="explore-chevron" data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-300"></i>
+            </button>
+
+            <div id="server-leagues-explorer-box"
+              class="hidden w-full bg-slate-900/60 p-4 rounded-xl border border-white/5 text-left mt-2 space-y-2">
+              <p class="text-[10px] text-slate-500 font-bold">Haz clic en "Seleccionar" en cualquier liga del servidor
+                para rellenar automáticamente el formulario de arriba.</p>
+              <div id="all-server-leagues-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                <div class="text-[10px] text-slate-500 text-center font-bold py-4">Cargando ligas del servidor...</div>
+              </div>
             </div>
           </div>
         </div>
@@ -558,6 +576,28 @@
                 </div>
               </div>
 
+              <!-- Modificar Fonda Coins (FC) -->
+              <div class="space-y-2 border-t border-white/5 pt-4">
+                <label for="admin-fc-mod"
+                  class="block text-xs font-bold uppercase tracking-wider text-purple-400 font-extrabold">Modificar Fonda Coins (FC)</label>
+                <div class="relative">
+                  <input type="number" id="admin-fc-mod" min="0" step="1" value="5"
+                    class="glass-input w-full px-3 py-2 rounded-xl text-xs" placeholder="Cantidad (Fonda Coins)">
+                  <span
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 text-[10px] font-bold">FC</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-1.5">
+                  <button id="btn-admin-add-fc" disabled
+                    class="bg-purple-500/20 hover:bg-purple-500 hover:text-slate-950 border border-purple-500/30 hover:border-transparent text-purple-400 font-extrabold py-1.5 rounded-lg text-[10px] transition cursor-pointer flex items-center justify-center gap-0.5">
+                    <i data-lucide="plus" class="w-3 h-3"></i> Dar FC
+                  </button>
+                  <button id="btn-admin-sub-fc" disabled
+                    class="bg-red-500/20 hover:bg-rose-500 hover:text-slate-950 border border-rose-500/30 hover:border-transparent text-rose-400 font-extrabold py-1.5 rounded-lg text-[10px] transition cursor-pointer flex items-center justify-center gap-0.5">
+                    <i data-lucide="minus" class="w-3 h-3"></i> Quitar FC
+                  </button>
+                </div>
+              </div>
+
               <!-- Otorgar / Quitar Jugadores -->
               <div class="space-y-2 border-t border-white/5 pt-4">
                 <label for="admin-player-mod"
@@ -669,8 +709,10 @@
                   <input type="datetime-local" id="admin-lock-lineups-time" disabled
                     class="glass-input w-full px-2.5 py-1.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-cyan-500/20">
                   <div class="space-y-0.5">
-                    <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest">Ajustes Rápidos (Rangos de Tiempo):</label>
-                    <select id="admin-lock-presets" disabled class="glass-input w-full px-2 py-1.5 rounded-xl text-[10px] bg-fonda-950 text-white font-bold border-white/5 cursor-pointer">
+                    <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest">Ajustes Rápidos
+                      (Rangos de Tiempo):</label>
+                    <select id="admin-lock-presets" disabled
+                      class="glass-input w-full px-2 py-1.5 rounded-xl text-[10px] bg-fonda-950 text-white font-bold border-white/5 cursor-pointer">
                       <option value="">-- Seleccionar Rango / Preset --</option>
                       <optgroup label="Antes de que Empiece la Jornada 1">
                         <option value="2026-06-09T21:00">48h antes J1 (09 Jun 21:00)</option>
@@ -923,6 +965,11 @@
           class="px-5 py-2.5 rounded-xl font-bold text-sm bg-transparent border border-white/5 text-slate-400 hover:text-slate-200 flex items-center gap-2 cursor-pointer transition">
           <i data-lucide="package" class="w-4 h-4 text-purple-400"></i> Colección de Cromos
         </button>
+        <button id="btn-tab-mailbox"
+          class="px-5 py-2.5 rounded-xl font-bold text-sm bg-transparent border border-white/5 text-slate-400 hover:text-slate-200 flex items-center gap-2 cursor-pointer transition relative">
+          <i data-lucide="mail" class="w-4 h-4 text-emerald-400 animate-pulse"></i> Buzón
+          <span id="mailbox-unread-badge" class="absolute -top-1.5 -right-1.5 min-w-5 h-5 bg-rose-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border border-slate-950 px-1 hidden">0</span>
+        </button>
       </div>
 
       <!-- ================= PESTAÑA A: MI PLANTILLA ================= -->
@@ -1099,7 +1146,8 @@
 
             <!-- Tabla Leaderboard -->
             <div class="space-y-2 pt-2 border-t border-white/5">
-              <div class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">CLASIFICACIÓN JORNADA</div>
+              <div class="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">CLASIFICACIÓN JORNADA
+              </div>
 
               <div id="league-standings-list" class="space-y-1.5 max-h-48 overflow-y-auto text-xs">
                 <!-- Cargado dinámicamente -->
@@ -1296,10 +1344,11 @@
               <div>
                 <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Seleccionar Selección /
                   País o Buscar</label>
-                <p class="text-[10px] text-slate-500 font-bold mt-0.5">Escoge un país o busca directamente a cualquier futbolista globalmente</p>
+                <p class="text-[10px] text-slate-500 font-bold mt-0.5">Escoge un país o busca directamente a cualquier
+                  futbolista globalmente</p>
               </div>
               <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                <input type="text" id="sim-player-search" placeholder="🔍 Buscar jugador por nombre..." 
+                <input type="text" id="sim-player-search" placeholder="🔍 Buscar jugador por nombre..."
                   class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white border-white/10 w-full sm:w-64" />
                 <select id="sim-country-select"
                   class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20 w-full sm:w-64 cursor-pointer">
@@ -1418,21 +1467,20 @@
                   class="glass-input w-full px-3 py-2.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20">
               </div>
 
-              <!-- Depósito en Millones -->
+              <!-- Depósito en Fonda Coins -->
               <div class="space-y-1.5">
                 <label for="bet-input-amount"
-                  class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">4. Dinero a Depositar
-                  ($)</label>
+                  class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">4. Fonda Coins a Apostar (FC)</label>
                 <div class="relative">
-                  <input type="number" id="bet-input-amount" min="1000000" step="1000000" value="5000000"
+                  <input type="number" id="bet-input-amount" min="1" step="1" value="2"
                     class="glass-input w-full px-3 py-2.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20 pr-12"
                     oninput="calculatePotentialPayout()">
-                  <span class="absolute right-3 top-2.5 text-slate-500 font-bold text-xs">$</span>
+                  <span class="absolute right-3 top-2.5 text-slate-500 font-bold text-xs">FC</span>
                 </div>
                 <div class="flex justify-between items-center text-[9px] font-bold text-slate-500 pt-1">
-                  <span>Tu presupuesto disponible: <span id="bet-current-budget"
-                      class="text-emerald-400">0M$</span></span>
-                  <span>Pago Potencial: <span id="bet-potential-payout" class="text-purple-400">10M$</span></span>
+                  <span>Saldo disponible: <span id="bet-current-budget"
+                      class="text-purple-400">0 FC</span></span>
+                  <span>Pago Potencial: <span id="bet-potential-payout" class="text-purple-400">4 FC</span></span>
                 </div>
               </div>
 
@@ -1475,7 +1523,8 @@
                 administración.</p>
             </div>
             <div class="flex items-center gap-2">
-              <button id="btn-admin-clear-chat" class="hidden bg-rose-500/10 hover:bg-rose-600 hover:text-white border border-rose-500/25 text-rose-400 py-1.5 px-2.5 rounded-xl text-[10px] font-black uppercase transition cursor-pointer flex items-center gap-1 shadow-sm">
+              <button id="btn-admin-clear-chat"
+                class="hidden bg-rose-500/10 hover:bg-rose-600 hover:text-white border border-rose-500/25 text-rose-400 py-1.5 px-2.5 rounded-xl text-[10px] font-black uppercase transition cursor-pointer flex items-center gap-1 shadow-sm">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Borrar Chat
               </button>
               <div
@@ -1688,18 +1737,23 @@
                 <i data-lucide="book-image" class="w-6 h-6 text-amber-400"></i>
                 Álbum Panini · Copa del Mundo 2026
               </h3>
-              <p class="text-slate-400 text-xs">Abre sobres, colecciona cromos y pégalos en tu álbum. ¡Intercambia los repetidos con otros mánagers!</p>
+              <p class="text-slate-400 text-xs">Abre sobres, colecciona cromos y pégalos en tu álbum. ¡Intercambia los
+                repetidos con otros mánagers!</p>
             </div>
-            <div class="glass-panel px-5 py-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 shrink-0 min-w-[220px] space-y-1.5">
+            <div
+              class="glass-panel px-5 py-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 shrink-0 min-w-[220px] space-y-1.5">
               <div class="flex justify-between items-center text-[10px] font-black uppercase text-amber-300">
                 <span>Álbum Completado</span>
                 <span id="album-percentage" class="text-amber-400 text-sm">0%</span>
               </div>
               <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-white/5">
-                <div id="album-progress-bar" class="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
+                <div id="album-progress-bar"
+                  class="bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 h-full rounded-full transition-all duration-700"
+                  style="width: 0%"></div>
               </div>
               <p class="text-[9px] text-slate-400 font-bold uppercase">
-                <span id="album-collected-count" class="text-white font-black">0</span> / <span id="album-total-count" class="text-white font-black">0</span> cromos pegados
+                <span id="album-collected-count" class="text-white font-black">0</span> / <span id="album-total-count"
+                  class="text-white font-black">0</span> cromos pegados
                 · <span id="album-deck-count" class="text-purple-300 font-black">0</span> en mazo
               </p>
             </div>
@@ -1708,10 +1762,18 @@
 
         <!-- Sub-Tabs del módulo -->
         <div class="flex flex-wrap gap-1 bg-fonda-950/80 p-1 rounded-2xl border border-white/5 w-fit">
-          <button id="packs-tab-shop" onclick="switchPacksTab('shop')" class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer bg-amber-500 text-slate-950">🎴 Sobres</button>
-          <button id="packs-tab-album" onclick="switchPacksTab('album')" class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">📖 Álbum</button>
-          <button id="packs-tab-deck" onclick="switchPacksTab('deck')" class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">🃏 Mi Mazo</button>
-          <button id="packs-tab-trade" onclick="switchPacksTab('trade')" class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">🔄 Intercambios</button>
+          <button id="packs-tab-shop" onclick="switchPacksTab('shop')"
+            class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer bg-amber-500 text-slate-950">🎴
+            Sobres</button>
+          <button id="packs-tab-album" onclick="switchPacksTab('album')"
+            class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">📖
+            Álbum</button>
+          <button id="packs-tab-deck" onclick="switchPacksTab('deck')"
+            class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">🃏
+            Mi Mazo</button>
+          <button id="packs-tab-trade" onclick="switchPacksTab('trade')"
+            class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">🔄
+            Intercambios</button>
         </div>
 
         <!-- ===== PANEL SHOP ===== -->
@@ -1719,99 +1781,162 @@
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
 
             <!-- Sobre Bronce -->
-            <div class="glass-panel rounded-3xl border border-amber-700/30 bg-gradient-to-b from-amber-950/30 to-slate-950 overflow-hidden flex flex-col">
-              <div class="relative h-52 flex items-center justify-center p-4 cursor-pointer group" onclick="openPackVisual('bronze')">
-                <img src="img/sobres/bronze.png" alt="Sobre Bronce" class="h-44 object-contain drop-shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(180,83,9,0.6)] group-active:scale-95 relative z-10">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none"></div>
+            <div
+              class="glass-panel rounded-3xl border border-amber-700/30 bg-gradient-to-b from-amber-950/30 to-slate-950 overflow-hidden flex flex-col">
+              <div class="relative h-52 flex items-center justify-center p-4 cursor-pointer group"
+                onclick="openPackVisual('bronze')">
+                <img src="img/sobres/bronze.png" alt="Sobre Bronce"
+                  class="h-44 object-contain drop-shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(180,83,9,0.6)] group-active:scale-95 relative z-10">
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none">
+                </div>
               </div>
               <div class="p-4 flex flex-col gap-3 flex-1">
-                <div>
-                  <h4 class="text-sm font-black text-amber-700 uppercase tracking-wider">Sobre Bronce</h4>
-                  <p class="text-[10px] text-slate-400 mt-0.5">3 cromos · Alta probabilidad de Comunes</p>
+                <div class="flex items-center justify-between gap-2">
+                  <div class="text-left">
+                    <h4 class="text-sm font-black text-amber-700 uppercase tracking-wider">Sobre Bronce</h4>
+                    <p class="text-[10px] text-slate-400 mt-0.5">3 cromos · Alta probabilidad</p>
+                  </div>
+                  <div class="flex items-center gap-1.5 bg-amber-950/50 border border-amber-700/40 px-2.5 py-1 rounded-xl text-xs font-black text-amber-400 select-none shrink-0" title="Costo: 3 Fonda Coins">
+                    <img src="img/logo.jpeg" alt="FC Logo" class="w-3 h-3 rounded-full object-cover border border-amber-600/30 align-middle">
+                    <span>3 FC</span>
+                  </div>
                 </div>
-                <div class="space-y-1 text-[9px]">
-                  <div class="flex justify-between text-slate-400 font-bold"><span>⚪ Común</span><span class="text-slate-300 font-black">80%</span></div>
-                  <div class="flex justify-between text-blue-400 font-bold"><span>🔵 Medio</span><span class="font-black">18%</span></div>
-                  <div class="flex justify-between text-amber-400 font-bold"><span>👑 Estrella</span><span class="font-black">2%</span></div>
+                <div class="space-y-1 text-[9px] text-left">
+                  <div class="flex justify-between text-slate-400 font-bold"><span>⚪ Común</span><span
+                      class="text-slate-300 font-black">80%</span></div>
+                  <div class="flex justify-between text-blue-400 font-bold"><span>🔵 Medio</span><span
+                      class="font-black">18%</span></div>
+                  <div class="flex justify-between text-amber-400 font-bold"><span>👑 Estrella</span><span
+                      class="font-black">2%</span></div>
                 </div>
                 <div class="flex gap-2 mt-auto">
-                  <button onclick="openPackVisual('bronze')" class="flex-1 bg-amber-900/40 hover:bg-amber-800/60 border border-amber-700/40 text-amber-400 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">Abrir x1</button>
-                  <button onclick="openPackMulti('bronze', 5)" class="flex-1 bg-amber-900/20 hover:bg-amber-900/40 border border-amber-700/20 text-amber-600 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">x5 ⚡</button>
+                  <button onclick="openPackVisual('bronze')"
+                    class="flex-1 bg-amber-900/40 hover:bg-amber-800/60 border border-amber-700/40 text-amber-400 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">Abrir
+                    x1</button>
+                  <button onclick="openPackMulti('bronze', 5)"
+                    class="flex-1 bg-amber-900/20 hover:bg-amber-900/40 border border-amber-700/20 text-amber-600 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">x5
+                    ⚡</button>
                 </div>
               </div>
             </div>
 
             <!-- Sobre Plata -->
-            <div class="glass-panel rounded-3xl border border-slate-400/30 bg-gradient-to-b from-slate-700/20 to-slate-950 overflow-hidden flex flex-col">
-              <div class="relative h-52 flex items-center justify-center p-4 cursor-pointer group" onclick="openPackVisual('plata')">
-                <img src="img/sobres/plata.png" alt="Sobre Plata" class="h-44 object-contain drop-shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(148,163,184,0.5)] group-active:scale-95 relative z-10">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none"></div>
+            <div
+              class="glass-panel rounded-3xl border border-slate-400/30 bg-gradient-to-b from-slate-700/20 to-slate-950 overflow-hidden flex flex-col">
+              <div class="relative h-52 flex items-center justify-center p-4 cursor-pointer group"
+                onclick="openPackVisual('plata')">
+                <img src="img/sobres/plata.png" alt="Sobre Plata"
+                  class="h-44 object-contain drop-shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_30px_rgba(148,163,184,0.5)] group-active:scale-95 relative z-10">
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none">
+                </div>
               </div>
               <div class="p-4 flex flex-col gap-3 flex-1">
-                <div>
-                  <h4 class="text-sm font-black text-slate-300 uppercase tracking-wider">Sobre Plata</h4>
-                  <p class="text-[10px] text-slate-400 mt-0.5">3 cromos · Equilibrio entre rarezas</p>
+                <div class="flex items-center justify-between gap-2">
+                  <div class="text-left">
+                    <h4 class="text-sm font-black text-slate-300 uppercase tracking-wider">Sobre Plata</h4>
+                    <p class="text-[10px] text-slate-400 mt-0.5">3 cromos · Equilibrio</p>
+                  </div>
+                  <div class="flex items-center gap-1.5 bg-slate-900/50 border border-slate-700/40 px-2.5 py-1 rounded-xl text-xs font-black text-slate-300 select-none shrink-0" title="Costo: 7 Fonda Coins">
+                    <img src="img/logo.jpeg" alt="FC Logo" class="w-3 h-3 rounded-full object-cover border border-slate-400/30 align-middle">
+                    <span>7 FC</span>
+                  </div>
                 </div>
-                <div class="space-y-1 text-[9px]">
-                  <div class="flex justify-between text-slate-400 font-bold"><span>⚪ Común</span><span class="text-slate-300 font-black">60%</span></div>
-                  <div class="flex justify-between text-blue-400 font-bold"><span>🔵 Medio</span><span class="font-black">30%</span></div>
-                  <div class="flex justify-between text-amber-400 font-bold"><span>👑 Estrella</span><span class="font-black">10%</span></div>
+                <div class="space-y-1 text-[9px] text-left">
+                  <div class="flex justify-between text-slate-400 font-bold"><span>⚪ Común</span><span
+                      class="text-slate-300 font-black">60%</span></div>
+                  <div class="flex justify-between text-blue-400 font-bold"><span>🔵 Medio</span><span
+                      class="font-black">30%</span></div>
+                  <div class="flex justify-between text-amber-400 font-bold"><span>👑 Estrella</span><span
+                      class="font-black">10%</span></div>
                 </div>
                 <div class="flex gap-2 mt-auto">
-                  <button onclick="openPackVisual('plata')" class="flex-1 bg-slate-600/30 hover:bg-slate-600/50 border border-slate-500/30 text-slate-300 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">Abrir x1</button>
-                  <button onclick="openPackMulti('plata', 5)" class="flex-1 bg-slate-600/10 hover:bg-slate-600/30 border border-slate-500/10 text-slate-500 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">x5 ⚡</button>
+                  <button onclick="openPackVisual('plata')"
+                    class="flex-1 bg-slate-600/30 hover:bg-slate-600/50 border border-slate-500/30 text-slate-300 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">Abrir
+                    x1</button>
+                  <button onclick="openPackMulti('plata', 5)"
+                    class="flex-1 bg-slate-600/10 hover:bg-slate-600/30 border border-slate-500/10 text-slate-500 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">x5
+                    ⚡</button>
                 </div>
               </div>
             </div>
 
             <!-- Sobre Oro -->
-            <div class="glass-panel rounded-3xl border border-amber-400/40 bg-gradient-to-b from-amber-500/20 to-slate-950 overflow-hidden flex flex-col shadow-[0_0_40px_rgba(245,158,11,0.15)]">
-              <div class="relative h-52 flex items-center justify-center p-4 cursor-pointer group" onclick="openPackVisual('gold')">
-                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(245,158,11,0.15)_0%,_transparent_70%)] animate-pulse pointer-events-none"></div>
-                <img src="img/sobres/gold.png" alt="Sobre Oro" class="h-44 object-contain drop-shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_40px_rgba(245,158,11,0.8)] group-active:scale-95 relative z-10">
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none"></div>
+            <div
+              class="glass-panel rounded-3xl border border-amber-400/40 bg-gradient-to-b from-amber-500/20 to-slate-950 overflow-hidden flex flex-col shadow-[0_0_40px_rgba(245,158,11,0.15)]">
+              <div class="relative h-52 flex items-center justify-center p-4 cursor-pointer group"
+                onclick="openPackVisual('gold')">
+                <div
+                  class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(245,158,11,0.15)_0%,_transparent_70%)] animate-pulse pointer-events-none">
+                </div>
+                <img src="img/sobres/gold.png" alt="Sobre Oro"
+                  class="h-44 object-contain drop-shadow-2xl transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_40px_rgba(245,158,11,0.8)] group-active:scale-95 relative z-10">
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none">
+                </div>
               </div>
               <div class="p-4 flex flex-col gap-3 flex-1">
-                <div>
-                  <h4 class="text-sm font-black text-amber-400 uppercase tracking-wider flex items-center gap-1"><i data-lucide="crown" class="w-3.5 h-3.5"></i> Sobre Oro</h4>
-                  <p class="text-[10px] text-slate-400 mt-0.5">3 cromos · Garantiza al menos 1 bueno</p>
+                <div class="flex items-center justify-between gap-2">
+                  <div class="text-left">
+                    <h4 class="text-sm font-black text-amber-400 uppercase tracking-wider flex items-center gap-1"><i
+                        data-lucide="crown" class="w-3.5 h-3.5"></i> Sobre Oro</h4>
+                    <p class="text-[10px] text-slate-400 mt-0.5">3 cromos · Alta calidad</p>
+                  </div>
+                  <div class="flex items-center gap-1.5 bg-amber-500/10 border border-amber-400/30 px-2.5 py-1 rounded-xl text-xs font-black text-amber-400 select-none shrink-0 shadow-md shadow-amber-500/5" title="Costo: 10 Fonda Coins">
+                    <img src="img/logo.jpeg" alt="FC Logo" class="w-3 h-3 rounded-full object-cover border border-amber-400/30 align-middle">
+                    <span>10 FC</span>
+                  </div>
                 </div>
-                <div class="space-y-1 text-[9px]">
-                  <div class="flex justify-between text-slate-400 font-bold"><span>⚪ Común</span><span class="text-slate-300 font-black">40%</span></div>
-                  <div class="flex justify-between text-blue-400 font-bold"><span>🔵 Medio</span><span class="font-black">40%</span></div>
-                  <div class="flex justify-between text-amber-400 font-bold"><span>👑 Estrella</span><span class="font-black">20%</span></div>
+                <div class="space-y-1 text-[9px] text-left">
+                  <div class="flex justify-between text-slate-400 font-bold"><span>⚪ Común</span><span
+                      class="text-slate-300 font-black">40%</span></div>
+                  <div class="flex justify-between text-blue-400 font-bold"><span>🔵 Medio</span><span
+                      class="font-black">40%</span></div>
+                  <div class="flex justify-between text-amber-400 font-bold"><span>👑 Estrella</span><span
+                      class="font-black">20%</span></div>
                 </div>
                 <div class="flex gap-2 mt-auto">
-                  <button onclick="openPackVisual('gold')" class="flex-1 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 border border-amber-400/30 text-slate-950 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95 shadow-lg shadow-amber-500/20">✨ Abrir x1</button>
-                  <button onclick="openPackMulti('gold', 5)" class="flex-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/20 text-amber-400 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">x5 ⚡</button>
+                  <button onclick="openPackVisual('gold')"
+                    class="flex-1 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 border border-amber-400/30 text-slate-950 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95 shadow-lg shadow-amber-500/20">✨
+                    Abrir x1</button>
+                  <button onclick="openPackMulti('gold', 5)"
+                    class="flex-1 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/20 text-amber-400 font-black py-2 rounded-xl text-[10px] uppercase transition cursor-pointer hover:scale-[1.02] active:scale-95">x5
+                    ⚡</button>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Zona de revelación de cartas -->
-          <div id="pack-reveal-zone" class="glass-panel p-6 rounded-3xl border border-white/5 bg-slate-950/70 min-h-[300px] flex flex-col justify-center items-center relative overflow-hidden">
+          <div id="pack-reveal-zone"
+            class="glass-panel p-6 rounded-3xl border border-white/5 bg-slate-950/70 min-h-[300px] flex flex-col justify-center items-center relative overflow-hidden">
             <div id="pack-reveal-placeholder" class="text-center space-y-4 py-6">
               <div class="flex justify-center gap-3 opacity-25 select-none pointer-events-none">
                 <img src="img/sobres/bronze.png" class="h-20 object-contain -rotate-12">
                 <img src="img/sobres/gold.png" class="h-28 object-contain animate-bounce">
                 <img src="img/sobres/plata.png" class="h-20 object-contain rotate-12">
               </div>
-              <p class="text-sm text-slate-400 font-black uppercase tracking-widest mt-2">Haz clic en un sobre para abrirlo</p>
+              <p class="text-sm text-slate-400 font-black uppercase tracking-widest mt-2">Haz clic en un sobre para
+                abrirlo</p>
               <p class="text-[10px] text-slate-600">Recibirás 3 cromos aleatorios según el tipo de sobre elegido</p>
             </div>
             <div id="pack-cards-grid" class="hidden w-full grid grid-cols-3 gap-4 max-w-lg mx-auto"></div>
-            <button id="btn-open-again" class="hidden mt-5 px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-black text-xs rounded-xl uppercase transition cursor-pointer active:scale-95" onclick="resetPackReveal()">🔄 Abrir otro sobre</button>
+            <button id="btn-open-again"
+              class="hidden mt-5 px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-black text-xs rounded-xl uppercase transition cursor-pointer active:scale-95"
+              onclick="resetPackReveal()">🔄 Abrir otro sobre</button>
           </div>
         </div>
 
         <!-- ===== PANEL ÁLBUM por Selección Nacional ===== -->
         <div id="packs-panel-album" class="hidden flex flex-col gap-5">
           <div class="glass-panel p-5 rounded-3xl border border-white/5">
-            <h4 class="text-base font-black text-white flex items-center gap-2 mb-4"><i data-lucide="book-open" class="w-5 h-5 text-amber-400"></i> Mi Álbum por Selección</h4>
+            <h4 class="text-base font-black text-white flex items-center gap-2 mb-4"><i data-lucide="book-open"
+                class="w-5 h-5 text-amber-400"></i> Mi Álbum por Selección</h4>
             <div id="album-country-nav" class="flex flex-wrap gap-2"></div>
           </div>
-          <div id="album-country-page" class="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-fonda-900/40 to-fonda-950/60">
+          <div id="album-country-page"
+            class="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-fonda-900/40 to-fonda-950/60">
             <div class="text-center text-slate-500 text-sm py-12 flex flex-col items-center gap-2">
               <i data-lucide="mouse-pointer-click" class="w-8 h-8 opacity-40"></i>
               Selecciona una selección arriba para ver su página del álbum
@@ -1824,17 +1949,28 @@
           <div class="glass-panel p-5 rounded-3xl border border-white/5">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
               <div>
-                <h4 class="text-base font-black text-white flex items-center gap-2"><i data-lucide="layers" class="w-5 h-5 text-purple-400"></i> Mi Mazo de Cromos</h4>
-                <p class="text-xs text-slate-400 mt-0.5">Cartas sin pegar. Puedes pegarlas en el álbum o intercambiar las repetidas.</p>
+                <h4 class="text-base font-black text-white flex items-center gap-2"><i data-lucide="layers"
+                    class="w-5 h-5 text-purple-400"></i> Mi Mazo de Cromos</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Cartas sin pegar. Puedes pegarlas en el álbum o intercambiar
+                  las repetidas.</p>
               </div>
               <div class="flex items-center gap-1 bg-fonda-950 p-1 rounded-xl border border-white/5 shrink-0">
-                <button class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer bg-purple-500 text-white" data-filter="all">Todos</button>
-                <button class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white" data-filter="comun">Comunes</button>
-                <button class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white" data-filter="medio">Medios</button>
-                <button class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white" data-filter="estrella">Estrellas</button>
+                <button
+                  class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer bg-purple-500 text-white"
+                  data-filter="all">Todos</button>
+                <button
+                  class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white"
+                  data-filter="comun">Comunes</button>
+                <button
+                  class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white"
+                  data-filter="medio">Medios</button>
+                <button
+                  class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white"
+                  data-filter="estrella">Estrellas</button>
               </div>
             </div>
-            <div id="deck-cards-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"></div>
+            <div id="deck-cards-grid"
+              class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"></div>
           </div>
         </div>
 
@@ -1842,27 +1978,33 @@
         <div id="packs-panel-trade" class="hidden flex flex-col gap-5">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <div class="glass-panel p-5 rounded-3xl border border-white/5 space-y-4">
-              <h4 class="text-base font-black text-white flex items-center gap-2"><i data-lucide="arrow-left-right" class="w-5 h-5 text-emerald-400"></i> Proponer Intercambio</h4>
+              <h4 class="text-base font-black text-white flex items-center gap-2"><i data-lucide="arrow-left-right"
+                  class="w-5 h-5 text-emerald-400"></i> Proponer Intercambio</h4>
               <div class="space-y-3">
                 <div>
-                  <label class="text-[10px] text-slate-400 font-black uppercase block mb-1">Ofreces (de tu mazo):</label>
-                  <select id="trade-offer-select" class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10">
+                  <label class="text-[10px] text-slate-400 font-black uppercase block mb-1">Ofreces (de tu
+                    mazo):</label>
+                  <select id="trade-offer-select"
+                    class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10">
                     <option value="">— Selecciona un cromo que ofreces —</option>
                   </select>
                 </div>
                 <div>
                   <label class="text-[10px] text-slate-400 font-black uppercase block mb-1">Buscas:</label>
-                <select id="trade-want-select" class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10">
+                  <select id="trade-want-select"
+                    class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10">
                     <option value="">— Selecciona el cromo que buscas —</option>
                   </select>
                 </div>
-                <button id="btn-create-trade" onclick="createTradeOffer()" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs rounded-xl uppercase transition cursor-pointer hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2">
+                <button id="btn-create-trade" onclick="createTradeOffer()"
+                  class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs rounded-xl uppercase transition cursor-pointer hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2">
                   <i data-lucide="send" class="w-3.5 h-3.5"></i> Publicar Oferta
                 </button>
               </div>
             </div>
             <div class="glass-panel p-5 rounded-3xl border border-white/5 space-y-3">
-              <h4 class="text-base font-black text-white flex items-center gap-2"><i data-lucide="rss" class="w-5 h-5 text-amber-400"></i> Intercambios de la Liga</h4>
+              <h4 class="text-base font-black text-white flex items-center gap-2"><i data-lucide="rss"
+                  class="w-5 h-5 text-amber-400"></i> Intercambios de la Liga</h4>
               <div id="trade-offers-list" class="space-y-2 max-h-80 overflow-y-auto pr-1">
                 <div class="text-center text-slate-500 text-xs py-8 italic">Cargando intercambios...</div>
               </div>
@@ -1870,6 +2012,39 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- ================= PESTAÑA H: BUZÓN DE RECOMPENSAS (MAILBOX) ================= -->
+      <div id="panel-mailbox" class="w-full hidden flex flex-col gap-6 text-left">
+        <!-- Header -->
+        <div class="glass-panel p-6 rounded-3xl border border-white/5 bg-gradient-to-br from-emerald-950/40 to-slate-900/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <h3 class="text-2xl font-black text-white flex items-center gap-2.5">
+              <i data-lucide="mail" class="w-6 h-6 text-emerald-400"></i>
+              Buzón de Recompensas
+            </h3>
+            <p class="text-slate-400 text-xs">Reclama aquí tus Fonda Coins (FC) de bonos de login y premios de fin de jornada.</p>
+          </div>
+          <button id="btn-mailbox-claim-all"
+            class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-3 rounded-2xl text-xs shadow-lg shadow-emerald-500/10 transition cursor-pointer flex items-center gap-1.5 hover:scale-[1.02] active:scale-95 duration-200">
+            <i data-lucide="check-check" class="w-4 h-4"></i> Reclamar Todo
+          </button>
+        </div>
+
+        <!-- Listado de Recompensas -->
+        <div class="glass-panel p-6 rounded-3xl border border-white/5 space-y-4">
+          <div class="flex justify-between items-center">
+            <h4 class="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="inbox" class="w-4 h-4 text-emerald-400"></i> Recompensas Pendientes
+            </h4>
+            <span id="mailbox-pending-count" class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-extrabold">0 Recompensas</span>
+          </div>
+
+          <div id="mailbox-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Cargado dinámicamente -->
+            <div class="col-span-full py-12 text-center text-slate-500 text-xs italic">Cargando tu buzón...</div>
+          </div>
+        </div>
       </div>
 
     </section>
@@ -2268,6 +2443,7 @@
     const btnTabChat = document.getElementById("btn-tab-chat");
     const btnTabManagerStats = document.getElementById("btn-tab-manager-stats");
     const btnTabPacks = document.getElementById("btn-tab-packs");
+    const btnTabMailbox = document.getElementById("btn-tab-mailbox");
 
     const panelSquad = document.getElementById("panel-squad");
     const panelMarket = document.getElementById("panel-market");
@@ -2276,6 +2452,7 @@
     const panelChat = document.getElementById("panel-chat");
     const panelManagerStats = document.getElementById("panel-manager-stats");
     const panelPacks = document.getElementById("panel-packs");
+    const panelMailbox = document.getElementById("panel-mailbox");
 
     function resetTabButtons() {
       const defaultClass = "px-5 py-2.5 rounded-xl font-bold text-sm bg-transparent border border-white/5 text-slate-400 hover:text-slate-200 flex items-center gap-2 cursor-pointer transition";
@@ -2286,6 +2463,7 @@
       btnTabChat.className = defaultClass;
       if (btnTabManagerStats) btnTabManagerStats.className = defaultClass;
       if (btnTabPacks) btnTabPacks.className = defaultClass;
+      if (btnTabMailbox) btnTabMailbox.className = defaultClass;
 
       panelSquad.classList.add("hidden");
       panelMarket.classList.add("hidden");
@@ -2294,6 +2472,7 @@
       panelChat.classList.add("hidden");
       if (panelManagerStats) panelManagerStats.classList.add("hidden");
       if (panelPacks) panelPacks.classList.add("hidden");
+      if (panelMailbox) panelMailbox.classList.add("hidden");
     }
 
     function switchDashboardTab(tabId) {
@@ -2340,6 +2519,10 @@
         if (btnTabPacks) btnTabPacks.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center gap-2 cursor-pointer transition";
         if (panelPacks) panelPacks.classList.remove("hidden");
         initPacksModule();
+      } else if (tabId === "mailbox") {
+        if (btnTabMailbox) btnTabMailbox.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-2 cursor-pointer transition";
+        if (panelMailbox) panelMailbox.classList.remove("hidden");
+        initMailboxModule();
       }
     }
 
@@ -2350,6 +2533,7 @@
     btnTabChat.addEventListener("click", () => switchDashboardTab("chat"));
     if (btnTabManagerStats) btnTabManagerStats.addEventListener("click", () => switchDashboardTab("manager-stats"));
     if (btnTabPacks) btnTabPacks.addEventListener("click", () => switchDashboardTab("packs"));
+    if (btnTabMailbox) btnTabMailbox.addEventListener("click", () => switchDashboardTab("mailbox"));
 
     // --- ESCUCHAS DE FILTRADO DEL MERCADO ---
     const posFilters = {
@@ -2462,6 +2646,7 @@
     const navUsername = document.getElementById("nav-username");
     const navBudget = document.getElementById("nav-budget");
     const navPoints = document.getElementById("nav-points");
+    const navFondaCoins = document.getElementById("nav-fonda-coins");
 
     const widgetLeagueName = document.getElementById("widget-league-name");
     const widgetLeagueCode = document.getElementById("widget-league-code");
@@ -2597,6 +2782,42 @@
             }
           });
         }
+
+        // 4. Escucha del buzón de recompensas (Mailbox) en tiempo real
+        if (window.unsubscribeMailbox) window.unsubscribeMailbox();
+        window.unsubscribeMailbox = db.collection("users").doc(user.uid).collection("mailbox")
+          .onSnapshot((snapshot) => {
+            const rewards = [];
+            snapshot.forEach(docSnap => {
+              rewards.push(docSnap.data());
+            });
+
+            window.currentUserMailbox = rewards;
+
+            const unclaimed = rewards.filter(r => !r.claimed);
+
+            // Actualizar badge
+            const badge = document.getElementById("mailbox-unread-badge");
+            if (badge) {
+              badge.textContent = unclaimed.length;
+              if (unclaimed.length > 0) {
+                badge.classList.remove("hidden");
+              } else {
+                badge.classList.add("hidden");
+              }
+            }
+
+            const countEl = document.getElementById("mailbox-pending-count");
+            if (countEl) {
+              countEl.textContent = `${unclaimed.length} Recompensas Pendientes`;
+            }
+
+            if (activeDashboardTab === "mailbox") {
+              renderMailboxList();
+            }
+          }, (err) => {
+            console.error("Error al escuchar buzón de correo:", err);
+          });
       },
       // Mánager Desconectado
       () => {
@@ -3193,6 +3414,10 @@
       const budgetMillions = ((currentUserProfile.presupuesto_actual || 100000000) / 1000000).toFixed(1);
       navBudget.textContent = `${budgetMillions}M$`;
       navPoints.textContent = `${currentUserProfile.puntos_totales || 0} PTS`;
+      if (navFondaCoins) {
+        const fc = currentUserProfile.fonda_coins || 0;
+        navFondaCoins.textContent = `${fc.toLocaleString()} FC`;
+      }
     }
 
     // --- RENDERIZADO DEL PANEL DE ESTADÍSTICAS DE MÁNAGER (CON GRÁFICOS Y GAMIFICACIÓN) ---
@@ -3898,16 +4123,22 @@
     async function renderMisLigas() {
       const container = document.getElementById("mis-ligas-container");
       const listEl = document.getElementById("mis-ligas-list");
+      const toggleBtn = document.getElementById("btn-toggle-join-form");
+      const formPanel = document.getElementById("join-league-form-panel");
       if (!container || !listEl) return;
 
       const userLigas = currentUserProfile.ligas || [];
 
       if (userLigas.length === 0) {
         container.classList.add("hidden");
+        if (toggleBtn) toggleBtn.classList.add("hidden");
+        if (formPanel) formPanel.classList.remove("hidden");
         return;
       }
 
       container.classList.remove("hidden");
+      if (toggleBtn) toggleBtn.classList.remove("hidden");
+      if (formPanel) formPanel.classList.add("hidden"); // Ocultar formulario de unir por defecto si ya tiene ligas!
       listEl.innerHTML = `
         <div class="py-4 text-center text-slate-500 text-xs flex justify-center items-center gap-2">
           Cargando tus ligas... <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>
@@ -3948,6 +4179,8 @@
 
         if (html === "") {
           container.classList.add("hidden");
+          if (toggleBtn) toggleBtn.classList.add("hidden");
+          if (formPanel) formPanel.classList.remove("hidden");
         } else {
           listEl.innerHTML = html;
           lucide.createIcons();
@@ -3999,8 +4232,8 @@
 
         const usrDiv = document.createElement("div");
         usrDiv.className = `flex items-center justify-between p-2 rounded-xl transition cursor-pointer hover:bg-white/[0.08] ${isSelf
-            ? "bg-gold/15 border border-gold/30 text-gold"
-            : "bg-fonda-900/50 border border-white/5 text-slate-300 hover:text-slate-100"
+          ? "bg-gold/15 border border-gold/30 text-gold"
+          : "bg-fonda-900/50 border border-white/5 text-slate-300 hover:text-slate-100"
           }`;
         usrDiv.setAttribute("title", "Haz clic para ver la plantilla de este mánager");
 
@@ -4062,13 +4295,13 @@
 
       // 4. Actualizar en Firestore si detectamos algún cambio
       if (
-        currentUserProfile && 
-        (currentUserProfile.puntos_totales !== totalPuntos || 
-         currentUserProfile.puntos_jornada_actual !== puntosJornadaActiva)
+        currentUserProfile &&
+        (currentUserProfile.puntos_totales !== totalPuntos ||
+          currentUserProfile.puntos_jornada_actual !== puntosJornadaActiva)
       ) {
         try {
           const userRef = doc(db, "users", currentUser.uid);
-          await updateDoc(userRef, { 
+          await updateDoc(userRef, {
             puntos_totales: totalPuntos,
             puntos_jornada_actual: puntosJornadaActiva
           });
@@ -4216,30 +4449,17 @@
         const bet = betSnap.data();
 
         if (status === "won") {
-          const userRef = doc(db, "users", bet.userId);
-          const userSnap = await getDoc(userRef);
-          if (userSnap.exists()) {
-            const currentBudget = userSnap.data().presupuesto_actual || 0;
-            const payout = bet.potentialPayout || 0;
-            const newBudget = currentBudget + payout;
-
-            await updateDoc(userRef, {
-              presupuesto_actual: newBudget
-            });
-
-            if (currentUser && currentUser.uid === bet.userId) {
-              currentUserProfile.presupuesto_actual = newBudget;
-            }
-
-            showNotification(`¡Apuesta APROBADA! Se han transferido ${(payout / 1000000).toFixed(1)}M$ al presupuesto de ${bet.username}.`, "success");
-          }
+          await updateDoc(betRef, {
+            status: "won",
+            claimed: false
+          });
+          showNotification(`¡Apuesta APROBADA! El mánager ${bet.username} ha ganado y puede reclamar su premio.`, "success");
         } else {
+          await updateDoc(betRef, {
+            status: "lost"
+          });
           showNotification(`Apuesta RECHAZADA. El mánager ${bet.username} ha perdido su apuesta.`, "error");
         }
-
-        await updateDoc(betRef, {
-          status: status
-        });
 
         renderAdminPendingBets();
         renderBetsPanel();
@@ -4436,6 +4656,14 @@
     function disableAdminActionControls(disabled) {
       document.getElementById("btn-admin-add-budget").disabled = disabled;
       document.getElementById("btn-admin-sub-budget").disabled = disabled;
+      
+      const btnAddFC = document.getElementById("btn-admin-add-fc");
+      if (btnAddFC) btnAddFC.disabled = disabled;
+      const btnSubFC = document.getElementById("btn-admin-sub-fc");
+      if (btnSubFC) btnSubFC.disabled = disabled;
+      const inputFCMod = document.getElementById("admin-fc-mod");
+      if (inputFCMod) inputFCMod.disabled = disabled;
+
       document.getElementById("btn-admin-give-player").disabled = disabled;
       document.getElementById("btn-admin-take-player").disabled = disabled;
       document.getElementById("admin-player-mod").disabled = disabled;
@@ -4492,6 +4720,68 @@
         }
       } catch (err) {
         console.error("Admin error subtracting money:", err);
+      }
+    });
+
+    // Admin: Sumar Fonda Coins (FC)
+    document.getElementById("btn-admin-add-fc").addEventListener("click", async () => {
+      if (!adminSelectedUserId) return;
+      const valueFC = parseInt(document.getElementById("admin-fc-mod").value) || 0;
+      if (valueFC <= 0) {
+        showNotification("La cantidad debe ser mayor que 0.", "error");
+        return;
+      }
+
+      try {
+        const userRef = doc(db, "users", adminSelectedUserId);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const currentFC = userSnap.data().fonda_coins || 0;
+          const nuevoFC = currentFC + valueFC;
+
+          await updateDoc(userRef, { fonda_coins: nuevoFC });
+          showNotification(`🪙 Gran Fondero: Has otorgado +${valueFC} FC a ${userSnap.data().nombre_usuario}.`, "success");
+          
+          if (adminSelectedUserId === currentUser.uid) {
+            currentUserProfile.fonda_coins = nuevoFC;
+            updateHeaderAndDashboardStats();
+          }
+        }
+      } catch (err) {
+        console.error("Admin error adding Fonda Coins:", err);
+        showNotification("Error de base de datos al dar Fonda Coins.", "error");
+      }
+    });
+
+    // Admin: Quitar Fonda Coins (FC)
+    document.getElementById("btn-admin-sub-fc").addEventListener("click", async () => {
+      if (!adminSelectedUserId) return;
+      const valueFC = parseInt(document.getElementById("admin-fc-mod").value) || 0;
+      if (valueFC <= 0) {
+        showNotification("La cantidad debe ser mayor que 0.", "error");
+        return;
+      }
+
+      try {
+        const userRef = doc(db, "users", adminSelectedUserId);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const currentFC = userSnap.data().fonda_coins || 0;
+          const nuevoFC = Math.max(0, currentFC - valueFC);
+
+          await updateDoc(userRef, { fonda_coins: nuevoFC });
+          showNotification(`🪙 Gran Fondero: Has descontado -${valueFC} FC a ${userSnap.data().nombre_usuario}.`, "success");
+          
+          if (adminSelectedUserId === currentUser.uid) {
+            currentUserProfile.fonda_coins = nuevoFC;
+            updateHeaderAndDashboardStats();
+          }
+        }
+      } catch (err) {
+        console.error("Admin error subtracting Fonda Coins:", err);
+        showNotification("Error de base de datos al quitar Fonda Coins.", "error");
       }
     });
 
@@ -4755,7 +5045,7 @@
         function renderGroupSection(title, players, typeClass, iconDot) {
           const sectionDiv = document.createElement("div");
           sectionDiv.className = "space-y-1.5 mb-4";
-          
+
           const header = document.createElement("div");
           header.className = `text-[10px] font-black uppercase tracking-wider py-1 px-3 rounded-lg flex items-center gap-1.5 ${typeClass}`;
           header.innerHTML = `<span>${iconDot}</span> <span>${title} (${players.length})</span>`;
@@ -6695,7 +6985,7 @@
       const select = document.getElementById("sim-country-select");
       const searchInput = document.getElementById("sim-player-search");
       if (!grid || !select) return;
-      
+
       const queryText = searchInput ? searchInput.value.trim().toLowerCase() : "";
       const selectedCountry = select.value;
       grid.innerHTML = "";
@@ -6705,8 +6995,8 @@
 
       if (hasQuery) {
         // Búsqueda global/local libre por nombre o país
-        filteredPlayers = PLAYERS_POOL.filter(p => 
-          p.nombre.toLowerCase().includes(queryText) || 
+        filteredPlayers = PLAYERS_POOL.filter(p =>
+          p.nombre.toLowerCase().includes(queryText) ||
           p.pais.toLowerCase().includes(queryText)
         ).sort((a, b) => a.nombre.localeCompare(b.nombre));
       } else {
@@ -7051,11 +7341,14 @@
           livePlayers[docSnap.id] = docSnap.data();
         });
 
+        const membersPoints = [];
+
         for (const mUid of members) {
           const teamDocId = getTeamDocId(mUid, leagueId);
           const teamRef = doc(db, "user_teams", teamDocId);
           const teamSnap = await getDoc(teamRef);
 
+          let puntosJornada = 0;
           if (teamSnap.exists()) {
             const team = teamSnap.data();
             const titulares = team.alineacion?.titulares || {};
@@ -7063,7 +7356,7 @@
             const capitanId = team.capitan_id || "";
 
             // Calcular puntos de esta jornada considerando potenciadores (Chips)
-            let puntosJornada = calculateTeamJornadaPoints(team, livePlayers, jornadaActiva);
+            puntosJornada = calculateTeamJornadaPoints(team, livePlayers, jornadaActiva);
 
             // Guardar en la base de datos de user_teams
             const prevPuntosPorJornada = team.puntos_por_jornada || {};
@@ -7089,15 +7382,51 @@
               puntos_jornada_actual: 0 // Reseteamos live a 0
             });
           }
+          membersPoints.push({ uid: mUid, puntos: puntosJornada });
         }
 
-        showNotification(`¡Jornada ${jornadaActiva} cerrada con éxito y puntos guardados de forma definitiva!`, "success");
+        // Determinar el/los ganador(es) de la jornada (puntuación máxima)
+        const maxPoints = membersPoints.length > 0 ? Math.max(...membersPoints.map(mp => mp.puntos)) : 0;
+
+        // Distribuir recompensas en la subcolección asíncrona 'mailbox'
+        for (const mp of membersPoints) {
+          const isWinner = mp.puntos === maxPoints && maxPoints > 0;
+          const rewardAmount = isWinner ? 15 : 8; // 15 FC para ganador, 8 FC para el resto
+          const rewardTitle = isWinner ? `🏆 Ganador de la ${jornadaActiva}` : `⚽ Recompensa por la ${jornadaActiva}`;
+          const rewardDesc = isWinner
+            ? `¡Impresionante! Has quedado 1º en la jornada de Comunio con ${mp.puntos} PTS. Recibes un superbono de +15 Fonda Coins (FC).`
+            : `¡Buen esfuerzo! Completada la jornada de Comunio con ${mp.puntos} PTS. Recibes un bono de participación de +8 Fonda Coins (FC).`;
+
+          const rewardId = `reward_${jornadaActiva.toLowerCase().replace(/\s+/g, "_")}_${mp.uid}_${Date.now()}`;
+          const mailboxRef = doc(db, "users", mp.uid, "mailbox", rewardId);
+
+          await setDoc(mailboxRef, {
+            id: rewardId,
+            title: rewardTitle,
+            description: rewardDesc,
+            amount: rewardAmount,
+            claimed: false,
+            createdAt: new Date().toISOString()
+          });
+        }
+
+        showNotification(`¡Jornada ${jornadaActiva} cerrada con éxito! Puntos consolidados y recompensas de Fonda Coins enviadas al buzón de los participantes.`, "success");
         await recalculateAllManagersPoints(leagueId);
       } catch (err) {
         console.error("Error al cerrar jornada de la liga:", err);
         showNotification("Error en base de datos al cerrar jornada.", "error");
       }
     }
+
+    window.calculatePotentialPayout = function() {
+      const selectType = document.getElementById("bet-select-type");
+      const inputAmount = document.getElementById("bet-input-amount");
+      const payoutEl = document.getElementById("bet-potential-payout");
+      if (!selectType || !inputAmount || !payoutEl) return;
+      const amount = parseInt(inputAmount.value) || 0;
+      const multiplier = selectType.value === "1" ? 2 : selectType.value === "2" ? 4 : 5;
+      payoutEl.textContent = `${(amount * multiplier).toLocaleString()} FC`;
+    };
 
     // --- CASA DE APUESTAS FINANCIERAS (Fonda Bet) ---
 
@@ -7121,19 +7450,19 @@
       }
 
       const depositAmount = parseInt(inputAmount.value) || 0;
-      if (depositAmount < 1000000) {
-        showNotification("El depósito mínimo es de 1,000,000 $ (1M$).", "error");
+      if (depositAmount < 1) {
+        showNotification("El depósito mínimo es de 1 FC.", "error");
         return;
       }
 
-      const currentBudget = currentUserProfile.presupuesto_actual || 0;
-      if (depositAmount > currentBudget) {
-        showNotification(`Presupuesto insuficiente. Tu saldo es de ${(currentBudget / 1000000).toFixed(1)}M$ y quieres apostar ${(depositAmount / 1000000).toFixed(1)}M$.`, "error");
+      const currentFC = currentUserProfile.fonda_coins || 0;
+      if (depositAmount > currentFC) {
+        showNotification(`Fonda Coins insuficientes. Tu saldo es de ${currentFC.toLocaleString()} FC y quieres apostar ${depositAmount.toLocaleString()} FC.`, "error");
         return;
       }
 
-      // Restar fondos del presupuesto
-      const newBudget = currentBudget - depositAmount;
+      // Restar fondos del monedero de Fonda Coins
+      const newFC = currentFC - depositAmount;
 
       const multiplier = selectType.value === "1" ? 2 : selectType.value === "2" ? 4 : 5;
       const potentialPayout = depositAmount * multiplier;
@@ -7157,19 +7486,20 @@
           depositAmount: depositAmount,
           potentialPayout: potentialPayout,
           status: "pending",
+          claimed: false,
           timestamp: Date.now()
         });
 
-        // Actualizar el presupuesto de su perfil en la colección users
+        // Actualizar Fonda Coins del perfil
         const userRef = doc(db, "users", currentUser.uid);
         await updateDoc(userRef, {
-          presupuesto_actual: newBudget
+          fonda_coins: newFC
         });
 
-        // Actualizar localmente el objeto de perfil para evitar lag
-        currentUserProfile.presupuesto_actual = newBudget;
+        // Actualizar localmente
+        currentUserProfile.fonda_coins = newFC;
 
-        showNotification(`🎰 Apuesta realizada con éxito. Se han depositado ${(depositAmount / 1000000).toFixed(1)}M$.`);
+        showNotification(`🎰 Apuesta realizada con éxito. Se han depositado ${depositAmount.toLocaleString()} FC.`);
 
         inputSelection.value = "";
         renderBetsPanel();
@@ -7187,9 +7517,9 @@
       const currentBudgetEl = document.getElementById("bet-current-budget");
       const listMyBetsEl = document.getElementById("bets-my-club-list");
 
-      // Mostrar presupuesto actual del manager
-      const budget = currentUserProfile.presupuesto_actual || 0;
-      currentBudgetEl.textContent = `${(budget / 1000000).toFixed(1)}M$`;
+      // Mostrar Fonda Coins disponibles
+      const fc = currentUserProfile.fonda_coins || 0;
+      currentBudgetEl.textContent = `${fc.toLocaleString()} FC`;
 
       try {
         // 1. Suscribirse a los partidos en tiempo real
@@ -7200,7 +7530,6 @@
           snapshot.forEach(docSnap => matches.push({ id: docSnap.id, ...docSnap.data() }));
 
           selectMatch.innerHTML = "";
-          // Filtrar usando el campo booleano resuelto (más robusto!)
           const pendingMatches = matches.filter(m => !m.resuelto);
 
           if (pendingMatches.length === 0) {
@@ -7237,9 +7566,33 @@
               const card = document.createElement("div");
 
               let typeBadge = bet.betType === 1 ? "Ganador (x2)" : bet.betType === 2 ? "Goleador (x4)" : "Resultado Exacto (x5)";
-              let statusBadge = bet.status === "pending" ? `<span class="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-400 font-extrabold px-2 py-0.5 rounded">Pendiente</span>` :
-                bet.status === "won" ? `<span class="text-[9px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-extrabold px-2 py-0.5 rounded">Ganada (+${(bet.potentialPayout / 1000000).toFixed(1)}M$)</span>` :
-                  `<span class="text-[9px] bg-rose-500/10 border border-rose-500/20 text-rose-400 font-extrabold px-2 py-0.5 rounded">Perdida</span>`;
+              let statusBadge = "";
+              let actionButtons = "";
+
+              if (bet.status === "pending") {
+                statusBadge = `<span class="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-400 font-extrabold px-2 py-0.5 rounded">Pendiente</span>`;
+              } else if (bet.status === "won") {
+                if (bet.claimed === true) {
+                  const methodStr = bet.claimedMethod === "FC" ? "FC" : "$";
+                  statusBadge = `<span class="text-[9px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-extrabold px-2 py-0.5 rounded">Cobrada (+${bet.potentialPayout.toLocaleString()} ${methodStr})</span>`;
+                } else {
+                  statusBadge = `<span class="text-[9px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-extrabold px-2 py-0.5 rounded animate-pulse">¡Ganada! Sin cobrar</span>`;
+                  actionButtons = `
+                    <div class="mt-3 grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
+                      <button onclick="claimBetPayout('${bet.id}', 'FC')" 
+                        class="px-2 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-purple-100 font-black text-[9px] uppercase transition cursor-pointer active:scale-95 text-center flex items-center justify-center gap-1 shadow-md shadow-purple-900/20 border border-purple-500/30">
+                        <i data-lucide="coins" class="w-3.5 h-3.5 text-purple-300"></i> Cobrar FC
+                      </button>
+                      <button onclick="claimBetPayout('${bet.id}', 'USD')" 
+                        class="px-2 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-emerald-100 font-black text-[9px] uppercase transition cursor-pointer active:scale-95 text-center flex items-center justify-center gap-1 shadow-md shadow-emerald-900/20 border border-emerald-500/30">
+                        <i data-lucide="wallet" class="w-3.5 h-3.5 text-emerald-300"></i> Cobrar en $
+                      </button>
+                    </div>
+                  `;
+                }
+              } else {
+                statusBadge = `<span class="text-[9px] bg-rose-500/10 border border-rose-500/20 text-rose-400 font-extrabold px-2 py-0.5 rounded">Perdida</span>`;
+              }
 
               card.className = "glass-panel p-4 rounded-2xl border border-white/5 space-y-2 shadow text-left animate-fade-in";
               card.innerHTML = `
@@ -7250,8 +7603,10 @@
                 <p class="font-bold text-xs text-white">${bet.matchString}</p>
                 <div class="flex justify-between items-center text-[10px] pt-1">
                   <span>Tu Selección: <strong class="text-gold font-extrabold">${bet.betSelection}</strong></span>
-                  <span>Depósito: <strong class="text-slate-300 font-extrabold">${(bet.depositAmount / 1000000).toFixed(1)}M$</strong></span>
+                  <span>Depósito: <strong class="text-slate-300 font-extrabold">${bet.depositAmount.toLocaleString()} FC</strong></span>
                 </div>
+                <p class="text-[10px] text-purple-400 font-extrabold pt-0.5">Premio Potencial: ${bet.potentialPayout.toLocaleString()} FC</p>
+                ${actionButtons}
               `;
               listMyBetsEl.appendChild(card);
             });
@@ -7271,6 +7626,84 @@
         console.error("Error en renderBetsPanel:", err);
       }
     }
+
+    window.claimBetPayout = async function (betId, method) {
+      if (!currentUser || !currentUserProfile) return;
+
+      try {
+        const betRef = doc(db, "club_bets", betId);
+        const betSnap = await getDoc(betRef);
+        if (!betSnap.exists()) return;
+
+        const bet = betSnap.data();
+        if (bet.status !== "won" || bet.claimed === true) {
+          showNotification("Esta apuesta no es válida o ya ha sido reclamada.", "error");
+          return;
+        }
+
+        const payout = bet.potentialPayout || 0; // en FC (valores concentrados, ej: 10 FC)
+        const userRef = doc(db, "users", currentUser.uid);
+
+        if (method === "FC") {
+          // Reclamar en Fonda Coins
+          const currentFC = currentUserProfile.fonda_coins || 0;
+          const newFC = currentFC + payout;
+
+          await updateDoc(userRef, {
+            fonda_coins: newFC
+          });
+
+          currentUserProfile.fonda_coins = newFC;
+
+          showNotification(`🎉 Has cobrado +${payout} FC con éxito.`, "success");
+        } else if (method === "USD") {
+          // Reclamar en $ (Conversión: 1 FC = 300,000 $ con 35% de penalización)
+          const baseUSD = payout * 300000;
+          const finalUSD = Math.round(baseUSD * 0.65); // 35% de penalización
+          const penaltyAmount = baseUSD - finalUSD;
+
+          const confirmConversion = confirm(
+            `⚠️ ADVERTENCIA DE PENALIZACIÓN DE CONVERSIÓN:\n\n` +
+            `Vas a cobrar tu premio de apuesta convirtiendo ${payout} FC a Presupuesto de Club ($).\n` +
+            `• Tasa de cambio base: 1 FC = 300,000 $\n` +
+            `• Valor Bruto: ${baseUSD.toLocaleString()} $\n` +
+            `• Penalización aplicada (-35%): -${penaltyAmount.toLocaleString()} $\n` +
+            `• Presupuesto Neto a ingresar: ${finalUSD.toLocaleString()} $\n\n` +
+            `¿Estás seguro de que deseas proceder? Esta acción no se puede deshacer.`
+          );
+
+          if (!confirmConversion) return;
+
+          const currentUSD = currentUserProfile.presupuesto_club || 0;
+          const newUSD = currentUSD + finalUSD;
+
+          const currentLegacyUSD = currentUserProfile.presupuesto_actual || 0;
+          const newLegacyUSD = currentLegacyUSD + finalUSD;
+
+          await updateDoc(userRef, {
+            presupuesto_club: newUSD,
+            presupuesto_actual: newLegacyUSD
+          });
+
+          currentUserProfile.presupuesto_club = newUSD;
+          currentUserProfile.presupuesto_actual = newLegacyUSD;
+
+          showNotification(`⚡ Premio convertido con éxito. Se han añadido +${finalUSD.toLocaleString()}$ a tu Presupuesto de Club (-35% sanción).`, "success");
+        }
+
+        await updateDoc(betRef, {
+          claimed: true,
+          claimedMethod: method,
+          claimedAt: new Date().toISOString()
+        });
+
+        renderBetsPanel();
+        updateHeaderAndDashboardStats();
+      } catch (err) {
+        console.error("Error al reclamar apuesta:", err);
+        showNotification("Error al reclamar premio de la apuesta.", "error");
+      }
+    };
 
 
 
@@ -8235,11 +8668,11 @@
 
           // Guardar nombre de equipo POR LIGA y establecer como liga activa
           const userRef = doc(db, "users", currentUser.uid);
-          await updateDoc(userRef, {
+          await setDoc(userRef, {
             liga_activa: code,
             ligas: arrayUnion(code),
             [`nombres_equipo.${code}`]: teamName
-          });
+          }, { merge: true });
 
           // Generar once inicial solo si no tiene ya plantilla en esta liga
           const teamDocId = getTeamDocId(currentUser.uid, code);
@@ -8766,9 +9199,9 @@
     // ==================== MÓDULO PACKS & ÁLBUM PANINI ====================
 
     const PACK_CONFIG = {
-      bronze: { probs: { comun: 80, medio: 18, estrella: 2 } },
-      plata:  { probs: { comun: 60, medio: 30, estrella: 10 } },
-      gold:   { probs: { comun: 40, medio: 40, estrella: 20 } }
+      bronze: { price: 3, probs: { comun: 80, medio: 18, estrella: 2 } },
+      plata: { price: 7, probs: { comun: 60, medio: 30, estrella: 10 } },
+      gold: { price: 10, probs: { comun: 40, medio: 40, estrella: 20 } }
     };
 
     let currentPackType = null;
@@ -8796,12 +9229,17 @@
         badge = `<span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-black text-[7px] flex items-center gap-0.5">⚡ MEDIO</span>`;
       }
 
-      const posMap = { portero: ["POR","teal"], defensa: ["DEF","blue"], mediocampista: ["MED","purple"], delantero: ["DEL","rose"] };
-      const [posLabel, posCol] = posMap[player.posicion] || ["JUG","slate"];
-      const initials = player.nombre.split(" ").map(n => n[0]).join("").substring(0,2).toUpperCase();
+      const posMap = { portero: ["POR", "teal"], defensa: ["DEF", "blue"], mediocampista: ["MED", "purple"], delantero: ["DEL", "rose"] };
+      const [posLabel, posCol] = posMap[player.posicion] || ["JUG", "slate"];
+      const initials = player.nombre.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
       const missingClass = state === "missing" ? "opacity-25 grayscale" : "";
       const deckCount = opts.count > 1 ? `<span class="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-purple-500 text-white text-[9px] font-black flex items-center justify-center z-20">x${opts.count}</span>` : "";
       const pegarBtn = state === "deck-in-album" ? `<button onclick="pasteSticker('${player.id}')" class="w-full mt-1.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[8px] uppercase transition active:scale-95 cursor-pointer">📌 Pegar</button>` : "";
+      
+      let payoutLabel = "1";
+      if (rarity === "medio") payoutLabel = "2";
+      else if (rarity === "estrella") payoutLabel = "5";
+      const quicksellBtn = state === "deck" ? `<button onclick="quicksellSticker('${player.id}')" class="w-full mt-1.5 py-1 rounded-lg bg-rose-600/40 hover:bg-rose-600 text-rose-200 hover:text-white font-black text-[8px] uppercase transition active:scale-95 cursor-pointer">♻️ Descartar (+${payoutLabel} FC)</button>` : "";
 
       return `
         <div class="relative group aspect-[3/4.2] w-full rounded-2xl border ${border} bg-gradient-to-b ${bg} p-2.5 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:scale-[1.03] ${glow} ${missingClass}">
@@ -8817,19 +9255,20 @@
             <p class="text-[9px] font-black text-white truncate uppercase">${player.nombre}</p>
             <div class="flex justify-between items-center">
               <span class="text-[7px] text-slate-500 font-bold truncate">${player.pais}</span>
-              <span class="text-[8px] ${priceColor} font-black">${(player.precio/1e6).toFixed(1)}M</span>
+              <span class="text-[8px] ${priceColor} font-black">${(player.precio / 1e6).toFixed(1)}M</span>
             </div>
             <div class="flex justify-center pt-0.5">${badge}</div>
             ${pegarBtn}
+            ${quicksellBtn}
           </div>
         </div>`;
     }
 
     // ---- Tab switcher sub-packs ----
-    window.switchPacksTab = function(tab) {
-      ["shop","album","deck","trade"].forEach(t => {
+    window.switchPacksTab = function (tab) {
+      ["shop", "album", "deck", "trade"].forEach(t => {
         const panel = document.getElementById(`packs-panel-${t}`);
-        const btn   = document.getElementById(`packs-tab-${t}`);
+        const btn = document.getElementById(`packs-tab-${t}`);
         if (!panel || !btn) return;
         if (t === tab) {
           panel.classList.remove("hidden");
@@ -8840,7 +9279,7 @@
         }
       });
       if (tab === "album") renderAlbumCountryNav();
-      if (tab === "deck")  renderDeckGrid();
+      if (tab === "deck") renderDeckGrid();
       if (tab === "trade") initTradePanel();
     };
 
@@ -8848,8 +9287,8 @@
     function drawPack(type, count = 3) {
       const probs = PACK_CONFIG[type]?.probs || PACK_CONFIG.gold.probs;
       const pools = {
-        comun:    PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "comun"),
-        medio:    PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "medio"),
+        comun: PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "comun"),
+        medio: PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "medio"),
         estrella: PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "estrella"),
       };
       const picked = [], pickedIds = [];
@@ -8866,12 +9305,19 @@
     }
 
     // ---- Visual single-pack opener ----
-    window.openPackVisual = async function(type) {
+    window.openPackVisual = async function (type) {
       if (!currentUser || !currentUserProfile) return;
       currentPackType = type;
       const placeholder = document.getElementById("pack-reveal-placeholder");
       const grid = document.getElementById("pack-cards-grid");
       const again = document.getElementById("btn-open-again");
+
+      const price = PACK_CONFIG[type]?.price || 0;
+      const currentFC = currentUserProfile.fonda_coins || 0;
+      if (currentFC < price) {
+        showNotification(`Fonda Coins insuficientes. El sobre cuesta ${price.toLocaleString()} FC y tienes ${currentFC.toLocaleString()} FC.`, "error");
+        return;
+      }
 
       // Shake animation on the reveal zone
       const zone = document.getElementById("pack-reveal-zone");
@@ -8881,8 +9327,14 @@
 
       const { players, ids } = drawPack(type, 3);
       try {
+        const newFC = currentFC - price;
         const userRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userRef, { user_inventory: arrayUnion(...ids) });
+        await updateDoc(userRef, {
+          user_inventory: arrayUnion(...ids),
+          fonda_coins: newFC
+        });
+        currentUserProfile.fonda_coins = newFC;
+
         if (!currentUserProfile.user_inventory) currentUserProfile.user_inventory = [];
         ids.forEach(id => { if (!currentUserProfile.user_inventory.includes(id)) currentUserProfile.user_inventory.push(id); });
 
@@ -8896,37 +9348,52 @@
             wrap.className = "transform scale-0 opacity-0 transition-all duration-500 ease-out";
             wrap.innerHTML = generateCromoHTML(player, "collected");
             grid.appendChild(wrap);
-            setTimeout(() => { wrap.classList.remove("scale-0","opacity-0"); wrap.classList.add("scale-100","opacity-100"); }, (idx + 1) * 280);
+            setTimeout(() => { wrap.classList.remove("scale-0", "opacity-0"); wrap.classList.add("scale-100", "opacity-100"); }, (idx + 1) * 280);
           });
           setTimeout(() => { lucide.createIcons(); updatePacksStats(); }, players.length * 280 + 100);
         }
-        showNotification(`🎴 ¡Sobre ${type} abierto! +${ids.length} cromos al mazo.`, "success");
-      } catch(err) {
+        showNotification(`🎴 ¡Sobre ${type} abierto! -${price.toLocaleString()} FC. +${ids.length} cromos al mazo.`, "success");
+        updateHeaderAndDashboardStats();
+      } catch (err) {
         console.error("Error abriendo sobre:", err);
         showNotification("Error al guardar cromos. Inténtalo de nuevo.", "error");
       }
     };
 
     // ---- Multi-pack quick open (x5) ----
-    window.openPackMulti = async function(type, count) {
+    window.openPackMulti = async function (type, count) {
       if (!currentUser || !currentUserProfile) return;
       const totalCards = count * 3;
+      const price = (PACK_CONFIG[type]?.price || 0) * count;
+      const currentFC = currentUserProfile.fonda_coins || 0;
+      if (currentFC < price) {
+        showNotification(`Fonda Coins insuficientes. Los ${count} sobres cuestan ${price.toLocaleString()} FC y tienes ${currentFC.toLocaleString()} FC.`, "error");
+        return;
+      }
+
       const allIds = [];
       for (let i = 0; i < count; i++) { const { ids } = drawPack(type, 3); ids.forEach(id => allIds.push(id)); }
       try {
+        const newFC = currentFC - price;
         const userRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userRef, { user_inventory: arrayUnion(...allIds) });
+        await updateDoc(userRef, {
+          user_inventory: arrayUnion(...allIds),
+          fonda_coins: newFC
+        });
+        currentUserProfile.fonda_coins = newFC;
+
         if (!currentUserProfile.user_inventory) currentUserProfile.user_inventory = [];
         allIds.forEach(id => { if (!currentUserProfile.user_inventory.includes(id)) currentUserProfile.user_inventory.push(id); });
         updatePacksStats();
-        showNotification(`⚡ ¡${count} sobres ${type} abiertos! +${totalCards} cromos al mazo.`, "success");
-      } catch(err) {
+        showNotification(`⚡ ¡${count} sobres ${type} abiertos! -${price.toLocaleString()} FC. +${totalCards} cromos al mazo.`, "success");
+        updateHeaderAndDashboardStats();
+      } catch (err) {
         console.error("Error en apertura múltiple:", err);
         showNotification("Error al guardar. Inténtalo de nuevo.", "error");
       }
     };
 
-    window.resetPackReveal = function() {
+    window.resetPackReveal = function () {
       const placeholder = document.getElementById("pack-reveal-placeholder");
       const grid = document.getElementById("pack-cards-grid");
       const again = document.getElementById("btn-open-again");
@@ -8941,7 +9408,7 @@
       const album = currentUserProfile.user_album || [];
       const total = PLAYERS_POOL.length;
       const pct = total > 0 ? Math.round((album.length / total) * 100) : 0;
-      const el = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+      const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
       el("album-percentage", `${pct}%`);
       el("album-collected-count", album.length);
       el("album-total-count", total);
@@ -8961,12 +9428,12 @@
       }).join("");
     }
 
-    window.renderAlbumCountryPage = function(country) {
+    window.renderAlbumCountryPage = function (country) {
       const page = document.getElementById("album-country-page");
       if (!page) return;
       const album = currentUserProfile.user_album || [];
-      const deck  = currentUserProfile.user_inventory || [];
-      const players = PLAYERS_POOL.filter(p => p.pais === country).sort((a,b) => b.precio - a.precio);
+      const deck = currentUserProfile.user_inventory || [];
+      const players = PLAYERS_POOL.filter(p => p.pais === country).sort((a, b) => b.precio - a.precio);
       const flag = players[0]?.flag || "";
       const stuckCount = players.filter(p => album.includes(p.id)).length;
 
@@ -8978,18 +9445,18 @@
           </div>
           <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
             ${players.map(p => {
-              const inAlbum = album.includes(p.id);
-              const inDeck  = deck.includes(p.id);
-              const state = inAlbum ? "collected" : inDeck ? "deck-in-album" : "missing";
-              return generateCromoHTML(p, state);
-            }).join("")}
+        const inAlbum = album.includes(p.id);
+        const inDeck = deck.includes(p.id);
+        const state = inAlbum ? "collected" : inDeck ? "deck-in-album" : "missing";
+        return generateCromoHTML(p, state);
+      }).join("")}
           </div>
         </div>`;
       lucide.createIcons();
     };
 
     // ---- Paste sticker ----
-    window.pasteSticker = async function(playerId) {
+    window.pasteSticker = async function (playerId) {
       if (!currentUser || !currentUserProfile) return;
       const inventory = currentUserProfile.user_inventory || [];
       if (!inventory.includes(playerId)) { showNotification("No tienes ese cromo en el mazo.", "error"); return; }
@@ -9005,13 +9472,85 @@
         if (!currentUserProfile.user_album) currentUserProfile.user_album = [];
         currentUserProfile.user_album.push(playerId);
         updatePacksStats();
+        
         const player = PLAYERS_POOL.find(p => p.id === playerId);
         const country = player?.pais;
         if (country) renderAlbumCountryPage(country);
         showNotification(`📌 ¡${player?.nombre} pegado en el álbum!`, "success");
-      } catch(err) {
+
+        // Verificar logro por completar país
+        if (country) {
+          const countryPlayers = PLAYERS_POOL.filter(p => p.pais === country);
+          const collectedCountryPlayers = countryPlayers.filter(p => currentUserProfile.user_album.includes(p.id));
+          
+          if (collectedCountryPlayers.length === countryPlayers.length) {
+            const completedCountries = currentUserProfile.completed_countries || [];
+            if (!completedCountries.includes(country)) {
+              const nextCompleted = [...completedCountries, country];
+              const bonusFC = 30; // 30 FC
+              const finalFC = (currentUserProfile.fonda_coins || 0) + bonusFC;
+              
+              await updateDoc(userRef, {
+                completed_countries: arrayUnion(country),
+                fonda_coins: finalFC
+              });
+              
+              currentUserProfile.completed_countries = nextCompleted;
+              currentUserProfile.fonda_coins = finalFC;
+              
+              showNotification(`🏆 ¡LOGRO! Has completado la selección de ${country}. ¡Bono de +${bonusFC.toLocaleString()} FC añadido!`, "success");
+              updateHeaderAndDashboardStats();
+            }
+          }
+        }
+      } catch (err) {
         console.error("Error pegando cromo:", err);
         showNotification("Error al pegar el cromo.", "error");
+      }
+    };
+
+    // ---- Quick Sell duplicate stickers ----
+    window.quicksellSticker = async function (playerId) {
+      if (!currentUser || !currentUserProfile) return;
+      const inventory = currentUserProfile.user_inventory || [];
+      if (!inventory.includes(playerId)) {
+        showNotification("No tienes este cromo en el mazo.", "error");
+        return;
+      }
+
+      const player = PLAYERS_POOL.find(p => p.id === playerId);
+      if (!player) return;
+
+      const rarity = getPlayerRarity(player.precio);
+      let payout = 1; // Común: 1 FC
+      if (rarity === "medio") payout = 2; // Medio: 2 FC
+      if (rarity === "estrella") payout = 5; // Estrella: 5 FC
+
+      try {
+        const newInventory = [...inventory];
+        const idx = newInventory.indexOf(playerId);
+        newInventory.splice(idx, 1);
+
+        const currentFC = currentUserProfile.fonda_coins || 0;
+        const newFC = currentFC + payout;
+
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, {
+          user_inventory: newInventory,
+          fonda_coins: newFC
+        });
+
+        currentUserProfile.user_inventory = newInventory;
+        currentUserProfile.fonda_coins = newFC;
+
+        updatePacksStats();
+        renderDeckGrid();
+        updateHeaderAndDashboardStats();
+
+        showNotification(`♻️ Has descartado a ${player.nombre} por +${payout} FC.`, "success");
+      } catch (err) {
+        console.error("Error al descartar cromo:", err);
+        showNotification("Error al descartar cromo.", "error");
       }
     };
 
@@ -9025,7 +9564,7 @@
       inventory.forEach(id => { countMap[id] = (countMap[id] || 0) + 1; });
       let players = [...new Set(inventory)].map(id => PLAYERS_POOL.find(p => p.id === id)).filter(Boolean);
       if (activeDeckFilter !== "all") players = players.filter(p => getPlayerRarity(p.precio) === activeDeckFilter);
-      players.sort((a,b) => b.precio - a.precio);
+      players.sort((a, b) => b.precio - a.precio);
       if (!players.length) {
         grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic text-xs">No tienes cromos en el mazo con este filtro.<br>¡Abre sobres para conseguir más!</div>`;
         return;
@@ -9052,7 +9591,7 @@
       // Populate offer select (cards in deck)
       const inventory = currentUserProfile?.user_inventory || [];
       const offerSel = document.getElementById("trade-offer-select");
-      const wantSel  = document.getElementById("trade-want-select");
+      const wantSel = document.getElementById("trade-want-select");
       if (offerSel) {
         offerSel.innerHTML = `<option value="">— Ofreces —</option>`;
         [...new Set(inventory)].forEach(id => {
@@ -9062,13 +9601,13 @@
       }
       if (wantSel) {
         wantSel.innerHTML = `<option value="">— Buscas —</option>`;
-        [...PLAYERS_POOL].sort((a,b) => b.precio - a.precio).forEach(p => {
+        [...PLAYERS_POOL].sort((a, b) => b.precio - a.precio).forEach(p => {
           wantSel.innerHTML += `<option value="${p.id}">${p.flag} ${p.nombre}</option>`;
         });
       }
       // Real-time trades listener
       if (tradeUnsubscribe) tradeUnsubscribe();
-      tradeUnsubscribe = db.collection("trades").where("leagueCode","==",currentActiveLeague).where("status","==","open")
+      tradeUnsubscribe = db.collection("trades").where("leagueCode", "==", currentActiveLeague).where("status", "==", "open")
         .onSnapshot(snap => {
           const list = document.getElementById("trade-offers-list");
           if (!list) return;
@@ -9076,8 +9615,8 @@
           list.innerHTML = snap.docs.map(d => {
             const t = d.data();
             const offerP = PLAYERS_POOL.find(p => p.id === t.offer_id);
-            const wantP  = PLAYERS_POOL.find(p => p.id === t.want_id);
-            const isOwn  = t.from_uid === currentUser.uid;
+            const wantP = PLAYERS_POOL.find(p => p.id === t.want_id);
+            const isOwn = t.from_uid === currentUser.uid;
             const canAccept = !isOwn && (currentUserProfile?.user_inventory || []).includes(t.want_id);
             return `
               <div class="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 text-xs">
@@ -9092,10 +9631,10 @@
         });
     }
 
-    window.createTradeOffer = async function() {
+    window.createTradeOffer = async function () {
       if (!currentUser || !currentActiveLeague) return;
       const offerId = document.getElementById("trade-offer-select")?.value;
-      const wantId  = document.getElementById("trade-want-select")?.value;
+      const wantId = document.getElementById("trade-want-select")?.value;
       if (!offerId || !wantId) { showNotification("Selecciona ambos cromos para el intercambio.", "error"); return; }
       if (offerId === wantId) { showNotification("No puedes intercambiar el mismo cromo.", "error"); return; }
       try {
@@ -9106,10 +9645,10 @@
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
         showNotification("✅ ¡Oferta publicada! Espera que alguien la acepte.", "success");
-      } catch(err) { console.error(err); showNotification("Error al publicar la oferta.", "error"); }
+      } catch (err) { console.error(err); showNotification("Error al publicar la oferta.", "error"); }
     };
 
-    window.acceptTrade = async function(tradeId) {
+    window.acceptTrade = async function (tradeId) {
       if (!currentUser || !currentUserProfile) return;
       const snap = await db.collection("trades").doc(tradeId).get();
       if (!snap.exists) { showNotification("Esta oferta ya no está disponible.", "error"); return; }
@@ -9137,269 +9676,162 @@
         currentUserProfile.user_inventory = myNewInv;
         updatePacksStats();
         showNotification("🎉 ¡Intercambio completado!", "success");
-      } catch(err) { console.error(err); showNotification("Error en el intercambio.", "error"); }
+      } catch (err) { console.error(err); showNotification("Error en el intercambio.", "error"); }
     };
 
-    window.cancelTrade = async function(tradeId) {
+    window.cancelTrade = async function (tradeId) {
       try {
         await db.collection("trades").doc(tradeId).update({ status: "cancelled" });
         showNotification("Oferta cancelada.", "success");
-      } catch(err) { showNotification("Error al cancelar.", "error"); }
+      } catch (err) { showNotification("Error al cancelar.", "error"); }
     };
 
     // ---- Main init ----
-    window.initPacksModule = function() {
+    window.initPacksModule = function () {
       if (!currentUser || !currentUserProfile) return;
       updatePacksStats();
       switchPacksTab("shop");
     };
 
-  </script>
+    // ================= BUZÓN DE RECOMPENSAS (MAILBOX) =================
 
-  <!-- Modal de Selección de Sustitución Directa (Fonda Engine) -->
-
-      return "comun";
-    }
-
-    function generateCromoHTML(player, isCollected = true, isReveal = false) {
-      const rarity = getPlayerRarity(player.precio);
-      
-      let bgGradient = "from-slate-850 to-slate-950 border-slate-700/40 text-slate-300";
-      let rarityBadge = `<span class="px-1.5 py-0.5 rounded bg-slate-500/10 text-slate-400 font-extrabold uppercase text-[7px] tracking-wider border border-slate-500/20">Común</span>`;
-      let priceColor = "text-slate-400";
-      let glowClass = "";
-
-      if (rarity === "estrella") {
-        bgGradient = "from-amber-600/60 via-amber-950/80 to-slate-900 border-amber-500/40 text-amber-200";
-        rarityBadge = `<span class="px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-black uppercase text-[7px] tracking-wider flex items-center gap-0.5 shadow-sm shadow-gold/20"><i data-lucide="crown" class="w-2 h-2"></i> ESTRELLA</span>`;
-        priceColor = "text-amber-400";
-        glowClass = "shadow-[0_0_15px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/20";
-      } else if (rarity === "medio") {
-        bgGradient = "from-indigo-950 via-slate-900 to-slate-950 border-blue-500/30 text-blue-300";
-        rarityBadge = `<span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-black uppercase text-[7px] tracking-wider flex items-center gap-0.5 shadow-sm shadow-blue-500/10"><i data-lucide="zap" class="w-2 h-2"></i> MEDIO</span>`;
-        priceColor = "text-blue-400";
-        glowClass = "shadow-[0_0_15px_rgba(59,130,246,0.2)] ring-1 ring-blue-500/20";
-      }
-
-      const stateClass = isCollected ? "" : "opacity-20 grayscale blur-[0.5px] hover:blur-none hover:opacity-40 transition duration-300 cursor-not-allowed";
-      const posUpper = player.posicion === "portero" ? "POR" : (player.posicion === "defensa" ? "DEF" : (player.posicion === "mediocampista" ? "MED" : "DEL"));
-      
-      let posColor = "bg-slate-500/10 text-slate-400";
-      if (player.posicion === "portero") posColor = "bg-teal-500/10 text-teal-400";
-      else if (player.posicion === "defensa") posColor = "bg-blue-500/10 text-blue-400";
-      else if (player.posicion === "mediocampista") posColor = "bg-purple-500/10 text-purple-400";
-      else if (player.posicion === "delantero") posColor = "bg-rose-500/10 text-rose-400";
-
-      const initials = player.nombre.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
-
-      return `
-        <div class="relative group aspect-[3/4.2] w-full rounded-2xl border ${bgGradient} p-3 flex flex-col justify-between overflow-hidden transition-all duration-300 hover:scale-[1.03] ${glowClass} ${stateClass}">
-          <!-- Top info bar -->
-          <div class="flex items-center justify-between relative z-10">
-            <span class="px-1.5 py-0.5 rounded font-black text-[8px] uppercase ${posColor}">${posUpper}</span>
-            <span class="text-xs shrink-0">${player.flag || "⚽"}</span>
-          </div>
-
-          <!-- Avatar Initials -->
-          <div class="flex-1 flex flex-col justify-center items-center py-2 relative z-10">
-            <div class="w-12 h-12 rounded-full bg-white/[0.03] border border-white/5 flex items-center justify-center font-black text-xs text-slate-400 tracking-wider shadow-inner group-hover:bg-white/[0.06] transition duration-300">
-              ${initials}
-            </div>
-          </div>
-
-          <!-- Metadata Footer -->
-          <div class="space-y-1 relative z-10 border-t border-white/5 pt-2 text-center">
-            <h5 class="text-[10px] font-black text-white truncate leading-none uppercase">${player.nombre}</h5>
-            <div class="flex justify-between items-center gap-1 mt-1">
-              <span class="text-[8px] text-slate-500 font-bold truncate">${player.pais}</span>
-              <span class="text-[9px] ${priceColor} font-black">${(player.precio / 1000000).toFixed(1)}M$</span>
-            </div>
-            <div class="flex justify-center pt-1.5">
-              ${rarityBadge}
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    let activeAlbumFilter = "all";
-
-    window.initPacksModule = function() {
+    window.initMailboxModule = function () {
       if (!currentUser || !currentUserProfile) return;
-      
-      const inventory = currentUserProfile.user_inventory || [];
-      
-      // Actualizar contador del álbum
-      const collectedCount = inventory.length;
-      const totalCount = PLAYERS_POOL.length;
-      const percentage = totalCount > 0 ? Math.round((collectedCount / totalCount) * 100) : 0;
-
-      const percentageEl = document.getElementById("album-percentage");
-      const progressBarEl = document.getElementById("album-progress-bar");
-      const collectedCountEl = document.getElementById("album-collected-count");
-      const totalCountEl = document.getElementById("album-total-count");
-
-      if (percentageEl) percentageEl.textContent = `${percentage}%`;
-      if (progressBarEl) progressBarEl.style.width = `${percentage}%`;
-      if (collectedCountEl) collectedCountEl.textContent = collectedCount;
-      if (totalCountEl) totalCountEl.textContent = totalCount;
-
-      renderAlbumGrid();
-      setupAlbumFilters();
-      setupPackOpeningEvent();
+      renderMailboxList();
     };
 
-    function renderAlbumGrid() {
-      const grid = document.getElementById("album-cards-grid");
-      if (!grid) return;
-      grid.innerHTML = "";
+    window.renderMailboxList = function () {
+      const listEl = document.getElementById("mailbox-list");
+      if (!listEl) return;
 
-      const inventory = currentUserProfile.user_inventory || [];
+      const rewards = window.currentUserMailbox || [];
+      const unclaimed = rewards.filter(r => !r.claimed);
 
-      // Filtrar y ordenar la pool por precio descendente
-      let playersToShow = [...PLAYERS_POOL].sort((a, b) => b.precio - a.precio);
-
-      if (activeAlbumFilter !== "all") {
-        playersToShow = playersToShow.filter(p => getPlayerRarity(p.precio) === activeAlbumFilter);
-      }
-
-      if (playersToShow.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic text-xs">No hay cromos en esta categoría.</div>`;
+      if (unclaimed.length === 0) {
+        listEl.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-500 italic text-xs flex flex-col items-center justify-center gap-3">
+            <i data-lucide="mail-open" class="w-12 h-12 text-slate-600 animate-bounce"></i>
+            <div>
+              <p class="font-extrabold text-slate-400">¡Buzón vacío!</p>
+              <p class="text-[10px] text-slate-500 mt-1">No tienes recompensas pendientes de reclamar en este momento.</p>
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
         return;
       }
 
-      playersToShow.forEach(player => {
-        const isCollected = inventory.includes(player.id);
-        const cardHtml = generateCromoHTML(player, isCollected, false);
-        const wrapper = document.createElement("div");
-        wrapper.innerHTML = cardHtml;
-        grid.appendChild(wrapper.firstElementChild);
-      });
+      listEl.innerHTML = unclaimed.map(r => {
+        const isWinner = r.amount === 15;
+        const borderClass = isWinner ? "border-amber-500/30 bg-amber-500/[0.02]" : "border-emerald-500/20 bg-emerald-500/[0.01]";
+        const titleClass = isWinner ? "text-amber-400" : "text-emerald-400";
+        const iconName = isWinner ? "trophy" : "mail";
+        const btnClass = isWinner 
+          ? "bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs px-4 py-2 rounded-xl transition cursor-pointer hover:scale-[1.03] active:scale-95 duration-150 flex items-center gap-1 shadow-md shadow-amber-500/10"
+          : "bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs px-4 py-2 rounded-xl transition cursor-pointer hover:scale-[1.03] active:scale-95 duration-150 flex items-center gap-1 shadow-md shadow-emerald-500/10";
 
+        return `
+          <div class="glass-panel p-5 rounded-2xl border ${borderClass} flex flex-col justify-between gap-4 hover:border-white/10 transition duration-300">
+            <div class="space-y-2">
+              <div class="flex justify-between items-start gap-2">
+                <h5 class="font-black text-sm ${titleClass} flex items-center gap-1.5 leading-snug">
+                  <i data-lucide="${iconName}" class="w-4.5 h-4.5 shrink-0"></i>
+                  ${r.title}
+                </h5>
+                <span class="text-[10px] bg-slate-950 border border-white/5 font-extrabold px-2 py-0.5 rounded text-slate-400 whitespace-nowrap">
+                  +${r.amount} FC
+                </span>
+              </div>
+              <p class="text-slate-400 text-[11px] leading-relaxed font-medium">${r.description}</p>
+            </div>
+            <div class="flex justify-between items-center gap-2 pt-2 border-t border-white/5">
+              <span class="text-[8px] text-slate-500 font-extrabold uppercase">
+                ${r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Reciente"}
+              </span>
+              <button onclick="claimReward('${r.id}', ${r.amount})" class="${btnClass}">
+                <i data-lucide="gift" class="w-3.5 h-3.5"></i> Reclamar
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
       lucide.createIcons();
-    }
+    };
 
-    function setupAlbumFilters() {
-      const buttons = document.querySelectorAll(".btn-album-filter");
-      buttons.forEach(btn => {
-        // Remover listeners anteriores para evitar duplicados
-        const newBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(newBtn, btn);
+    window.claimReward = async function (rewardId, amount) {
+      if (!currentUser || !currentUserProfile) return;
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        const rewardRef = doc(db, "users", currentUser.uid, "mailbox", rewardId);
 
-        newBtn.addEventListener("click", () => {
-          buttons.forEach(b => b.className = "btn-album-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white");
-          newBtn.className = "btn-album-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer bg-gold text-slate-950";
-          
-          activeAlbumFilter = newBtn.getAttribute("data-filter");
-          renderAlbumGrid();
+        const batch = firebase.firestore().batch();
+        
+        const currentFC = currentUserProfile.fonda_coins || 0;
+        const newFC = currentFC + amount;
+        
+        batch.update(firebase.firestore().doc(`users/${currentUser.uid}`), {
+          fonda_coins: newFC
         });
-      });
-    }
 
-    function setupPackOpeningEvent() {
-      const btnOpen = document.getElementById("btn-open-pack");
-      if (!btnOpen) return;
+        batch.update(firebase.firestore().doc(`users/${currentUser.uid}/mailbox/${rewardId}`), {
+          claimed: true,
+          claimedAt: new Date().toISOString()
+        });
 
-      // Remover listeners anteriores clone-nodeando
-      const newBtn = btnOpen.cloneNode(true);
-      btnOpen.parentNode.replaceChild(newBtn, btnOpen);
+        await batch.commit();
 
-      newBtn.addEventListener("click", async () => {
-        if (!currentUser || !currentUserProfile) return;
+        currentUserProfile.fonda_coins = newFC;
+        updateHeaderAndDashboardStats();
+        showNotification(`🎉 ¡Recompensa reclamada! +${amount} Fonda Coins (FC) añadidos.`, "success");
+      } catch (err) {
+        console.error("Error al reclamar recompensa:", err);
+        showNotification("Error de red al reclamar la recompensa.", "error");
+      }
+    };
 
-        newBtn.disabled = true;
-        newBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> ABRIENDO SOBRE...`;
-        lucide.createIcons();
+    window.claimAllRewards = async function () {
+      if (!currentUser || !currentUserProfile) return;
+      const rewards = window.currentUserMailbox || [];
+      const unclaimed = rewards.filter(r => !r.claimed);
 
-        // 1. Clasificar la pool
-        const poolComunes = PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "comun");
-        const poolMedios = PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "medio");
-        const poolEstrellas = PLAYERS_POOL.filter(p => getPlayerRarity(p.precio) === "estrella");
+      if (unclaimed.length === 0) {
+        showNotification("No tienes ninguna recompensa pendiente.", "error");
+        return;
+      }
 
-        const pickedPlayers = [];
-        const pickedIds = [];
+      try {
+        const totalAmount = unclaimed.reduce((sum, r) => sum + r.amount, 0);
+        const batch = firebase.firestore().batch();
 
-        // 2. Elegir 3 jugadores aleatorios aplicando probabilidades (70% común, 25% medio, 5% estrella)
-        for (let i = 0; i < 3; i++) {
-          const rand = Math.random() * 100;
-          let selectedPool = poolComunes;
-          
-          if (rand >= 95) {
-            selectedPool = poolEstrellas.length > 0 ? poolEstrellas : poolComunes;
-          } else if (rand >= 70) {
-            selectedPool = poolMedios.length > 0 ? poolMedios : poolComunes;
-          }
-
-          // Si la pool elegida está vacía por algún motivo, usar toda la pool
-          if (selectedPool.length === 0) {
-            selectedPool = PLAYERS_POOL;
-          }
-
-          // Elegir jugador asegurando que no se repita en el mismo sobre
-          let attempts = 0;
-          let chosen = null;
-          do {
-            chosen = selectedPool[Math.floor(Math.random() * selectedPool.length)];
-            attempts++;
-          } while (pickedIds.includes(chosen.id) && attempts < 20);
-
-          pickedPlayers.push(chosen);
-          pickedIds.push(chosen.id);
-        }
-
-        // 3. Persistir en Firestore del usuario
-        try {
-          const userRef = doc(db, "users", currentUser.uid);
-          await updateDoc(userRef, {
-            user_inventory: firebase.firestore.FieldValue.arrayUnion(...pickedIds)
+        unclaimed.forEach(r => {
+          batch.update(firebase.firestore().doc(`users/${currentUser.uid}/mailbox/${r.id}`), {
+            claimed: true,
+            claimedAt: new Date().toISOString()
           });
+        });
 
-          // Actualizar localmente el inventario
-          if (!currentUserProfile.user_inventory) {
-            currentUserProfile.user_inventory = [];
-          }
-          pickedIds.forEach(id => {
-            if (!currentUserProfile.user_inventory.includes(id)) {
-              currentUserProfile.user_inventory.push(id);
-            }
-          });
+        const currentFC = currentUserProfile.fonda_coins || 0;
+        const newFC = currentFC + totalAmount;
 
-          // 4. Animar apertura
-          const placeholder = document.getElementById("pack-reveal-placeholder");
-          const cardsGrid = document.getElementById("pack-cards-grid");
+        batch.update(firebase.firestore().doc(`users/${currentUser.uid}`), {
+          fonda_coins: newFC
+        });
 
-          if (placeholder) placeholder.classList.add("hidden");
-          if (cardsGrid) {
-            cardsGrid.classList.remove("hidden");
-            cardsGrid.innerHTML = "";
+        await batch.commit();
 
-            pickedPlayers.forEach((player, idx) => {
-              const cardContainer = document.createElement("div");
-              cardContainer.className = "transform scale-50 opacity-0 transition-all duration-700 ease-out";
-              cardContainer.innerHTML = generateCromoHTML(player, true, true);
-              cardsGrid.appendChild(cardContainer);
+        currentUserProfile.fonda_coins = newFC;
+        updateHeaderAndDashboardStats();
+        showNotification(`🎉 ¡Bandeja limpia! Has reclamado un total de +${totalAmount} Fonda Coins (FC).`, "success");
+      } catch (err) {
+        console.error("Error al reclamar todas las recompensas:", err);
+        showNotification("Error al reclamar todas las recompensas.", "error");
+      }
+    };
 
-              // Animación escalonada premium
-              setTimeout(() => {
-                cardContainer.classList.remove("scale-50", "opacity-0");
-                cardContainer.classList.add("scale-100", "opacity-100");
-              }, (idx + 1) * 350);
-            });
-          }
-
-          // Actualizar el estado del álbum
-          initPacksModule();
-          showNotification("🌟 ¡Has abierto un sobre! Revisa tu colección.", "success");
-
-        } catch (err) {
-          console.error("Error al abrir sobre:", err);
-          showNotification("Error de red al guardar tu sobre de cromos.", "error");
-        } finally {
-          newBtn.disabled = false;
-          newBtn.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4"></i> ABRIR SOBRE DE CROMOS`;
-          lucide.createIcons();
-        }
-      });
+    // Añadir listener para el botón Reclamar Todo
+    const btnClaimAll = document.getElementById("btn-mailbox-claim-all");
+    if (btnClaimAll) {
+      btnClaimAll.addEventListener("click", () => claimAllRewards());
     }
 
   </script>

@@ -74,6 +74,9 @@ async function registerManager(username, password, nombreEquipo, isSystemInit = 
       nombre_equipo: nombreEquipo || `${username} FC`,
       fecha_registro: new Date().toISOString(),
       presupuesto_actual: 100000000, // 100M$ inicial
+      presupuesto_club: 100000000, // 100M$ inicial
+      fonda_coins: 10, // 10 FC inicial (escala concentrada)
+      ultimo_login: new Date().toDateString(),
       puntos_totales: 0,
       puntos_jornada_actual: 0,
       ranking_global: 1,
@@ -186,17 +189,77 @@ function initAuthListener(onUserLogin, onUserLogout) {
           if (isAdminEmail && data.rol !== "admin") {
             data.rol = "admin";
           }
+
+          // BONO DIARIO LOGIN: +1 FC
+          const todayStr = new Date().toDateString();
+          if (data.ultimo_login !== todayStr && data.rol !== "admin") {
+            const currentFC = data.fonda_coins || 0;
+            const newFC = currentFC + 1;
+            data.fonda_coins = newFC;
+            data.ultimo_login = todayStr;
+
+            await setDoc(doc(db, "users", user.uid), {
+              fonda_coins: newFC,
+              ultimo_login: todayStr
+            }, { merge: true }).catch(err => console.error("Error daily login bonus:", err));
+
+            setTimeout(() => {
+              showNotification("🌞 ¡BONO DIARIO! Recibes +1 Fonda Coin (FC) por entrar hoy.", "success");
+            }, 2000);
+          }
+
           onUserLogin(user, data);
         } else {
-          // Documento no existe aún (usuario recién registrado sin Firestore listo)
-          onUserLogin(user, {
-            nombre_usuario: user.email?.split("@")[0] || "Usuario",
-            nombre_equipo: "Mi Equipo FC",
+          // AUTO-REPARACIÓN/CREACIÓN DE PERFIL EN FIRESTORE (En caso de registro truncado o creación manual en Auth)
+          const repairsUsername = user.email?.split("@")[0] || "Usuario";
+          const newProfile = {
+            uid: user.uid,
+            nombre_usuario: repairsUsername,
+            nombre_equipo: `${repairsUsername} FC`,
+            fecha_registro: new Date().toISOString(),
             presupuesto_actual: 100000000,
+            presupuesto_club: 100000000,
+            fonda_coins: 10,
+            ultimo_login: new Date().toDateString(),
+            puntos_totales: 0,
+            puntos_jornada_actual: 0,
+            ranking_global: 1,
             rol: isAdminEmail ? "admin" : "manager",
             ligas: [],
             liga_activa: ""
-          });
+          };
+
+          try {
+            await setDoc(doc(db, "users", user.uid), newProfile);
+
+            // Asegurar que tenga también documento inicializado en user_teams
+            const userTeamRef = doc(db, "user_teams", user.uid);
+            const initialTeam = {
+              uid: user.uid,
+              jugadores_ids: [],
+              alineacion: {
+                titulares: { portero: [], defensas: [], mediocampistas: [], delanteros: [] },
+                suplentes: { portero: [], defensas: [], mediocampistas: [], delanteros: [] }
+              },
+              capitan_id: "",
+              cambios_realizados_jornada: 0,
+              chips: {
+                wildcard: { disponible: true, usado_en_jornada: null },
+                jugador_12: { disponible: true, usado_en_jornada: null, jugador_extra_id: null },
+                capitan_maximo: { disponible: true, usado_en_jornada: null },
+                comodin_misterioso: { disponible: true, usado_en_jornada: null },
+                super_banquillo: { disponible: true, usado_en_jornada: null }
+              }
+            };
+            await setDoc(userTeamRef, initialTeam);
+
+            console.log(`🔧 [Self-Healing] Se ha reparado/creado automáticamente el perfil de Firestore para el usuario: ${repairsUsername}`);
+            onUserLogin(user, newProfile);
+          } catch (repairErr) {
+            console.error("Error al reparar perfil en Firestore:", repairErr);
+            // Fallback en memoria si la escritura falla
+            onUserLogin(user, newProfile);
+          }
         }
       } catch (err) {
         console.error("Error al cargar perfil de Firestore:", err);
@@ -205,6 +268,8 @@ function initAuthListener(onUserLogin, onUserLogout) {
           nombre_usuario: user.email?.split("@")[0] || "Usuario",
           nombre_equipo: isAdminEmail ? "Consola de Administración" : "Mi Equipo FC",
           presupuesto_actual: 100000000,
+          presupuesto_club: 100000000,
+          fonda_coins: 10,
           rol: isAdminEmail ? "admin" : "manager",
           ligas: [],
           liga_activa: ""

@@ -27,7 +27,9 @@ export const FirestoreSchemas = {
     nombre_usuario: "string",                       // Nombre del mánager
     nombre_equipo: "string",                        // Nombre de su club fantasy
     fecha_registro: "string (ISO Date)",            // Fecha de alta
-    presupuesto_actual: 100000000,                  // Presupuesto actual en dólares (ej: 100M o 105M)
+    presupuesto_actual: 100000000,                  // Presupuesto actual en dólares (ej: 100M o 105M) [Legacy/Deprecated]
+    presupuesto_club: 100000000,                    // [Doble Divisa] Balance en dólares ($) exclusivo para el mercado tradicional de fichajes
+    fonda_coins: 10,                                 // [Doble Divisa] Balance en Fonda Coins (FC) para apertura de sobres y apuestas deportivas
     puntos_totales: 0,                              // Suma acumulada de puntos de todas las jornadas
     puntos_jornada_actual: 0,                       // Puntos obtenidos en la jornada actual
     ranking_global: 1                               // Puesto en la clasificación general
