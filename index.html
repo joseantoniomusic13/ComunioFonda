@@ -462,6 +462,12 @@
                     <i data-lucide="trash-2" class="w-3 h-3"></i> Quitar Crack
                   </button>
                 </div>
+                <!-- Botón Premium: Ver/Editar Plantilla en Vivo -->
+                <div class="pt-3">
+                  <button id="btn-admin-view-edit-squad" disabled class="w-full bg-gradient-to-r from-purple-500/20 to-indigo-500/20 hover:from-purple-500 hover:to-indigo-500 hover:text-slate-950 border border-purple-500/30 hover:border-transparent text-purple-300 font-extrabold py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/5">
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-purple-400"></i> Ver / Editar Plantilla en Vivo
+                  </button>
+                </div>
               </div>
 
               <!-- NUEVO: Restar Puntos al Mánager y dar Razón -->
@@ -695,7 +701,8 @@
                 <h3 class="text-2xl font-black text-white flex items-center gap-2 flex-wrap">
                   El Campo de la Fonda 
                   <span id="squad-formacion-badge" class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">4-4-2</span>
-                  <span id="dash-info-count" class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400" title="Cupo de Plantilla">0 / 15 Jugadores</span>
+                  <span id="squad-jornada-badge" class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-gold font-black">Jornada 1</span>
+                  <span id="dash-info-count" class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400" title="Cupo de Plantilla">0 / 30 Jugadores</span>
                 </h3>
                 <p id="squad-instructions" class="text-slate-400 text-xs">
                   Sustituciones: ¡Puedes arrastrar y soltar (Drag & Drop) jugadores al campo! O haz clic en un suplente y en un titular para intercambiarlos. Haz clic en la corona <i data-lucide="crown" class="inline w-3 h-3 text-gold"></i> para elegir Capitán.
@@ -1049,7 +1056,8 @@
                   <th class="py-4 px-6 text-center">Goles</th>
                   <th class="py-4 px-6 text-center">Asistencias</th>
                   <th class="py-4 px-6 text-center">Tarjetas</th>
-                  <th class="py-4 px-6 text-center font-black text-gold">Puntos</th>
+                  <th class="py-4 px-6 text-center font-black text-amber-400">Pts Jornada</th>
+                  <th class="py-4 px-6 text-center font-black text-gold">Pts Totales</th>
                 </tr>
               </thead>
               <tbody id="stats-table-body" class="divide-y divide-white/5 text-slate-200">
@@ -1352,6 +1360,47 @@
       <button id="btn-confirm-change-pw" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-sm transition cursor-pointer flex items-center justify-center gap-2">
         <i data-lucide="check" class="w-4 h-4"></i> Confirmar Cambio
       </button>
+    </div>
+  </div>
+
+  <!-- Modal Admin: Editor de Plantillas en Vivo (Premium) -->
+  <div id="modal-admin-squad-editor" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+    <div class="glass-panel rounded-3xl border border-purple-500/30 p-6 w-full max-w-2xl shadow-2xl space-y-5 text-left bg-fonda-950/95 flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between border-b border-white/5 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="p-2 rounded-xl bg-purple-500/10 border border-purple-500/25 text-purple-400">
+            <i data-lucide="shield-alert" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-black text-white uppercase tracking-wider">Editor de Plantilla en Vivo</h3>
+            <p class="text-[10px] text-purple-300 font-bold uppercase">Mánager: <span id="admin-squad-editor-manager-name" class="text-white">---</span></p>
+          </div>
+        </div>
+        <button id="btn-close-admin-squad-editor" class="text-slate-400 hover:text-white transition cursor-pointer p-1 rounded-lg hover:bg-white/5">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Add Player Action Bar -->
+      <div class="bg-purple-950/20 border border-purple-500/15 p-3 rounded-2xl flex flex-col md:flex-row gap-3 items-center justify-between">
+        <div class="w-full md:w-3/5">
+          <label for="admin-squad-add-player-select" class="block text-[9px] font-black uppercase text-purple-300 tracking-widest mb-1">Otorgar nuevo jugador directamente</label>
+          <select id="admin-squad-add-player-select" class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-slate-950 text-white font-extrabold border border-white/5 focus:outline-none">
+            <!-- Cargado dinámicamente -->
+          </select>
+        </div>
+        <button id="btn-admin-squad-add-player" class="w-full md:w-auto px-5 py-2.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-black text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-purple-500/10 self-end">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> Otorgar Jugador
+        </button>
+      </div>
+
+      <!-- Current Squad List -->
+      <div class="flex-1 overflow-y-auto space-y-2 pr-1 select-none min-h-[250px]">
+        <div class="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-2">Jugadores en Plantilla (<span id="admin-squad-editor-player-count">0</span> / 30)</div>
+        <div id="admin-squad-editor-players-list" class="space-y-1.5">
+          <!-- Rellenado por JS -->
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1812,6 +1861,7 @@
     let unsubscribeAllLeagues = null; // para la consola admin
     let unsubscribeMatches = null;
     let unsubscribeClubBets = null;
+    let adminSquadEditorUnsubscribe = null;
 
     // ── Función central de enrutamiento de pantalla ──
     function routeUserToSection(user, profile) {
@@ -2219,13 +2269,6 @@
             const titulares = { ...winnerTeam.alineacion.titulares };
             const suplentes = { ...winnerTeam.alineacion.suplentes };
 
-            // Añadir al banquillo (suplente)
-            const posPlural = player.posicion === "portero" ? "portero" :
-                              player.posicion === "defensa" ? "defensas" :
-                              player.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
-            
-            suplentes[posPlural] = [...(suplentes[posPlural] || []), item.id];
-
             // Subir precio del jugador si hubo alta demanda (múltiples pujas)
             let finalPrice = player.precio;
             const playerRef = doc(db, "players", item.id);
@@ -2440,8 +2483,8 @@
         }
 
         const buyerOwnedIds = buyerTeam.jugadores_ids || [];
-        if (buyerOwnedIds.length >= 15) {
-          showNotification("El mánager comprador tiene la plantilla llena (límite 15).", "error");
+        if (buyerOwnedIds.length >= 30) {
+          showNotification("El mánager comprador tiene la plantilla llena (límite 30).", "error");
           return;
         }
 
@@ -2466,7 +2509,6 @@
         const nuevosJugadoresIdsComprador = [...buyerOwnedIds, playerId];
         const titularesComprador = { ...buyerTeam.alineacion.titulares };
         const suplentesComprador = { ...buyerTeam.alineacion.suplentes };
-        suplentesComprador[posPlural] = [...(suplentesComprador[posPlural] || []), playerId];
 
         const sellerRef     = doc(db, "users", currentUser.uid);
         const sellerTeamRef = doc(db, "user_teams", getTeamDocId());
@@ -3101,7 +3143,7 @@
           previousSecondaryMarket = lData.secondary_market || [];
           currentActiveLeagueData = lData; // Guardar estado global de la liga activa
           
-          widgetLeagueName.textContent = lData.nombre;
+          widgetLeagueName.innerHTML = `${lData.nombre} <span class="ml-2 text-[9px] px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/20 text-gold font-extrabold uppercase inline-block animate-pulse">${lData.jornada_activa || "Jornada 1"}</span>`;
           widgetLeagueCode.textContent = lData.id;
           
           // Re-renderizar el mercado en vivo
@@ -3424,6 +3466,12 @@
 
       sorted.forEach(p => {
         const pts = p.puntos_jornadas?.[jornadaActiva] || 0;
+        let totalPts = 0;
+        if (p.puntos_jornadas) {
+          Object.values(p.puntos_jornadas).forEach(val => {
+            totalPts += val || 0;
+          });
+        }
         
         // Formatear posición con color
         let posBadge = "";
@@ -3449,6 +3497,7 @@
             ${p.stats?.tarjetas_rojas ? `<span class="px-1.5 py-0.5 rounded bg-red-600 text-white font-bold text-[9px] uppercase">Roja</span>` : `<span class="text-slate-500">-</span>`}
           </td>
           <td class="py-3 px-6 text-center font-black text-amber-400 text-sm">${pts > 0 ? `+${pts}` : pts < 0 ? pts : 0} pts</td>
+          <td class="py-3 px-6 text-center font-black text-gold text-sm">${totalPts} pts</td>
         `;
         tbody.appendChild(tr);
       });
@@ -3644,6 +3693,11 @@
       document.getElementById("btn-admin-take-player").disabled = disabled;
       document.getElementById("admin-player-mod").disabled = disabled;
       
+      const btnViewEditSquad = document.getElementById("btn-admin-view-edit-squad");
+      if (btnViewEditSquad) {
+        btnViewEditSquad.disabled = disabled;
+      }
+      
       document.getElementById("btn-admin-sub-points").disabled = disabled;
       document.getElementById("admin-points-mod").disabled = disabled;
       document.getElementById("admin-points-reason").disabled = disabled;
@@ -3696,11 +3750,11 @@
 
     // Admin: Otorgar Jugador Directamente
     document.getElementById("btn-admin-give-player").addEventListener("click", async () => {
-      if (!adminSelectedUserId) return;
+      if (!adminSelectedUserId || !adminSelectedLeagueId) return;
       const playerId = document.getElementById("admin-player-mod").value;
 
       try {
-        const teamRef = doc(db, "user_teams", adminSelectedUserId);
+        const teamRef = doc(db, "user_teams", `${adminSelectedUserId}_${adminSelectedLeagueId}`);
         const teamSnap = await getDoc(teamRef);
 
         if (teamSnap.exists()) {
@@ -3712,38 +3766,19 @@
             return;
           }
 
-          if (ownedIds.length >= 15) {
-            showNotification("La plantilla del mánager está llena (Límite 15).", "error");
+          if (ownedIds.length >= 30) {
+            showNotification("La plantilla del mánager está llena (Límite 30).", "error");
             return;
           }
 
           const player = PLAYERS_POOL.find(p => p.id === playerId);
           const nuevosJugadoresIds = [...ownedIds, playerId];
 
-          const titulares = { ...teamData.alineacion.titulares };
-          const suplentes = { ...teamData.alineacion.suplentes };
-
-          const posPlural = player.posicion === "portero" ? "portero" :
-                            player.posicion === "defensa" ? "defensas" :
-                            player.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
-
-          const maxTitulares = player.posicion === "portero" ? 1 :
-                               player.posicion === "defensa" ? 4 :
-                               player.posicion === "mediocampista" ? 4 : 2;
-
-          if ((titulares[posPlural] || []).length < maxTitulares) {
-            titulares[posPlural] = [...(titulares[posPlural] || []), playerId];
-          } else {
-            suplentes[posPlural] = [...(suplentes[posPlural] || []), playerId];
-          }
-
           await updateDoc(teamRef, {
-            jugadores_ids: nuevosJugadoresIds,
-            alineacion: { titulares, suplentes },
-            players: buildPlayersArrayFromAlineacion(titulares, suplentes)
+            jugadores_ids: nuevosJugadoresIds
           });
 
-          showNotification(`Gran Fondero: ¡Has otorgado a ${player.nombre} directamente!`);
+          showNotification(`Gran Fondero: ¡Has otorgado a ${player.nombre} directamente a reservas!`);
         }
       } catch (err) {
         console.error("Admin error giving player:", err);
@@ -3752,11 +3787,11 @@
 
     // Admin: Quitar Jugador de Plantilla
     document.getElementById("btn-admin-take-player").addEventListener("click", async () => {
-      if (!adminSelectedUserId) return;
+      if (!adminSelectedUserId || !adminSelectedLeagueId) return;
       const playerId = document.getElementById("admin-player-mod").value;
 
       try {
-        const teamRef = doc(db, "user_teams", adminSelectedUserId);
+        const teamRef = doc(db, "user_teams", `${adminSelectedUserId}_${adminSelectedLeagueId}`);
         const teamSnap = await getDoc(teamRef);
 
         if (teamSnap.exists()) {
@@ -3797,6 +3832,239 @@
         console.error("Admin error taking player:", err);
       }
     });
+
+
+    // ==========================================
+    // SECCIÓN EXTRA: EDITOR DE PLANTILLAS EN VIVO PARA EL ADMINISTRADOR (PREMIUM)
+    // ==========================================
+    const modalAdminSquadEditor = document.getElementById("modal-admin-squad-editor");
+    const btnCloseAdminSquadEditor = document.getElementById("btn-close-admin-squad-editor");
+    const btnAdminViewEditSquad = document.getElementById("btn-admin-view-edit-squad");
+    const btnAdminSquadAddPlayer = document.getElementById("btn-admin-squad-add-player");
+    const adminSquadAddPlayerSelect = document.getElementById("admin-squad-add-player-select");
+    const adminSquadEditorPlayersList = document.getElementById("admin-squad-editor-players-list");
+    const adminSquadEditorManagerName = document.getElementById("admin-squad-editor-manager-name");
+    const adminSquadEditorPlayerCount = document.getElementById("admin-squad-editor-player-count");
+
+    if (btnAdminViewEditSquad) {
+      btnAdminViewEditSquad.addEventListener("click", () => {
+        if (!adminSelectedUserId || !adminSelectedLeagueId) {
+          showNotification("Selecciona un mánager y liga válidos.", "error");
+          return;
+        }
+        openAdminSquadEditor();
+      });
+    }
+
+    if (btnCloseAdminSquadEditor) {
+      btnCloseAdminSquadEditor.addEventListener("click", closeAdminSquadEditor);
+    }
+
+    async function openAdminSquadEditor() {
+      console.log("🛠️ [Admin Squad Editor] Abriendo modal...");
+      modalAdminSquadEditor.classList.remove("hidden");
+
+      try {
+        const userRef = doc(db, "users", adminSelectedUserId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          adminSquadEditorManagerName.textContent = `${userData.nombre_usuario} (${userData.nombre_equipo || "Sin equipo"})`;
+        }
+      } catch (err) {
+        console.error("Error al obtener perfil de mánager para editor:", err);
+      }
+
+      // Desvincular cualquier listener previo
+      if (adminSquadEditorUnsubscribe) {
+        adminSquadEditorUnsubscribe();
+      }
+
+      // Suscribirse en tiempo real a la plantilla del manager seleccionado
+      const teamDocId = `${adminSelectedUserId}_${adminSelectedLeagueId}`;
+      const teamRef = doc(db, "user_teams", teamDocId);
+
+      adminSquadEditorUnsubscribe = onSnapshot(teamRef, (snap) => {
+        if (!snap.exists()) {
+          adminSquadEditorPlayersList.innerHTML = `
+            <div class="py-12 text-center text-slate-500 font-bold text-xs italic">
+              Este mánager no tiene un documento de plantilla activo para esta liga.
+            </div>
+          `;
+          adminSquadEditorPlayerCount.textContent = "0";
+          return;
+        }
+
+        const teamData = snap.data();
+        const ownedIds = teamData.jugadores_ids || [];
+        adminSquadEditorPlayerCount.textContent = ownedIds.length;
+
+        // 1. Rellenar dropdown de otorgar jugador directamente (con jugadores que el manager NO tenga)
+        adminSquadAddPlayerSelect.innerHTML = `<option value="">Selecciona un jugador a otorgar...</option>`;
+        const availableToAdd = PLAYERS_POOL.filter(p => !ownedIds.includes(p.id))
+          .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+        availableToAdd.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = `[${p.posicion.toUpperCase()}] ${p.nombre} (${p.pais}) — ${(p.precio/1000000).toFixed(1)}M$`;
+          adminSquadAddPlayerSelect.appendChild(opt);
+        });
+
+        // 2. Renderizar lista de jugadores del mánager
+        adminSquadEditorPlayersList.innerHTML = "";
+        if (ownedIds.length === 0) {
+          adminSquadEditorPlayersList.innerHTML = `
+            <div class="py-12 text-center text-slate-500 font-bold text-xs italic border border-dashed border-white/5 rounded-2xl bg-white/[0.01]">
+              La plantilla del mánager está completamente vacía.
+            </div>
+          `;
+          return;
+        }
+
+        ownedIds.forEach(id => {
+          const fPlayer = firestorePlayersList.find(p => p.id === id);
+          const staticPlayer = PLAYERS_POOL.find(p => p.id === id);
+          const player = fPlayer || staticPlayer;
+
+          if (!player) return;
+
+          let posBadge = "";
+          if (player.posicion === "portero") posBadge = `<span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-black uppercase text-[10px]">POR</span>`;
+          else if (player.posicion === "defensa") posBadge = `<span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-black uppercase text-[10px]">DF</span>`;
+          else if (player.posicion === "mediocampista") posBadge = `<span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-black uppercase text-[10px]">MC</span>`;
+          else if (player.posicion === "delantero") posBadge = `<span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 font-black uppercase text-[10px]">DL</span>`;
+
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all duration-300";
+          itemDiv.innerHTML = `
+            <div class="flex items-center gap-3">
+              <span class="text-lg">${player.flag || "⚽"}</span>
+              <div>
+                <div class="font-extrabold text-white text-xs">${player.nombre}</div>
+                <div class="text-[9px] text-slate-400 font-bold uppercase flex items-center gap-1.5 mt-0.5">
+                  ${posBadge} <span>${player.pais || "Mundial"}</span> <span class="text-gold">• ${(player.precio/1000000).toFixed(1)}M$</span>
+                </div>
+              </div>
+            </div>
+            <button class="btn-editor-remove-player bg-rose-500/10 hover:bg-rose-500 hover:text-slate-950 text-rose-400 border border-rose-500/20 hover:border-transparent p-2 rounded-xl transition cursor-pointer" data-id="${id}" title="Quitar jugador de la plantilla">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          `;
+
+          itemDiv.querySelector(".btn-editor-remove-player").addEventListener("click", () => {
+            removePlayerFromAdminSquad(id, player.nombre);
+          });
+
+          adminSquadEditorPlayersList.appendChild(itemDiv);
+        });
+
+        lucide.createIcons();
+      });
+    }
+
+    function closeAdminSquadEditor() {
+      modalAdminSquadEditor.classList.add("hidden");
+      if (adminSquadEditorUnsubscribe) {
+        adminSquadEditorUnsubscribe();
+        adminSquadEditorUnsubscribe = null;
+      }
+    }
+
+    // Otorgar crack directamente desde modal (Reserva por defecto)
+    if (btnAdminSquadAddPlayer) {
+      btnAdminSquadAddPlayer.addEventListener("click", async () => {
+        if (!adminSelectedUserId || !adminSelectedLeagueId) return;
+        const playerId = adminSquadAddPlayerSelect.value;
+        if (!playerId) {
+          showNotification("Selecciona un jugador de la lista.", "error");
+          return;
+        }
+
+        btnAdminSquadAddPlayer.disabled = true;
+        const originalText = btnAdminSquadAddPlayer.innerHTML;
+        btnAdminSquadAddPlayer.innerHTML = 'Otorgando... <i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i>';
+        lucide.createIcons();
+
+        try {
+          const teamDocId = `${adminSelectedUserId}_${adminSelectedLeagueId}`;
+          const teamRef = doc(db, "user_teams", teamDocId);
+          const teamSnap = await getDoc(teamRef);
+
+          if (teamSnap.exists()) {
+            const teamData = teamSnap.data();
+            const ownedIds = teamData.jugadores_ids || [];
+
+            if (ownedIds.length >= 30) {
+              showNotification("La plantilla del mánager ya tiene el límite máximo de 30 jugadores.", "error");
+              return;
+            }
+
+            const player = PLAYERS_POOL.find(p => p.id === playerId);
+            const nuevosJugadoresIds = [...ownedIds, playerId];
+
+            await updateDoc(teamRef, {
+              jugadores_ids: nuevosJugadoresIds
+            });
+
+            showNotification(`¡Has otorgado a ${player.nombre} a la plantilla de reservas!`, "success");
+            adminSquadAddPlayerSelect.value = "";
+          }
+        } catch (err) {
+          console.error("Error al otorgar jugador en editor:", err);
+          showNotification("Error de base de datos al otorgar jugador.", "error");
+        } finally {
+          btnAdminSquadAddPlayer.disabled = false;
+          btnAdminSquadAddPlayer.innerHTML = originalText;
+          lucide.createIcons();
+        }
+      });
+    }
+
+    async function removePlayerFromAdminSquad(playerId, playerName) {
+      if (!adminSelectedUserId || !adminSelectedLeagueId) return;
+      
+      const confirmRemove = confirm(`¿Estás seguro de que quieres retirar a ${playerName} de esta plantilla?`);
+      if (!confirmRemove) return;
+
+      try {
+        const teamDocId = `${adminSelectedUserId}_${adminSelectedLeagueId}`;
+        const teamRef = doc(db, "user_teams", teamDocId);
+        const teamSnap = await getDoc(teamRef);
+
+        if (teamSnap.exists()) {
+          const teamData = teamSnap.data();
+          const ownedIds = teamData.jugadores_ids || [];
+          const nuevosJugadoresIds = ownedIds.filter(id => id !== playerId);
+
+          const titulares = { ...teamData.alineacion.titulares };
+          const suplentes = { ...teamData.alineacion.suplentes };
+
+          const player = PLAYERS_POOL.find(p => p.id === playerId) || { posicion: "mediocampista" };
+          const posPlural = player.posicion === "portero" ? "portero" :
+                            player.posicion === "defensa" ? "defensas" :
+                            player.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
+
+          titulares[posPlural] = (titulares[posPlural] || []).filter(id => id !== playerId);
+          suplentes[posPlural] = (suplentes[posPlural] || []).filter(id => id !== playerId);
+
+          let capitanId = teamData.capitan_id;
+          if (capitanId === playerId) capitanId = "";
+
+          await updateDoc(teamRef, {
+            jugadores_ids: nuevosJugadoresIds,
+            alineacion: { titulares, suplentes },
+            capitan_id: capitanId,
+            players: buildPlayersArrayFromAlineacion(titulares, suplentes)
+          });
+
+          showNotification(`Has retirado a ${playerName} de la plantilla.`, "success");
+        }
+      } catch (err) {
+        console.error("Error al retirar jugador de plantilla en editor:", err);
+        showNotification("Error de base de datos al retirar jugador.", "error");
+      }
+    }
 
 
     // --- RENDERIZADO DEL MERCADO DE FICHAJES (DISEÑO PREMIUM) ---
@@ -4246,7 +4514,12 @@
       console.log("   - Titulares en Campo:", titulares);
       console.log("   - Suplentes en Banquillo:", suplentes);
 
-      dashInfoCount.textContent = `${ownedIds.length} / 15`;
+      dashInfoCount.textContent = `${ownedIds.length} / 30`;
+
+      const squadJornadaBadge = document.getElementById("squad-jornada-badge");
+      if (squadJornadaBadge && currentActiveLeagueData) {
+        squadJornadaBadge.textContent = currentActiveLeagueData.jornada_activa || "Jornada 1";
+      }
 
       // Obtener formación táctica activa
       const activeFormation = currentUserTeam.formacion || "4-4-2";
@@ -5625,6 +5898,7 @@
         if (currentActiveLeagueData) {
           currentActiveLeagueData.jornada_activa = newJornada;
         }
+        await resetAllPlayersLivePoints();
         await recalculateAllManagersPoints(adminSelectedLeagueId);
         renderStatsTable();
         renderBetsPanel();
@@ -5750,6 +6024,7 @@
         }
 
         showNotification(`¡Jornada ${jornadaActiva} cerrada con éxito y puntos guardados de forma definitiva!`, "success");
+        await resetAllPlayersLivePoints();
         await recalculateAllManagersPoints(leagueId);
       } catch (err) {
         console.error("Error al cerrar jornada de la liga:", err);
@@ -6086,6 +6361,23 @@
         .replace("bosnia-herzegovina", "bosnia y herzegovina")
         .replace("rd congo", "r.d. del congo")
         .replace("r. d. del congo", "r.d. del congo");
+    }
+
+    // --- RESETEAR PUNTOS EN VIVO DE TODOS LOS FUTBOLISTAS ---
+    async function resetAllPlayersLivePoints() {
+      console.log("🔄 [Scoring Engine] Iniciando resetAllPlayersLivePoints()...");
+      try {
+        const playersSnap = await getDocs(collection(db, "players"));
+        for (const docSnap of playersSnap.docs) {
+          const playerRef = doc(db, "players", docSnap.id);
+          await updateDoc(playerRef, {
+            puntos: 0
+          });
+        }
+        console.log("✅ [Scoring Engine] Puntos en vivo (puntos) de todos los jugadores reseteados a 0.");
+      } catch (err) {
+        console.error("❌ [Scoring Engine] Error al resetear puntos en vivo:", err);
+      }
     }
 
     // --- RECALCULAR PUNTOS DE TODOS LOS MANAGERS ---
