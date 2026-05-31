@@ -4618,7 +4618,7 @@
         ...(suplentes.defensas || []),
         ...(suplentes.mediocampistas || []),
         ...(suplentes.delanteros || [])
-      ];
+      ].slice(0, 2);
 
       console.log("🔋 [Fonda Engine] Renderizando banquillo oficial (Suman puntos):", suplentesIds);
 
