@@ -2093,12 +2093,22 @@
       // El presupuesto inicial de 100M$ NO se reduce por recibir la plantilla inicial.
       // El mánager arranca siempre con el presupuesto completo.
 
-      // Actualizar perfil y equipo
+      // Actualizar perfil y equipo (utilizando setDoc para crear el documento de la plantilla inicial)
       await updateDoc(userRef, { presupuesto_actual: 100000000 });
-      await updateDoc(teamRef, {
+      await setDoc(teamRef, {
+        uid: userId,
         jugadores_ids: jugadoresIds,
         alineacion: { titulares, suplentes },
-        players: buildPlayersArrayFromAlineacion(titulares, suplentes)
+        players: buildPlayersArrayFromAlineacion(titulares, suplentes),
+        capitan_id: "",
+        cambios_realizados_jornada: 0,
+        chips: {
+          wildcard: { disponible: true, usado_en_jornada: null },
+          jugador_12: { disponible: true, usado_en_jornada: null, jugador_extra_id: null },
+          capitan_maximo: { disponible: true, usado_en_jornada: null },
+          presupuesto_extra: { disponible: true, usado_en_jornada: null }
+        },
+        puntos_por_jornada: {}
       });
 
       return { selectedPlayers, totalCost };
