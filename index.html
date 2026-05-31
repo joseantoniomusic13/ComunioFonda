@@ -704,6 +704,20 @@
                   <span id="squad-jornada-badge" class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-gold font-black">Jornada 1</span>
                   <span id="dash-info-count" class="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400" title="Cupo de Plantilla">0 / 30 Jugadores</span>
                 </h3>
+                <div id="squad-selection-actions" class="hidden mb-3.5 p-3 bg-purple-950/40 border border-purple-500/20 rounded-2xl flex flex-wrap items-center justify-between gap-2 text-xs font-bold transition">
+                  <span class="text-purple-300 flex items-center gap-1.5">
+                    <i data-lucide="info" class="w-4 h-4"></i>
+                    Seleccionado: <span id="squad-selected-player-name" class="text-white font-extrabold underline decoration-purple-500/50"></span>
+                  </span>
+                  <div class="flex items-center gap-2">
+                    <button id="btn-squad-send-to-reserves" class="bg-purple-600 hover:bg-purple-500 text-white font-black px-3.5 py-1.5 rounded-xl cursor-pointer transition flex items-center gap-1">
+                      <i data-lucide="archive" class="w-3.5 h-3.5"></i> Enviar a Reservas
+                    </button>
+                    <button id="btn-squad-cancel-swap" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-extrabold px-3 py-1.5 rounded-xl cursor-pointer transition">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
                 <p id="squad-instructions" class="text-slate-400 text-xs">
                   Sustituciones: ¡Puedes arrastrar y soltar (Drag & Drop) jugadores al campo! O haz clic en un suplente y en un titular para intercambiarlos. Haz clic en la corona <i data-lucide="crown" class="inline w-3 h-3 text-gold"></i> para elegir Capitán.
                 </p>
@@ -1306,6 +1320,36 @@
           
         </div>
 
+        <!-- Clasificación General de Todas las Jornadas (Tabla Completa) -->
+        <div class="glass-panel p-6 rounded-3xl border border-white/5 space-y-4">
+          <div>
+            <h4 class="text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="list-ordered" class="w-5 h-5 text-gold"></i> Clasificación General (Acumulado de todas las Jornadas)
+            </h4>
+            <p class="text-xs text-slate-400">Tabla general con los puntos acumulados por todos los rivales de la liga. Haz clic en cualquier mánager para visualizar su plantilla.</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse min-w-[500px]">
+              <thead>
+                <tr class="text-[9px] uppercase font-black tracking-widest text-slate-400 border-b border-white/5 pb-2">
+                  <th class="py-2.5 px-3">#</th>
+                  <th class="py-2.5 px-3">Mánager</th>
+                  <th class="py-2.5 px-3">Equipo</th>
+                  <th class="py-2.5 px-3 text-right">Presupuesto</th>
+                  <th class="py-2.5 px-3 text-right">Pts Jornada Actual</th>
+                  <th class="py-2.5 px-3 text-right">Pts Totales</th>
+                </tr>
+              </thead>
+              <tbody id="stat-table-general-standings-body" class="divide-y divide-white/5 text-slate-200">
+                <!-- Inyectado dinámicamente por JS -->
+                <tr>
+                  <td colspan="6" class="py-6 text-center text-slate-500 italic">Cargando clasificación general...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Achievements / Gamification Section -->
         <div class="glass-panel p-6 rounded-3xl border border-white/5 space-y-4">
           <div>
@@ -1382,7 +1426,7 @@
       </div>
 
       <!-- Add Player Action Bar -->
-      <div class="bg-purple-950/25 border border-purple-500/20 p-4 rounded-2xl space-y-3 shadow-inner">
+      <div id="admin-squad-editor-actions-container" class="bg-purple-950/25 border border-purple-500/20 p-4 rounded-2xl space-y-3 shadow-inner">
         <div class="flex flex-col md:flex-row gap-3 items-center">
           <div class="w-full md:w-1/3">
             <label for="admin-squad-add-player-search" class="block text-[9px] font-black uppercase text-purple-300 tracking-widest mb-1">Buscar jugador por nombre</label>
@@ -2786,6 +2830,75 @@
             `;
             tableBody.appendChild(tr);
           });
+      }
+
+      // 5b. Renderizar Tabla Completa de Clasificación General (Acumulada de todas las Jornadas)
+      const generalStandingsBody = document.getElementById("stat-table-general-standings-body");
+      if (generalStandingsBody && currentActiveLeagueData && currentActiveLeagueData.id) {
+        try {
+          const participantesUids = currentActiveLeagueData.participantes || [];
+          if (participantesUids.length > 0) {
+            const q = query(collection(db, "users"), where("uid", "in", participantesUids));
+            const usersSnapshot = await getDocs(q);
+            
+            const listUsers = [];
+            usersSnapshot.forEach(docSnap => {
+              listUsers.push(docSnap.data());
+            });
+
+            // Ordenar por puntos totales descendente (Clasificación General)
+            listUsers.sort((a, b) => (b.puntos_totales || 0) - (a.puntos_totales || 0));
+
+            generalStandingsBody.innerHTML = "";
+            listUsers.forEach((usr, index) => {
+              const tr = document.createElement("tr");
+              const isSelf = usr.uid === currentUser.uid;
+              const isSelfClass = isSelf ? "bg-gold/5 font-extrabold text-gold" : "hover:bg-white/[0.04]";
+              tr.className = `transition-colors border-b border-white/5 cursor-pointer ${isSelfClass}`;
+              tr.setAttribute("title", "Haz clic para ver la plantilla de este mánager");
+              
+              const rankClass = index === 0 ? "bg-gold text-slate-950 font-black px-2 py-0.5 rounded" : 
+                                index === 1 ? "bg-slate-300 text-slate-950 font-bold px-2 py-0.5 rounded" :
+                                index === 2 ? "bg-amber-700 text-amber-100 font-bold px-2 py-0.5 rounded" : "text-slate-400 font-bold px-2";
+
+              const pres = usr.presupuesto_actual || 100000000;
+              const ptsAct = usr.puntos_jornada_actual || 0;
+              const ptsTot = usr.puntos_totales || 0;
+
+              tr.innerHTML = `
+                <td class="py-3 px-3"><span class="${rankClass}">${index + 1}</span></td>
+                <td class="py-3 px-3 text-white font-black flex items-center gap-1.5">
+                  ${usr.nombre_usuario} ${isSelf ? '<span class="text-[8px] bg-gold/20 text-gold px-1 py-0.2 rounded uppercase font-black">Tú</span>' : ''}
+                </td>
+                <td class="py-3 px-3 text-slate-400">${usr.nombre_equipo || "Sin equipo"}</td>
+                <td class="py-3 px-3 text-right text-emerald-400 font-black">${(pres/1000000).toFixed(1)}M$</td>
+                <td class="py-3 px-3 text-right text-cyan-400 font-bold">${ptsAct} PTS</td>
+                <td class="py-3 px-3 text-right text-gold font-black">${ptsTot} PTS</td>
+              `;
+
+              tr.addEventListener("click", () => {
+                const isUserAdmin = currentActiveLeagueData.admin_uid === currentUser.uid;
+                adminSelectedUserId = usr.uid;
+                adminSelectedLeagueId = currentActiveLeagueData.id;
+                openAdminSquadEditor(!isUserAdmin);
+              });
+
+              generalStandingsBody.appendChild(tr);
+            });
+          } else {
+            generalStandingsBody.innerHTML = `
+              <tr>
+                <td colspan="6" class="py-4 text-center text-slate-500 italic">No hay participantes en esta liga.</td>
+              </tr>
+            `;
+          }
+        } catch (err) {
+          console.error("Error al renderizar clasificación general de mánagers:", err);
+          generalStandingsBody.innerHTML = `
+            <tr>
+              <td colspan="6" class="py-4 text-center text-rose-500 italic">Error al cargar clasificación general.</td>
+            </tr>
+          `;
         }
       }
 
@@ -3174,8 +3287,8 @@
               listUsers.push(docSnap.data());
             });
 
-            // Ordenar por puntos totales descendente
-            listUsers.sort((a, b) => (b.puntos_totales || 0) - (a.puntos_totales || 0));
+            // Ordenar por puntos de la jornada actual descendente (Clasificación por Jornadas)
+            listUsers.sort((a, b) => (b.puntos_jornada_actual || 0) - (a.puntos_jornada_actual || 0));
 
             renderLeagueStandingsList(listUsers);
           }
@@ -3301,11 +3414,12 @@
         const isSelf = usr.uid === currentUser.uid;
         
         const usrDiv = document.createElement("div");
-        usrDiv.className = `flex items-center justify-between p-2 rounded-xl transition ${
+        usrDiv.className = `flex items-center justify-between p-2 rounded-xl transition cursor-pointer hover:bg-white/[0.08] ${
           isSelf 
             ? "bg-gold/15 border border-gold/30 text-gold" 
             : "bg-fonda-900/50 border border-white/5 text-slate-300 hover:text-slate-100"
         }`;
+        usrDiv.setAttribute("title", "Haz clic para ver la plantilla de este mánager");
         
         const rankClass = index === 0 ? "bg-gold text-slate-950" : "bg-fonda-800 text-slate-400";
         usrDiv.innerHTML = `
@@ -3317,9 +3431,19 @@
                 <p class="text-[9px] text-slate-500 truncate">${usr.nombre_equipo}</p>
               </div>
             </div>
-            <span class="font-black text-xs shrink-0">${usr.puntos_totales || 0} PTS</span>
+            <span class="font-black text-xs shrink-0">${usr.puntos_jornada_actual || 0} PTS</span>
           </div>
         `;
+        
+        usrDiv.addEventListener("click", () => {
+          if (currentActiveLeagueData) {
+            const isUserAdmin = currentActiveLeagueData.admin_uid === currentUser.uid;
+            adminSelectedUserId = usr.uid;
+            adminSelectedLeagueId = currentActiveLeagueData.id;
+            openAdminSquadEditor(!isUserAdmin);
+          }
+        });
+
         leagueStandingsList.appendChild(usrDiv);
       });
     }
@@ -3900,11 +4024,26 @@
       btnCloseAdminSquadEditor.addEventListener("click", closeAdminSquadEditor);
     }
 
-    async function openAdminSquadEditor() {
-      console.log("🛠️ [Admin Squad Editor] Abriendo modal...");
+    async function openAdminSquadEditor(isReadOnly = false) {
+      console.log(`🛠️ [Admin Squad Editor] Abriendo modal (ReadOnly: ${isReadOnly})...`);
       modalAdminSquadEditor.classList.remove("hidden");
       if (adminSquadAddPlayerSearch) {
         adminSquadAddPlayerSearch.value = "";
+      }
+
+      // Cambiar título y visibilidad de acciones
+      const modalTitleEl = modalAdminSquadEditor.querySelector("h3");
+      if (modalTitleEl) {
+        modalTitleEl.textContent = isReadOnly ? "Visualizador de Plantilla" : "Editor de Plantilla en Vivo";
+      }
+
+      const actionsContainer = document.getElementById("admin-squad-editor-actions-container");
+      if (actionsContainer) {
+        if (isReadOnly) {
+          actionsContainer.classList.add("hidden");
+        } else {
+          actionsContainer.classList.remove("hidden");
+        }
       }
 
       try {
@@ -3943,11 +4082,13 @@
         adminSquadEditorPlayerCount.textContent = ownedIds.length;
 
         // 1. Rellenar dropdown de otorgar jugador directamente (con jugadores que el manager NO tenga)
-        currentAvailableToAdd = PLAYERS_POOL.filter(p => !ownedIds.includes(p.id))
-          .sort((a, b) => a.nombre.localeCompare(b.nombre));
+        if (!isReadOnly) {
+          currentAvailableToAdd = PLAYERS_POOL.filter(p => !ownedIds.includes(p.id))
+            .sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-        const term = adminSquadAddPlayerSearch ? adminSquadAddPlayerSearch.value.toLowerCase().trim() : "";
-        renderAddPlayerDropdownFiltered(term);
+          const term = adminSquadAddPlayerSearch ? adminSquadAddPlayerSearch.value.toLowerCase().trim() : "";
+          renderAddPlayerDropdownFiltered(term);
+        }
 
         // 2. Renderizar lista de jugadores del mánager
         adminSquadEditorPlayersList.innerHTML = "";
@@ -3985,14 +4126,16 @@
                 </div>
               </div>
             </div>
-            <button class="btn-editor-remove-player bg-rose-500/10 hover:bg-rose-500 hover:text-slate-950 text-rose-400 border border-rose-500/20 hover:border-transparent p-2 rounded-xl transition cursor-pointer" data-id="${id}" title="Quitar jugador de la plantilla">
+            <button class="btn-editor-remove-player bg-rose-500/10 hover:bg-rose-500 hover:text-slate-950 text-rose-400 border border-rose-500/20 hover:border-transparent p-2 rounded-xl transition cursor-pointer ${isReadOnly ? 'hidden' : ''}" data-id="${id}" title="Quitar jugador de la plantilla">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           `;
 
-          itemDiv.querySelector(".btn-editor-remove-player").addEventListener("click", () => {
-            removePlayerFromAdminSquad(id, player.nombre);
-          });
+          if (!isReadOnly) {
+            itemDiv.querySelector(".btn-editor-remove-player").addEventListener("click", () => {
+              removePlayerFromAdminSquad(id, player.nombre);
+            });
+          }
 
           adminSquadEditorPlayersList.appendChild(itemDiv);
         });
@@ -4514,6 +4657,44 @@
       }
       
       console.log("📋 [Fonda Engine] Datos crudos de la plantilla recibidos de Firestore:", currentUserTeam);
+
+      // --- ACTUALIZAR BARRA DE SELECCIÓN TÁCTICA Y ACCIONES EN VIVO ---
+      const selectionActionsEl = document.getElementById("squad-selection-actions");
+      const selectedPlayerNameEl = document.getElementById("squad-selected-player-name");
+      if (selectionActionsEl && selectedPlayerNameEl) {
+        if (swapActiveSourceId) {
+          const sPlayer = PLAYERS_POOL.find(p => p.id === swapActiveSourceId);
+          if (sPlayer) {
+            let posBad = sPlayer.posicion === "portero" ? "POR" : 
+                         sPlayer.posicion === "defensa" ? "DFC" :
+                         sPlayer.posicion === "mediocampista" ? "MC" : "DEL";
+            selectedPlayerNameEl.textContent = `${sPlayer.nombre} (${posBad})`;
+            selectionActionsEl.classList.remove("hidden");
+          } else {
+            selectionActionsEl.classList.add("hidden");
+          }
+        } else {
+          selectionActionsEl.classList.add("hidden");
+        }
+      }
+
+      const btnReserves = document.getElementById("btn-squad-send-to-reserves");
+      if (btnReserves) {
+        btnReserves.onclick = async () => {
+          if (swapActiveSourceId) {
+            const playerIdToMove = swapActiveSourceId;
+            swapActiveSourceId = null;
+            await handleMoveToReservas(playerIdToMove);
+          }
+        };
+      }
+      const btnCancel = document.getElementById("btn-squad-cancel-swap");
+      if (btnCancel) {
+        btnCancel.onclick = () => {
+          swapActiveSourceId = null;
+          renderSquadAndPitch();
+        };
+      }
 
       let ownedIds = [];
       let titulares = { portero: [], defensas: [], mediocampistas: [], delanteros: [] };
