@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Setup Admin - Comunio Mundial</title>
+  <style>
+    body { font-family: monospace; background: #0f172a; color: #e2e8f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 40px; max-width: 520px; width: 90%; text-align: center; }
+    h1 { color: #fbbf24; margin-bottom: 8px; }
+    p { color: #94a3b8; font-size: 13px; margin-bottom: 24px; line-height: 1.6; }
+    button { background: #f59e0b; color: #0f172a; border: none; padding: 14px 32px; border-radius: 10px; font-weight: 900; font-size: 15px; cursor: pointer; width: 100%; }
+    button:hover { background: #fbbf24; }
+    button:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+    #log { margin-top: 24px; background: #0f172a; border-radius: 10px; padding: 16px; text-align: left; font-size: 12px; max-height: 320px; overflow-y: auto; line-height: 1.8; }
+    .ok   { color: #34d399; }
+    .err  { color: #f87171; }
+    .info { color: #60a5fa; }
+    .warn { color: #fbbf24; }
+    .alert { background: #7f1d1d; border: 1px solid #f87171; border-radius: 8px; padding: 12px; margin-top: 16px; color: #fca5a5; font-size: 12px; text-align: left; line-height: 1.8; }
+    .alert a { color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚙️ Setup Admin</h1>
+    <p>Crea la cuenta <strong>admin / catena13</strong> en Firebase Authentication y Firestore.<br>
+    Asegúrate de haber activado <strong>Email/Contraseña</strong> en Authentication y creado <strong>Firestore en modo prueba</strong>.</p>
+    <button id="btn-setup" onclick="runSetup()">Crear Cuenta Admin</button>
+    <div id="log"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAuavGdnkq9lhqu4CcMVrGbe_u4ZZ-XPbM",
+      authDomain: "fir-comunio-mundial.firebaseapp.com",
+      projectId: "fir-comunio-mundial",
+      storageBucket: "fir-comunio-mundial.firebasestorage.app",
+      messagingSenderId: "864387254690",
+      appId: "1:864387254690:web:6553df4d895efb56c34afb"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const logEl = document.getElementById("log");
+
+    function log(msg, type = "info") {
+      const line = document.createElement("div");
+      line.className = type;
+      const prefix = { ok: "✅ ", err: "❌ ", warn: "⚠️ ", info: "→ " }[type] || "→ ";
+      line.textContent = prefix + msg;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function withTimeout(promise, ms, errMsg) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error(errMsg)), ms))
+      ]);
+    }
+
+    function showHelp(type) {
+      document.querySelectorAll(".alert").forEach(el => el.remove());
+      const div = document.createElement("div");
+      div.className = "alert";
+      if (type === "auth") {
+        div.innerHTML = `<strong>¿Cómo arreglarlo?</strong><br>
+          1. Ve a <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a><br>
+          2. Proyecto → <strong>Authentication</strong> → Métodos de inicio de sesión<br>
+          3. Activa <strong>Email/Contraseña</strong> y guarda.<br>
+          4. Vuelve aquí y haz clic en Reintentar.`;
+      } else {
+        div.innerHTML = `<strong>¿Cómo arreglarlo?</strong><br>
+          1. Ve a <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a><br>
+          2. Proyecto → <strong>Firestore Database</strong><br>
+          3. Clic en "Crear base de datos" → <strong>Modo de prueba</strong> → Crear.<br>
+          4. Vuelve aquí y haz clic en Reintentar.`;
+      }
+      document.querySelector(".card").appendChild(div);
+    }
+
+    async function runSetup() {
+      const btn = document.getElementById("btn-setup");
+      btn.disabled = true;
+      btn.textContent = "⏳ Creando...";
+      logEl.innerHTML = "";
+      document.querySelectorAll(".alert").forEach(el => el.remove());
+
+      const EMAIL = "admin@comuniomundial.com";
+      const PASSWORD = "catena13";
+
+      // ── PASO 1: Firebase Authentication ──
+      log("Conectando con Firebase Authentication...");
+      let uid;
+      try {
+        const cred = await withTimeout(
+          auth.createUserWithEmailAndPassword(EMAIL, PASSWORD),
+          10000,
+          "Timeout (10s) — ¿Email/Contraseña está activado en Authentication?"
+        );
+        uid = cred.user.uid;
+        log("Usuario creado. UID: " + uid, "ok");
+      } catch (authErr) {
+        if (authErr.code === "auth/email-already-in-use") {
+          log("Usuario ya existía. Iniciando sesión para obtener UID...", "warn");
+          try {
+            const cred = await withTimeout(
+              auth.signInWithEmailAndPassword(EMAIL, PASSWORD),
+              10000, "Timeout al hacer login"
+            );
+            uid = cred.user.uid;
+            log("Login OK. UID: " + uid, "ok");
+          } catch (loginErr) {
+            log("Error al iniciar sesión: " + (loginErr.message || loginErr.code), "err");
+            showHelp("auth");
+            btn.disabled = false;
+            btn.textContent = "Reintentar";
+            return;
+          }
+        } else {
+          log("Error Auth: " + (authErr.message || authErr.code), "err");
+          showHelp("auth");
+          btn.disabled = false;
+          btn.textContent = "Reintentar";
+          return;
+        }
+      }
+
+      // ── PASO 2: Firestore ──
+      log("Guardando perfil de admin en Firestore...");
+      try {
+        await withTimeout(
+          db.collection("users").doc(uid).set({
+            uid,
+            nombre_usuario: "admin",
+            nombre_equipo: "Consola de Administración",
+            fecha_registro: new Date().toISOString(),
+            presupuesto_actual: 0,
+            puntos_totales: 0,
+            puntos_jornada_actual: 0,
+            ranking_global: 0,
+            rol: "admin",
+            ligas: [],
+            liga_activa: ""
+          }, { merge: true }),
+          12000,
+          "Timeout Firestore (12s) — ¿Está creada la base de datos en modo prueba?"
+        );
+        log("Perfil guardado con rol: admin", "ok");
+        log("¡Listo! Abre http://localhost:8080", "ok");
+        log("Usuario: admin  |  Contraseña: catena13", "ok");
+        btn.textContent = "✅ Admin Creado Correctamente";
+        btn.style.background = "#34d399";
+        btn.style.color = "#0f172a";
+      } catch (fsErr) {
+        log("Error Firestore: " + fsErr.message, "err");
+        log("Auth OK (uid: " + uid + ") pero falló Firestore.", "warn");
+        showHelp("firestore");
+        btn.disabled = false;
+        btn.textContent = "Reintentar (solo Firestore)";
+      }
+    }
+  </script>
+</body>
+</html>

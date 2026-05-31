@@ -1,0 +1,331 @@
+/* Estilos de Diseño Premium - Fonda Fanegas Comunio Mundial 2026 */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --font-title: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  
+  /* Paleta de Colores Exclusiva: Fonda Fanegas */
+  --bg-dark: #070706;
+  --bg-stadium-glow: radial-gradient(circle at 50% 30%, #153123 0%, #070706 70%);
+  --bg-card: rgba(18, 17, 15, 0.75);
+  --border-card: rgba(226, 183, 71, 0.12);
+  --border-card-hover: rgba(226, 183, 71, 0.25);
+  
+  --accent-gold: #e2b747;
+  --accent-emerald: #10b981;  /* El '2' de 2026 en el logo */
+  --accent-scarlet: #ef4444;  /* El '6' de 2026 en el logo */
+  --text-primary: #faf9f6;    /* Blanco Marfil */
+  --text-secondary: #a19e99;  /* Gris Ceniza */
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-dark);
+  background-image: var(--bg-stadium-glow);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  letter-spacing: -0.02em;
+}
+
+/* Glassmorphism de la Fonda (Branding de Madera / Carbón / Oro) */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-card);
+  box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.65);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-panel:hover {
+  border-color: var(--border-card-hover);
+  box-shadow: 0 15px 50px 0 rgba(0, 0, 0, 0.85);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(226, 183, 71, 0.15);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 15px rgba(226, 183, 71, 0.2);
+  outline: none;
+}
+
+/* Acentos Visuales */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #fff 0%, #ffd700 50%, #e2b747 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(226, 183, 71, 0.2));
+}
+
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 50%, #d97706 100%);
+}
+
+.bg-emerald-gradient {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #047857 100%);
+}
+
+.bg-scarlet-gradient {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 50%, #b91c1c 100%);
+}
+
+/* --- MAQUETACIÓN DEL CÉSPED TÁCTICO (PITCH VIEW) --- */
+.football-pitch {
+  background: radial-gradient(circle, #155e3e 0%, #0f402b 100%);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Líneas Reglamentarias del Campo */
+.football-pitch::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.football-pitch-center-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90px;
+  height: 90px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.football-pitch-penalty-area-top {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 180px;
+  height: 70px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.football-pitch-penalty-area-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 180px;
+  height: 70px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-bottom: none;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* Fila de Jugadores por Posición */
+.pitch-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  min-height: 85px;
+  z-index: 10;
+  position: relative;
+}
+
+/* Tarjeta del Jugador en el Campo */
+.player-pitch-card {
+  display: flex;
+  flex-col: column;
+  align-items: center;
+  text-align: center;
+  width: 75px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.player-pitch-card:hover {
+  transform: scale(1.08);
+}
+
+.player-pitch-card.active-swap-target {
+  animation: pulseGold 1.5s infinite;
+  border-radius: 12px;
+  background: rgba(226, 183, 71, 0.15);
+}
+
+.player-pitch-badge {
+  background: rgba(13, 20, 38, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 2px 4px;
+  margin-top: 4px;
+  width: 100%;
+  max-width: 85px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGold {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(226, 183, 71, 0.5);
+    border-color: rgba(226, 183, 71, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 15px 4px rgba(226, 183, 71, 0.2);
+    border-color: rgba(226, 183, 71, 0.3);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.pulse-gold {
+  animation: pulseGold 2.5s infinite;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070706;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(226, 183, 71, 0.15);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-gold);
+}
+
+/* --- ESTILOS EXTRA DE INTERACCIÓN PREMIUM Y DRAG & DROP --- */
+
+/* Clases de Arrastre */
+.player-dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+  cursor: grabbing !important;
+}
+
+.drag-over {
+  background: rgba(226, 183, 71, 0.25) !important;
+  box-shadow: 0 0 20px 4px rgba(226, 183, 71, 0.4) !important;
+  border-color: var(--accent-gold) !important;
+  transform: scale(1.05);
+}
+
+/* Slots de Posiciones Vacías */
+.slot-empty-dashed {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px dashed rgba(226, 183, 71, 0.25);
+}
+
+.slot-empty-dashed:hover {
+  border-color: var(--accent-gold);
+  background: rgba(226, 183, 71, 0.05);
+  transform: scale(1.05);
+}
+
+/* Rediseño de Tarjetas del Mercado (Grid Premium) */
+.market-card-premium {
+  background: linear-gradient(145deg, rgba(26, 25, 22, 0.85) 0%, rgba(12, 11, 10, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.market-card-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent 45%, rgba(226, 183, 71, 0.1) 50%, transparent 55%);
+  background-size: 200% 200%;
+  transition: all 0.5s ease;
+  pointer-events: none;
+}
+
+.market-card-premium:hover::before {
+  background-position: 100% 100%;
+}
+
+.market-card-premium:hover {
+  border-color: rgba(226, 183, 71, 0.35);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 35px rgba(226, 183, 71, 0.08);
+}
+
+/* Pujas en vivo - Glows */
+.bid-glow-winning {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+.bid-glow-active {
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.4) !important;
+}
+
+/* Bet365 Odd Badges */
+.odd-badge {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(226, 183, 71, 0.15);
+  color: var(--accent-gold);
+  font-family: var(--font-title);
+  transition: all 0.2s ease;
+}
+
+.odd-badge:hover {
+  background: var(--accent-gold);
+  color: var(--bg-dark);
+  border-color: var(--accent-gold);
+}
+
+/* Corrección de Visibilidad para Desplegables (Fonda Dropdowns) */
+select, 
+select option,
+.glass-input option {
+  background-color: #0d111d !important;
+  color: #faf9f6 !important;
+}
+
