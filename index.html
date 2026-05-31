@@ -2164,7 +2164,7 @@
         uid: userId,
         jugadores_ids: jugadoresIds,
         alineacion: { titulares, suplentes },
-        players: buildPlayersArrayFromAlineacion(titulares, suplentes),
+        players: buildPlayersArrayFromAlineacion(titulares, suplentes, jugadoresIds),
         capitan_id: "",
         cambios_realizados_jornada: 0,
         chips: {
@@ -2297,7 +2297,7 @@
             await updateDoc(winnerTeamRef, {
               jugadores_ids: nuevosJugadoresIds,
               alineacion: { titulares, suplentes },
-              players: buildPlayersArrayFromAlineacion(titulares, suplentes)
+              players: buildPlayersArrayFromAlineacion(titulares, suplentes, nuevosJugadoresIds)
             });
 
             newIncidencias.unshift(`🔔 [Subasta] ¡${winnerProfile.nombre_equipo} adquiere a ${player.nombre} en subasta por ${(offerPrice/1000000).toFixed(2)}M$! (${bids.length} pujas recibidas).`);
@@ -2529,14 +2529,14 @@
           jugadores_ids: nuevosJugadoresIdsVendedor,
           alineacion: { titulares: titularesVendedor, suplentes: suplentesVendedor },
           capitan_id: capitanId,
-          players: buildPlayersArrayFromAlineacion(titularesVendedor, suplentesVendedor)
+          players: buildPlayersArrayFromAlineacion(titularesVendedor, suplentesVendedor, nuevosJugadoresIdsVendedor)
         });
 
         await updateDoc(buyerRef, { presupuesto_actual: nuevoPresupuestoComprador });
         await updateDoc(buyerTeamRef, {
           jugadores_ids: nuevosJugadoresIdsComprador,
           alineacion: { titulares: titularesComprador, suplentes: suplentesComprador },
-          players: buildPlayersArrayFromAlineacion(titularesComprador, suplentesComprador)
+          players: buildPlayersArrayFromAlineacion(titularesComprador, suplentesComprador, nuevosJugadoresIdsComprador)
         });
 
         const updatedSecondary = (currentActiveLeagueData.secondary_market || []).filter(x => x.id !== playerId);
@@ -3785,8 +3785,12 @@
           const player = PLAYERS_POOL.find(p => p.id === playerId);
           const nuevosJugadoresIds = [...ownedIds, playerId];
 
+          const titulares = teamData.alineacion?.titulares || { portero: [], defensas: [], mediocampistas: [], delanteros: [] };
+          const suplentes = teamData.alineacion?.suplentes || { portero: [], defensas: [], mediocampistas: [], delanteros: [] };
+
           await updateDoc(teamRef, {
-            jugadores_ids: nuevosJugadoresIds
+            jugadores_ids: nuevosJugadoresIds,
+            players: buildPlayersArrayFromAlineacion(titulares, suplentes, nuevosJugadoresIds)
           });
 
           showNotification(`Gran Fondero: ¡Has otorgado a ${player.nombre} directamente a reservas!`);
@@ -3834,7 +3838,7 @@
             jugadores_ids: nuevosJugadoresIds,
             alineacion: { titulares, suplentes },
             capitan_id: capitanId,
-            players: buildPlayersArrayFromAlineacion(titulares, suplentes)
+            players: buildPlayersArrayFromAlineacion(titulares, suplentes, nuevosJugadoresIds)
           });
 
           showNotification(`Gran Fondero: Desvinculado ${player.nombre} de la plantilla.`);
@@ -4037,8 +4041,12 @@
             const player = PLAYERS_POOL.find(p => p.id === playerId);
             const nuevosJugadoresIds = [...ownedIds, playerId];
 
+            const titulares = teamData.alineacion?.titulares || { portero: [], defensas: [], mediocampistas: [], delanteros: [] };
+            const suplentes = teamData.alineacion?.suplentes || { portero: [], defensas: [], mediocampistas: [], delanteros: [] };
+
             await updateDoc(teamRef, {
-              jugadores_ids: nuevosJugadoresIds
+              jugadores_ids: nuevosJugadoresIds,
+              players: buildPlayersArrayFromAlineacion(titulares, suplentes, nuevosJugadoresIds)
             });
 
             showNotification(`¡Has otorgado a ${player.nombre} a la plantilla de reservas!`, "success");
@@ -4089,7 +4097,7 @@
             jugadores_ids: nuevosJugadoresIds,
             alineacion: { titulares, suplentes },
             capitan_id: capitanId,
-            players: buildPlayersArrayFromAlineacion(titulares, suplentes)
+            players: buildPlayersArrayFromAlineacion(titulares, suplentes, nuevosJugadoresIds)
           });
 
           showNotification(`Has retirado a ${playerName} de la plantilla.`, "success");
@@ -4437,17 +4445,20 @@
     }
 
     // --- AUXILIAR: GENERAR ARRAY DE OBJETOS DE JUGADORES DESDE ALINEACIÓN ---
-    function buildPlayersArrayFromAlineacion(titulares, suplentes) {
+    function buildPlayersArrayFromAlineacion(titulares, suplentes, jugadoresIds = []) {
       console.log("🔄 [Fonda Sync] Sincronizando array 'players' de subastas con la alineación...");
       const list = [];
+      const addedIds = new Set();
       
       const addGroup = (ids, isTit) => {
         (ids || []).forEach(id => {
+          if (addedIds.has(id)) return;
           const fPlayer = firestorePlayersList.find(pl => pl.id === id);
           const staticPlayer = PLAYERS_POOL.find(pl => pl.id === id);
           const p = fPlayer || staticPlayer;
           
           if (p) {
+            addedIds.add(id);
             list.push({
               id: p.id,
               nombre: p.nombre,
@@ -4470,7 +4481,27 @@
       addGroup(suplentes.mediocampistas, false);
       addGroup(suplentes.delanteros, false);
 
-      console.log("🔄 [Fonda Sync] Array 'players' autogenerado exitosamente:", list);
+      // Sincronizar reservas que están en la lista general de IDs pero no en alineación activa (titulares ni suplentes)
+      (jugadoresIds || []).forEach(id => {
+        if (!addedIds.has(id)) {
+          const fPlayer = firestorePlayersList.find(pl => pl.id === id);
+          const staticPlayer = PLAYERS_POOL.find(pl => pl.id === id);
+          const p = fPlayer || staticPlayer;
+          if (p) {
+            addedIds.add(id);
+            list.push({
+              id: p.id,
+              nombre: p.nombre,
+              posicion: p.posicion === "portero" ? "POR" :
+                        p.posicion === "defensa" ? "DFC" :
+                        p.posicion === "mediocampista" ? "MC" : "DEL",
+              isTitular: false
+            });
+          }
+        }
+      });
+
+      console.log("🔄 [Fonda Sync] Array 'players' autogenerado exitosamente con reservas:", list);
       return list;
     }
 
@@ -5070,7 +5101,7 @@
         await updateDoc(teamRef, {
           alineacion: { titulares, suplentes: finalSuplentes },
           capitan_id: capitanId,
-          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes)
+          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
         });
 
         showNotification(`Intercambio realizado entre ${sourcePlayer.nombre} y ${player.nombre}.`);
@@ -5141,7 +5172,7 @@
         await updateDoc(teamRef, {
           alineacion: { titulares, suplentes: finalSuplentes },
           capitan_id: capitanId,
-          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes)
+          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
         });
         showNotification(`Movid@ ${player.nombre} al Banquillo Oficial.`);
       } catch (err) {
@@ -5196,7 +5227,7 @@
         await updateDoc(teamRef, {
           alineacion: { titulares, suplentes: finalSuplentes },
           capitan_id: capitanId,
-          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes)
+          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
         });
         showNotification(`Movid@ ${player.nombre} a las Reservas (dejará de puntuar).`);
       } catch (err) {
@@ -5353,7 +5384,7 @@
         await updateDoc(teamRef, {
           alineacion: { titulares, suplentes: finalSuplentes },
           capitan_id: capitanId,
-          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes)
+          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
         });
       } catch (err) {
         console.error("Error al guardar arrastre:", err);
@@ -5559,7 +5590,7 @@
         await updateDoc(teamRef, {
           alineacion: { titulares, suplentes: finalSuplentes },
           capitan_id: capitanId,
-          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes)
+          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
         });
         showNotification("Alineación actualizada con éxito.");
       } catch (err) {
@@ -5633,7 +5664,7 @@
           formacion: newFormation,
           alineacion: { titulares, suplentes: finalSuplentes },
           capitan_id: capitanId,
-          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes)
+          players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
         });
         showNotification(`Táctica cambiada a ${newFormation}. Alineación equilibrada.`);
       } catch (err) {
