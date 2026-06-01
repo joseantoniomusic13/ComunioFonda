@@ -2150,6 +2150,100 @@
     </div>
   </div>
 
+  <!-- Modal: Visualizador Premium de Plantilla Rival y Clausulazos -->
+  <div id="modal-rival-squad-viewer"
+    class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+    <div
+      class="glass-panel rounded-3xl border border-rose-500/20 p-6 w-full max-w-3xl shadow-2xl space-y-4 text-left bg-slate-950/95 flex flex-col max-h-[90vh]">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-white/5 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-400">
+            <i data-lucide="shield" class="w-6 h-6 animate-pulse"></i>
+          </div>
+          <div>
+            <h3 id="rival-viewer-team-name" class="text-lg font-black text-white leading-tight">Plantilla Rival</h3>
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Mánager: <span id="rival-viewer-manager-name" class="text-rose-400">---</span></p>
+          </div>
+        </div>
+        <button id="btn-close-rival-squad-viewer"
+          class="text-slate-400 hover:text-white transition cursor-pointer p-1.5 rounded-xl hover:bg-white/5">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="grid grid-cols-3 gap-2 p-3.5 rounded-2xl bg-slate-900/40 border border-white/5 text-center text-xs font-bold">
+        <div>
+          <span class="text-[9px] text-slate-500 uppercase block tracking-wider mb-0.5">Jugadores</span>
+          <span id="rival-viewer-stat-count" class="text-white font-extrabold text-sm">0</span>
+        </div>
+        <div>
+          <span class="text-[9px] text-slate-500 uppercase block tracking-wider mb-0.5">Valor Plantilla</span>
+          <span id="rival-viewer-stat-value" class="text-amber-400 font-black text-sm">0.0M$</span>
+        </div>
+        <div>
+          <span class="text-[9px] text-slate-500 uppercase block tracking-wider mb-0.5">Puntos Totales</span>
+          <span id="rival-viewer-stat-points" class="text-emerald-400 font-extrabold text-sm">0 PTS</span>
+        </div>
+      </div>
+
+      <!-- Tabs Switcher -->
+      <div class="flex gap-2 border-b border-white/5 pb-2">
+        <button id="btn-rival-tab-pitch" onclick="switchRivalViewerTab('pitch')"
+          class="px-4 py-2 rounded-xl text-xs font-black uppercase transition cursor-pointer bg-rose-500 text-white">
+          ⚽ Vista Táctica
+        </button>
+        <button id="btn-rival-tab-list" onclick="switchRivalViewerTab('list')"
+          class="px-4 py-2 rounded-xl text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white">
+          📋 Lista de Jugadores
+        </button>
+      </div>
+
+      <!-- Content Area -->
+      <div class="flex-1 overflow-y-auto min-h-[300px]">
+        
+        <!-- Tab 1: Pitch Táctico -->
+        <div id="rival-tab-content-pitch" class="relative w-full aspect-[4/3] max-w-xl mx-auto rounded-3xl overflow-hidden border border-emerald-500/20 bg-emerald-950/20 shadow-inner flex flex-col justify-between p-4 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/40 via-slate-950 to-slate-950">
+          <!-- Campo de fútbol estilizado -->
+          <div class="absolute inset-0 border border-white/10 m-3 pointer-events-none rounded-2xl flex flex-col justify-between">
+            <div class="h-1/2 border-b border-white/10 flex items-end justify-center">
+              <div class="w-24 h-12 border border-white/10 border-t-0 rounded-b-full"></div>
+            </div>
+            <div class="h-1/2 flex items-start justify-center">
+              <div class="w-24 h-12 border border-white/10 border-b-0 rounded-t-full"></div>
+            </div>
+          </div>
+          <!-- Área de portería superior/inferior para ambientar -->
+          <div class="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-8 border border-white/10 border-t-0 pointer-events-none"></div>
+          <div class="absolute bottom-3 left-1/2 -translate-x-1/2 w-32 h-8 border border-white/10 border-b-0 pointer-events-none"></div>
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-white/10 rounded-full pointer-events-none"></div>
+
+          <!-- Filas de Posición -->
+          <div class="z-10 flex flex-col justify-between h-full gap-4 relative">
+            <!-- Delanteros -->
+            <div id="rival-pitch-delanteros" class="flex justify-around items-center gap-2"></div>
+            <!-- Mediocampistas -->
+            <div id="rival-pitch-mediocampistas" class="flex justify-around items-center gap-2"></div>
+            <!-- Defensas -->
+            <div id="rival-pitch-defensas" class="flex justify-around items-center gap-2"></div>
+            <!-- Portero -->
+            <div id="rival-pitch-portero" class="flex justify-center items-center gap-2"></div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Lista Completa Detallada -->
+        <div id="rival-tab-content-list" class="hidden space-y-2">
+          <!-- Rellenado dinámicamente -->
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+
   <!-- Modal Unirse a Liga (Con Contraseña Premium) -->
   <div id="modal-join-league"
     class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
@@ -4888,10 +4982,19 @@
 
         usrDiv.addEventListener("click", () => {
           if (currentActiveLeagueData) {
-            const isUserAdmin = currentActiveLeagueData.admin_uid === currentUser.uid;
-            adminSelectedUserId = usr.uid;
-            adminSelectedLeagueId = currentActiveLeagueData.id;
-            openAdminSquadEditor(!isUserAdmin);
+            if (isSelf) {
+              showNotification("Esta es tu propia plantilla. Gestiona tu alineación desde la pestaña 'Mi Plantilla'.", "info");
+              return;
+            }
+            if (window.openRivalSquadViewer) {
+              window.openRivalSquadViewer(usr.uid, usr.nombre_usuario, usr.nombre_equipo || "Sin equipo", usr.puntos_totales || 0);
+            } else {
+              // fallback
+              const isUserAdmin = currentActiveLeagueData.admin_uid === currentUser.uid;
+              adminSelectedUserId = usr.uid;
+              adminSelectedLeagueId = currentActiveLeagueData.id;
+              openAdminSquadEditor(!isUserAdmin);
+            }
           }
         });
 
@@ -5745,6 +5848,274 @@
         adminSquadEditorUnsubscribe = null;
       }
     }
+
+    // =====================================================================
+    // ================= PREMIUM RIVAL SQUAD VIEWER & CLAUSULAZOS =================
+    // =====================================================================
+
+    let rivalSquadViewerUnsubscribe = null;
+    let activeRivalViewerTab = "pitch"; // "pitch" | "list"
+    let currentRivalUid = "";
+    let currentRivalName = "";
+    let currentRivalTeam = "";
+    let currentRivalPoints = 0;
+
+    window.openRivalSquadViewer = async function(rivalUid, managerName, teamName, points) {
+      console.log(`👁️ [Rival Squad Viewer] Abriendo plantilla de ${managerName} (${teamName})...`);
+      currentRivalUid = rivalUid;
+      currentRivalName = managerName;
+      currentRivalTeam = teamName;
+      currentRivalPoints = points;
+
+      const modal = document.getElementById("modal-rival-squad-viewer");
+      if (!modal) return;
+      modal.classList.remove("hidden");
+
+      document.getElementById("rival-viewer-team-name").textContent = teamName;
+      document.getElementById("rival-viewer-manager-name").textContent = managerName;
+      document.getElementById("rival-viewer-stat-points").textContent = `${points} PTS`;
+
+      // Set active tab default to pitch
+      switchRivalViewerTab("pitch");
+
+      // Bind close button
+      const closeBtn = document.getElementById("btn-close-rival-squad-viewer");
+      if (closeBtn) {
+        closeBtn.onclick = closeRivalSquadViewer;
+      }
+
+      if (rivalSquadViewerUnsubscribe) {
+        rivalSquadViewerUnsubscribe();
+      }
+
+      // Fetch team data in real-time
+      const leagueCode = currentActiveLeagueData.id;
+      const teamDocId = `${rivalUid}_${leagueCode}`;
+      const teamRef = doc(db, "user_teams", teamDocId);
+
+      rivalSquadViewerUnsubscribe = onSnapshot(teamRef, (snap) => {
+        if (!snap.exists()) {
+          document.getElementById("rival-viewer-stat-count").textContent = "0";
+          document.getElementById("rival-viewer-stat-value").textContent = "0.0M$";
+          document.getElementById("rival-tab-content-list").innerHTML = `
+            <div class="py-12 text-center text-slate-500 font-bold text-xs italic">
+              Este mánager no tiene un documento de plantilla activo.
+            </div>
+          `;
+          return;
+        }
+
+        const teamData = snap.data();
+        const ownedIds = teamData.jugadores_ids || [];
+        document.getElementById("rival-viewer-stat-count").textContent = ownedIds.length;
+
+        // Calculate total squad market value
+        let totalVal = 0;
+        const allRivalPlayers = [];
+        ownedIds.forEach(id => {
+          const fPlayer = firestorePlayersList.find(p => p.id === id);
+          const staticPlayer = PLAYERS_POOL.find(p => p.id === id);
+          const player = fPlayer || staticPlayer;
+          if (player) {
+            totalVal += player.precio;
+            allRivalPlayers.push({ ...player });
+          }
+        });
+        document.getElementById("rival-viewer-stat-value").textContent = `${(totalVal / 1000000).toFixed(1)}M$`;
+
+        // Render Pitch view and List view
+        renderRivalPitch(teamData, allRivalPlayers);
+        renderRivalList(teamData, allRivalPlayers);
+      });
+    };
+
+    window.closeRivalSquadViewer = function() {
+      const modal = document.getElementById("modal-rival-squad-viewer");
+      if (modal) modal.classList.add("hidden");
+      if (rivalSquadViewerUnsubscribe) {
+        rivalSquadViewerUnsubscribe();
+        rivalSquadViewerUnsubscribe = null;
+      }
+    };
+
+    window.switchRivalViewerTab = function(tab) {
+      activeRivalViewerTab = tab;
+      const btnPitch = document.getElementById("btn-rival-tab-pitch");
+      const btnList = document.getElementById("btn-rival-tab-list");
+      const contentPitch = document.getElementById("rival-tab-content-pitch");
+      const contentList = document.getElementById("rival-tab-content-list");
+
+      if (tab === "pitch") {
+        btnPitch.className = "px-4 py-2 rounded-xl text-xs font-black uppercase transition cursor-pointer bg-rose-500 text-white";
+        btnList.className = "px-4 py-2 rounded-xl text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white";
+        contentPitch.classList.remove("hidden");
+        contentList.classList.add("hidden");
+      } else {
+        btnPitch.className = "px-4 py-2 rounded-xl text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white";
+        btnList.className = "px-4 py-2 rounded-xl text-xs font-black uppercase transition cursor-pointer bg-rose-500 text-white";
+        contentPitch.classList.add("hidden");
+        contentList.classList.remove("hidden");
+      }
+    };
+
+    function renderRivalPitch(teamData, allPlayers) {
+      const titulares = teamData.alineacion?.titulares || {};
+      const blindados = teamData.blindados || {};
+      const clausulas = teamData.clausulas || {};
+
+      const renderPos = (posKey, containerId) => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = "";
+
+        const ids = titulares[posKey] || [];
+        if (ids.length === 0) {
+          container.innerHTML = `<span class="text-[9px] text-slate-600 font-bold uppercase italic py-2">Vacío</span>`;
+          return;
+        }
+
+        ids.forEach(id => {
+          const player = allPlayers.find(p => p.id === id);
+          if (!player) return;
+
+          // Clausula calculation
+          const isShielded = blindados[id] || false;
+          const currentClause = clausulas[id] || Math.round(player.precio * 1.5);
+          const formattedClause = (currentClause / 1000000).toFixed(1);
+
+          // Avatar and visual elements
+          const avatar = window.getPlayerCardAvatarHTML(id, player, "w-10 h-10", false);
+          const isClausulazoPending = (currentActiveLeagueData?.pending_clausulazos || []).some(
+            c => c.playerId === id && c.status === "pending"
+          );
+
+          let actionBtn = "";
+          if (isShielded) {
+            actionBtn = `<span class="px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-[7px] text-gold font-extrabold uppercase flex items-center gap-0.5"><i data-lucide="shield-check" class="w-2 h-2"></i> Protegido</span>`;
+          } else if (isClausulazoPending) {
+            actionBtn = `<span class="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold text-[7px] animate-pulse">⚡ En curso</span>`;
+          } else {
+            actionBtn = `<button onclick="triggerRivalClausulazo('${id}', '${player.nombre.replace(/'/g, "\\'")}', ${currentClause})" class="px-1.5 py-0.5 rounded bg-rose-600 hover:bg-rose-500 active:scale-95 transition text-[7.5px] text-white font-black uppercase cursor-pointer flex items-center gap-0.5 shadow-sm shadow-rose-500/10">⚡ Clausular</button>`;
+          }
+
+          const card = document.createElement("div");
+          card.className = "flex flex-col items-center text-center space-y-0.5 relative group";
+          card.innerHTML = `
+            <div class="relative">
+              ${avatar}
+              <span class="absolute -top-1 -right-1 text-[8px] bg-slate-900 border border-white/10 text-slate-300 font-extrabold px-1 rounded-full">${formattedClause}M</span>
+            </div>
+            <p class="text-[8px] font-black text-slate-100 truncate max-w-[65px]">${player.nombre.split(" ").pop()}</p>
+            <div class="mt-0.5">${actionBtn}</div>
+          `;
+          container.appendChild(card);
+        });
+      };
+
+      renderPos("portero", "rival-pitch-portero");
+      renderPos("defensas", "rival-pitch-defensas");
+      renderPos("mediocampistas", "rival-pitch-mediocampistas");
+      renderPos("delanteros", "rival-pitch-delanteros");
+
+      lucide.createIcons();
+    }
+
+    function renderRivalList(teamData, allPlayers) {
+      const container = document.getElementById("rival-tab-content-list");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const blindados = teamData.blindados || {};
+      const clausulas = teamData.clausulas || {};
+      const capitanId = teamData.capitan_id || "";
+      const jugador12Id = teamData.chips?.jugador_12?.jugador_id || "";
+
+      if (allPlayers.length === 0) {
+        container.innerHTML = `<div class="py-8 text-center text-slate-500 italic text-xs">Sin jugadores en plantilla.</div>`;
+        return;
+      }
+
+      // Group by position
+      const categories = {
+        portero: { name: "Porteros", list: [], dot: "🔵" },
+        defensa: { name: "Defensas", list: [], dot: "🟢" },
+        mediocampista: { name: "Mediocampistas", list: [], dot: "🟡" },
+        delantero: { name: "Delanteros", list: [], dot: "🔴" }
+      };
+
+      allPlayers.forEach(p => {
+        if (categories[p.posicion]) {
+          categories[p.posicion].list.push(p);
+        }
+      });
+
+      Object.values(categories).forEach(cat => {
+        if (cat.list.length === 0) return;
+
+        const groupDiv = document.createElement("div");
+        groupDiv.className = "space-y-1 mb-4";
+        groupDiv.innerHTML = `<div class="text-[10px] font-black uppercase text-slate-500 px-2 py-1 tracking-wider bg-slate-900/40 rounded-lg flex items-center gap-1.5">
+          <span>${cat.dot}</span> <span>${cat.name} (${cat.list.length})</span>
+        </div>`;
+
+        cat.list.forEach(player => {
+          const isShielded = blindados[player.id] || false;
+          const currentClause = clausulas[player.id] || Math.round(player.precio * 1.5);
+          const formattedClause = (currentClause / 1000000).toFixed(1);
+          
+          let statusBadges = "";
+          if (player.id === capitanId) {
+            statusBadges += `<span class="px-1 py-0.5 rounded bg-amber-500 text-slate-950 font-black text-[7px] flex items-center gap-0.5"><i data-lucide="crown" class="w-2.5 h-2.5"></i> C</span>`;
+          }
+          if (player.id === jugador12Id) {
+            statusBadges += `<span class="px-1 py-0.5 rounded bg-purple-500 text-white font-black text-[7px] flex items-center gap-0.5"><i data-lucide="zap" class="w-2.5 h-2.5"></i> 12</span>`;
+          }
+
+          // Clausulazo button or status badge
+          const isClausulazoPending = (currentActiveLeagueData?.pending_clausulazos || []).some(
+            c => c.playerId === player.id && c.status === "pending"
+          );
+
+          let actionBtn = "";
+          if (isShielded) {
+            actionBtn = `<span class="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/25 text-[8px] text-gold font-extrabold uppercase flex items-center gap-0.5"><i data-lucide="shield-check" class="w-3 h-3"></i> Protegido</span>`;
+          } else if (isClausulazoPending) {
+            actionBtn = `<span class="px-2 py-1 rounded bg-rose-500/20 text-rose-300 font-bold text-[8px] animate-pulse">⚡ Clausulazo Activo</span>`;
+          } else {
+            actionBtn = `<button onclick="triggerRivalClausulazo('${player.id}', '${player.nombre.replace(/'/g, "\\'")}', ${currentClause})" class="px-2.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-black text-[9px] uppercase transition cursor-pointer flex items-center gap-0.5 shadow-md shadow-rose-500/10 active:scale-95">⚡ Clausulazo</button>`;
+          }
+
+          const item = document.createElement("div");
+          item.className = "flex items-center justify-between p-2.5 rounded-2xl bg-white/[0.01] border border-white/5 hover:bg-white/[0.03] transition-all duration-300";
+          item.innerHTML = `
+            <div class="flex items-center gap-2.5">
+              <span class="text-sm">${player.flag || "⚽"}</span>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="font-extrabold text-white text-xs">${player.nombre}</span>
+                  ${statusBadges}
+                </div>
+                <div class="text-[9px] text-slate-400 font-medium">
+                  Valor: <span class="text-slate-300 font-bold">${(player.precio / 1000000).toFixed(1)}M$</span> • Cláusula: <span class="text-amber-400 font-black">${formattedClause}M$</span>
+                </div>
+              </div>
+            </div>
+            <div>${actionBtn}</div>
+          `;
+          groupDiv.appendChild(item);
+        });
+        container.appendChild(groupDiv);
+      });
+      lucide.createIcons();
+    }
+
+    window.triggerRivalClausulazo = function(playerId, playerName, clauseAmount) {
+      // Close the viewer first to prevent modal stacking confusion
+      closeRivalSquadViewer();
+      if (window.openClausulazoModal) {
+        window.openClausulazoModal(playerId, currentRivalUid, currentRivalName, clauseAmount);
+      }
+    };
 
     // Otorgar crack directamente desde modal (Reserva por defecto)
     if (btnAdminSquadAddPlayer) {
@@ -10582,7 +10953,8 @@
         list.innerHTML = pending.map(c => {
           const player = PLAYERS_POOL.find(p => p.id === c.playerId);
           const playerName = player ? player.nombre : "Jugador";
-          const elapsed = Math.floor((now - c.createdAt) / 1000);
+          const startTime = c.createdAt || c.timestamp || now;
+          const elapsed = Math.floor((now - startTime) / 1000);
           const remaining = Math.max(0, 30 - elapsed);
 
           return `
@@ -10614,7 +10986,10 @@
         clausulazoInterval = setInterval(() => {
           updateListHtml();
           const now = Date.now();
-          const allExpired = pending.every(c => Math.floor((now - c.createdAt) / 1000) >= 30);
+          const allExpired = pending.every(c => {
+            const startTime = c.createdAt || c.timestamp || now;
+            return Math.floor((now - startTime) / 1000) >= 30;
+          });
           if (allExpired && clausulazoInterval) {
             clearInterval(clausulazoInterval);
             clausulazoInterval = null;
