@@ -570,7 +570,9 @@
               <div class="space-y-2 border-t border-white/5 pt-4">
                 <label for="admin-player-mod"
                   class="block text-xs font-bold uppercase tracking-wider text-purple-400 font-extrabold">Modificar
-                  Plantilla (Dar/Quitar crack)</label>
+                  Plantilla / Colección</label>
+                <input type="text" id="admin-player-mod-search" placeholder="🔍 Escribe para buscar jugador..." disabled
+                  class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20 disabled:opacity-40 disabled:cursor-not-allowed">
                 <select id="admin-player-mod" disabled
                   class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20">
                   <!-- Cargado dinámicamente -->
@@ -583,6 +585,10 @@
                   <button id="btn-admin-take-player" disabled
                     class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-extrabold py-1.5 rounded-lg text-[10px] border border-white/5 transition cursor-pointer flex items-center justify-center gap-0.5">
                     <i data-lucide="trash-2" class="w-3 h-3"></i> Quitar Crack
+                  </button>
+                  <button id="btn-admin-give-card" disabled
+                    class="col-span-2 bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 text-slate-950 font-black py-2 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-1 shadow-md shadow-purple-500/10">
+                    <i data-lucide="layers" class="w-3.5 h-3.5"></i> Otorgar Carta (Cromo al Mazo)
                   </button>
                 </div>
                 <!-- Botón Premium: Ver/Editar Plantilla en Vivo -->
@@ -1740,6 +1746,9 @@
           <button id="packs-tab-deck" onclick="switchPacksTab('deck')"
             class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">🃏
             Mi Mazo</button>
+          <button id="packs-tab-consumables" onclick="switchPacksTab('consumables')"
+            class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">🎒
+            Consumibles</button>
           <button id="packs-tab-trade" onclick="switchPacksTab('trade')"
             class="px-4 py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white">🔄
             Intercambios</button>
@@ -1923,23 +1932,43 @@
                 <p class="text-xs text-slate-400 mt-0.5">Cartas sin pegar. Puedes pegarlas en el álbum o intercambiar
                   las repetidas.</p>
               </div>
-              <div class="flex items-center gap-1 bg-fonda-950 p-1 rounded-xl border border-white/5 shrink-0">
-                <button
-                  class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer bg-purple-500 text-white"
-                  data-filter="all">Todos</button>
-                <button
-                  class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white"
-                  data-filter="comun">Comunes</button>
-                <button
-                  class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white"
-                  data-filter="medio">Medios</button>
-                <button
-                  class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white"
-                  data-filter="estrella">Estrellas</button>
+              <div class="flex flex-wrap items-center gap-3 shrink-0">
+                <button onclick="autoPasteAllStickers()"
+                  class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-slate-950 font-black text-[10px] uppercase rounded-xl transition cursor-pointer hover:scale-[1.02] active:scale-95 shadow-md shadow-emerald-500/10 flex items-center gap-1">
+                  📌 Pegar Todo en Álbum
+                </button>
+                <div class="flex items-center gap-1 bg-fonda-950 p-1 rounded-xl border border-white/5">
+                  <button
+                    class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer bg-purple-500 text-white"
+                    data-filter="all">Todos</button>
+                  <button
+                    class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white"
+                    data-filter="comun">Comunes</button>
+                  <button
+                    class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white"
+                    data-filter="medio">Medios</button>
+                  <button
+                    class="btn-deck-filter px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all cursor-pointer text-slate-400 hover:text-white"
+                    data-filter="estrella">Estrellas</button>
+                </div>
               </div>
             </div>
             <div id="deck-cards-grid"
               class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"></div>
+          </div>
+        </div>
+
+        <!-- ===== PANEL CONSUMIBLES ===== -->
+        <div id="packs-panel-consumables" class="hidden flex flex-col gap-5">
+          <div class="glass-panel p-5 rounded-3xl border border-white/5">
+            <div class="mb-4">
+              <h4 class="text-base font-black text-white flex items-center gap-2"><i data-lucide="backpack"
+                  class="w-5 h-5 text-purple-400"></i> Mis Consumibles y Tokens</h4>
+              <p class="text-xs text-slate-400 mt-0.5">Úsalos en tu alineación desde el perfil de tus jugadores para obtener ventajas competitivas.</p>
+            </div>
+            <div id="consumables-cards-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto pt-2">
+              <!-- Renderizado dinámicamente -->
+            </div>
           </div>
         </div>
 
@@ -2468,6 +2497,28 @@
           class="hidden w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gold/10 hover:bg-gold/20 border border-gold/20 text-gold font-bold text-xs transition cursor-pointer">
           <i data-lucide="crown" class="w-3.5 h-3.5"></i> Hacer Capitán (x2 puntos)
         </button>
+
+        <!-- Consumibles Especiales -->
+        <div id="ppm-consumibles-section" class="hidden mt-3 p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+          <p class="text-[9px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+            <i data-lucide="zap" class="w-3 h-3 text-amber-400"></i> Consumibles Especiales
+          </p>
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Seguro 24h -->
+            <button id="ppm-btn-seguro" class="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-300 font-bold text-[10px] transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+              <span class="text-xl">🛡️</span>
+              <span>Seguro 24h</span>
+              <span id="ppm-seguro-count" class="text-[8px] bg-emerald-500/20 px-1.5 py-0.5 rounded font-black">0 disponibles</span>
+            </button>
+            <!-- Motivación Plus -->
+            <button id="ppm-btn-motivacion" class="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-300 font-bold text-[10px] transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+              <span class="text-xl">🔥</span>
+              <span>Motivación Plus</span>
+              <span id="ppm-motivacion-count" class="text-[8px] bg-rose-500/20 px-1.5 py-0.5 rounded font-black">0 disponibles</span>
+            </button>
+          </div>
+          <p class="text-[8px] text-slate-600 leading-relaxed">🛡️ <b class="text-slate-400">Seguro 24h</b>: Protege al jugador de clausulazos durante 24h. 🔥 <b class="text-slate-400">Motivación Plus</b>: Añade +2 puntos a este jugador en la jornada activa.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -2505,6 +2556,88 @@
       <button id="czm-btn-ejecutar"
         class="w-full py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-black text-sm transition cursor-pointer flex items-center justify-center gap-2">
         <i data-lucide="swords" class="w-4 h-4"></i> Confirmar Clausulazo
+      </button>
+  </div>
+
+
+  <!-- ===== MODAL: COBRAR APUESTA GANADA (SPLIT COBRO) ===== -->
+  <div id="modal-claim-bet-split"
+    class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+    onclick="if(event.target===this) closeClaimBetSplitModal()">
+    <div class="glass-panel w-full max-w-md rounded-3xl border border-purple-500/30 bg-fonda-950/95 shadow-2xl p-6 space-y-4 text-left">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-2xl bg-purple-500/10 border border-purple-500/25">
+          <i data-lucide="coins" class="w-5 h-5 text-purple-400 animate-pulse"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-black text-white">Reclamar Premio Fonda Bet</h3>
+          <p class="text-[10px] text-slate-400">Elige cómo cobrar tus Fonda Coins (FC) ganadas</p>
+        </div>
+        <button onclick="closeClaimBetSplitModal()" class="ml-auto text-slate-500 hover:text-white transition cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+        <div class="flex justify-between items-center text-xs">
+          <span class="text-slate-400 font-bold">Partido:</span>
+          <span id="claim-bet-match" class="text-white font-extrabold text-right"></span>
+        </div>
+        <div class="flex justify-between items-center text-xs">
+          <span class="text-slate-400 font-bold">Pronóstico:</span>
+          <span id="claim-bet-selection" class="text-gold font-extrabold"></span>
+        </div>
+        <div class="flex justify-between items-center text-xs pt-1.5 border-t border-white/5">
+          <span class="text-slate-400 font-black">Premio Total:</span>
+          <span id="claim-bet-payout-total" class="text-purple-400 font-black text-sm"></span>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Rango / Slider para dividir el cobro -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <span>Cobrar en Fonda Coins</span>
+            <span>Cobrar en Presupuesto ($)</span>
+          </div>
+          <div class="flex items-center gap-3 bg-slate-900/60 p-3 rounded-2xl border border-white/5">
+            <div class="w-1/2 text-center">
+              <span id="claim-bet-fc-display" class="text-lg font-black text-purple-400">0 FC</span>
+              <p class="text-[8px] text-slate-500 font-bold mt-0.5">Se ingresa directo</p>
+            </div>
+            <div class="h-8 w-px bg-white/5"></div>
+            <div class="w-1/2 text-center">
+              <span id="claim-bet-usd-display" class="text-lg font-black text-emerald-400">0M$</span>
+              <p class="text-[8px] text-slate-500 font-bold mt-0.5">1 FC = 195,000 $ (Neto)</p>
+            </div>
+          </div>
+          <input type="range" id="claim-bet-split-range" min="0" max="100" value="100"
+            class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+            oninput="updateClaimBetSplitDisplay()">
+        </div>
+
+        <!-- Inputs directos opcionales para control preciso -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label for="claim-bet-fc-input" class="block text-[9px] font-bold text-slate-450 uppercase">FC a cobrar</label>
+            <input type="number" id="claim-bet-fc-input" min="0" step="1"
+              class="glass-input w-full px-3 py-2 rounded-xl text-xs font-black text-white"
+              oninput="onClaimBetFCInput()">
+          </div>
+          <div class="space-y-1 text-right flex flex-col justify-end">
+            <label class="block text-[9px] font-bold text-slate-450 uppercase mb-1">Equivalente en $</label>
+            <div class="py-2 px-1 text-emerald-400 font-extrabold text-xs" id="claim-bet-usd-val">+0 $</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-[9.5px] text-slate-400 leading-normal bg-amber-500/5 border border-amber-500/20 p-3 rounded-2xl">
+        💡 <b class="text-slate-350">Información de Conversión:</b> Las Fonda Coins que elijas cobrar en presupuesto de club se transformarán a razón de <b>300,000 $</b> brutos por FC, aplicando un <b>35% de penalización de cambio</b> (quedando en <b>195,000 $ netos</b> por cada FC convertida).
+      </div>
+
+      <button id="btn-confirm-bet-claim"
+        class="w-full bg-purple-gradient text-slate-950 font-black py-3 px-6 rounded-2xl shadow-lg shadow-purple-500/10 hover:scale-[1.01] active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer">
+        <i data-lucide="check-circle" class="w-4 h-4 text-slate-950"></i> Confirmar y Cobrar Premio
       </button>
     </div>
   </div>
@@ -2958,7 +3091,7 @@
           // Con liga Fonda Fanegas → mostrar Dashboard
           leaguesHubSection.classList.add("hidden");
           dashboardSection.classList.remove("hidden");
-          switchDashboardTab("squad");
+          switchDashboardTab(activeDashboardTab || "squad");
 
           // Reconectar snapshot de plantilla si cambia la liga activa
           const newTeamDocId = getTeamDocId(user.uid, ligaActiva);
@@ -3391,6 +3524,7 @@
             });
 
             newIncidencias.unshift(`🔔 [Subasta] ¡${winnerProfile.nombre_equipo} adquiere a ${player.nombre} en subasta por ${(offerPrice / 1000000).toFixed(2)}M$! (${bids.length} pujas recibidas).`);
+            window.sendSystemLeagueChatMessage?.(leagueCode, `🔔 [SUBASTA] ¡${winnerProfile.nombre_equipo || winnerProfile.nombre_usuario} ha ganado a ${player.nombre} en subasta por ${(offerPrice/1e6).toFixed(2)}M$ con ${bids.length} puja${bids.length!==1?'s':''}!`);
           }
         }
 
@@ -3642,6 +3776,9 @@
           incidencias: updatedIncidencias
         });
 
+        // Log en chat de liga
+        window.sendSystemLeagueChatMessage(leagueCode, `🤝 [TRASPASO] ¡${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha vendido a ${player.nombre} a ${buyerProfile.nombre_equipo || buyerProfile.nombre_usuario} por ${(offerPrice / 1000000).toFixed(1)}M$!`);
+
         showNotification(`¡Traspaso confirmado! Has vendido a ${player.nombre} a ${buyerProfile.nombre_usuario} por ${(offerPrice / 1000000).toFixed(1)}M$.`);
       } catch (err) {
         console.error("Error accepting offer:", err);
@@ -3829,6 +3966,42 @@
         await setCaptain(playerId);
       };
 
+      // --- Wiring Consumibles ---
+      const seguroCount = currentUserProfile.seguro_24h_count || 0;
+      const motivacionCount = currentUserProfile.motivacion_plus_count || 0;
+      const consumiblesSection = document.getElementById("ppm-consumibles-section");
+      const btnSeguro = document.getElementById("ppm-btn-seguro");
+      const btnMotivacion = document.getElementById("ppm-btn-motivacion");
+
+      if (seguroCount > 0 || motivacionCount > 0) {
+        consumiblesSection.classList.remove("hidden");
+      } else {
+        consumiblesSection.classList.add("hidden");
+      }
+
+      document.getElementById("ppm-seguro-count").textContent = `${seguroCount} disponible${seguroCount!==1?'s':''}`;
+      document.getElementById("ppm-motivacion-count").textContent = `${motivacionCount} disponible${motivacionCount!==1?'s':''}`;
+
+      // Check active states
+      const seguroUntil = (currentUserTeam.seguro_24h || {})[playerId] || 0;
+      const motivacionActiva = (currentUserTeam.motivacion_plus || {})[playerId] || false;
+
+      if (seguroUntil > Date.now()) {
+        btnSeguro.innerHTML = `<span class="text-xl">🛡️</span><span>Seguro 24h</span><span class="text-[8px] bg-emerald-500/30 px-1.5 py-0.5 rounded font-black text-emerald-300">✅ ACTIVO</span>`;
+        btnSeguro.disabled = true;
+      } else {
+        btnSeguro.disabled = seguroCount <= 0;
+        btnSeguro.onclick = async () => { closePlayerProfileModal(); await applySeguro24h(playerId); };
+      }
+
+      if (motivacionActiva) {
+        btnMotivacion.innerHTML = `<span class="text-xl">🔥</span><span>Motivación Plus</span><span class="text-[8px] bg-rose-500/30 px-1.5 py-0.5 rounded font-black text-rose-300">✅ ACTIVO</span>`;
+        btnMotivacion.disabled = true;
+      } else {
+        btnMotivacion.disabled = motivacionCount <= 0;
+        btnMotivacion.onclick = async () => { closePlayerProfileModal(); await applyMotivacionPlus(playerId); };
+      }
+
       lucide.createIcons();
     };
 
@@ -3836,6 +4009,69 @@
       document.getElementById("modal-player-profile").classList.add("hidden");
       _ppmCurrentPlayerId = null;
     };
+
+    // --- Aplicar Seguro de Plantilla 24h a un jugador ---
+    async function applySeguro24h(playerId) {
+      if (!currentUser || !currentUserProfile || !currentUserTeam) return;
+      const count = currentUserProfile.seguro_24h_count || 0;
+      if (count <= 0) { showNotification("No tienes Seguros de Plantilla disponibles.", "error"); return; }
+
+      const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
+      const expiresAt = Date.now() + 24 * 3600 * 1000; // 24 horas
+
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        const teamRef = doc(db, "user_teams", getTeamDocId());
+        const prevSeguro = currentUserTeam.seguro_24h || {};
+
+        await updateDoc(userRef, { seguro_24h_count: count - 1 });
+        await updateDoc(teamRef, { seguro_24h: { ...prevSeguro, [playerId]: expiresAt } });
+
+        currentUserProfile.seguro_24h_count = count - 1;
+        if (!currentUserTeam.seguro_24h) currentUserTeam.seguro_24h = {};
+        currentUserTeam.seguro_24h[playerId] = expiresAt;
+
+        showNotification(`🛡️ ¡Seguro 24h activado para ${player?.nombre || playerId}! Protegido contra clausulazos hasta mañana.`, "success");
+        if (currentActiveLeague) {
+          window.sendSystemLeagueChatMessage(currentActiveLeague, `🛡️ [CONSUMIBLE] ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha activado un Seguro de 24h sobre ${player?.nombre || playerId}. ¡Intocable por 24 horas!`);
+        }
+        updateHeaderAndDashboardStats();
+      } catch(e) {
+        console.error("Error applying seguro 24h:", e);
+        showNotification("Error al aplicar el Seguro de Plantilla.", "error");
+      }
+    }
+
+    // --- Aplicar Motivación Plus a un jugador ---
+    async function applyMotivacionPlus(playerId) {
+      if (!currentUser || !currentUserProfile || !currentUserTeam) return;
+      const count = currentUserProfile.motivacion_plus_count || 0;
+      if (count <= 0) { showNotification("No tienes Motivaciones Plus disponibles.", "error"); return; }
+
+      const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
+
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        const teamRef = doc(db, "user_teams", getTeamDocId());
+        const prevMotivacion = currentUserTeam.motivacion_plus || {};
+
+        await updateDoc(userRef, { motivacion_plus_count: count - 1 });
+        await updateDoc(teamRef, { motivacion_plus: { ...prevMotivacion, [playerId]: true } });
+
+        currentUserProfile.motivacion_plus_count = count - 1;
+        if (!currentUserTeam.motivacion_plus) currentUserTeam.motivacion_plus = {};
+        currentUserTeam.motivacion_plus[playerId] = true;
+
+        showNotification(`🔥 ¡Motivación Plus aplicada a ${player?.nombre || playerId}! +2 puntos extra en la próxima jornada.`, "success");
+        if (currentActiveLeague) {
+          window.sendSystemLeagueChatMessage(currentActiveLeague, `🔥 [CONSUMIBLE] ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha aplicado Motivación Plus a ${player?.nombre || playerId}. ¡+2 puntos extra esta jornada!`);
+        }
+        updateHeaderAndDashboardStats();
+      } catch(e) {
+        console.error("Error applying motivacion plus:", e);
+        showNotification("Error al aplicar la Motivación Plus.", "error");
+      }
+    }
 
     // --- Blindaje Multiplicador x2 ---
     async function upgradeClausula(playerId, investAmountM) {
@@ -3973,6 +4209,12 @@
           showNotification("🛡️ ¡Blindaje activado! Este jugador está protegido con un Token de Fidelidad. No se puede ejecutar el clausulazo.", "error");
           closeClausulazoModal(); return;
         }
+        // Comprobar Seguro 24h
+        const seguroUntil = (ownerTeamData.seguro_24h || {})[playerId] || 0;
+        if (seguroUntil > Date.now()) {
+          showNotification("🛡️ ¡Seguro de Plantilla activo! Este jugador está cubierto por un Seguro de 24h. Vuelve más tarde.", "error");
+          closeClausulazoModal(); return;
+        }
       }
 
       const btn = document.getElementById("czm-btn-ejecutar");
@@ -4007,7 +4249,22 @@
         incidencias.unshift(`⚡ [CLAUSULAZO] ${currentUserProfile.nombre_equipo} ha activado el clausulazo de ${player?.nombre} (${(clausulaAmount/1e6).toFixed(2)}M$). El dueño tiene tiempo para activar su Token de Fidelidad.`);
         await updateDoc(leagueRef, { pending_clausulazos: pendingList, incidencias });
 
-        showNotification(`⚡ ¡Clausulazo enviado! El dueño tiene 24h para usar un Token de Fidelidad.`, "success");
+        // --- Notificación en buzón del dueño ---
+        try {
+          await db.collection("users").doc(ownerUid).collection("mailbox").doc(clausulazoId).set({
+            id: clausulazoId, type: "clausulazo_alert",
+            title: `🚨 ¡Clausulazo sobre ${player?.nombre || playerId}!`,
+            description: `El mánager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha pagado la cláusula de rescisión de ${player?.nombre || playerId} por ${(clausulaAmount/1e6).toFixed(1)}M$. Tienes 30 segundos para usar un Token de Fidelidad o se consumará el traspaso.`,
+            amount: clausulaAmount, playerId, clausulazoId, leagueCode,
+            buyerName: currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario,
+            claimed: false, createdAt: Date.now()
+          });
+        } catch(e) { console.error("Error sending mailbox alert:", e); }
+
+        // --- Log en el chat de liga ---
+        window.sendSystemLeagueChatMessage(leagueCode, `⚡ [CLAUSULAZO] ¡${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha activado el clausulazo sobre ${player?.nombre || playerId} por ${(clausulaAmount/1e6).toFixed(1)}M$! El dueño tiene 30 segundos para reaccionar.`);
+
+        showNotification(`⚡ ¡Clausulazo enviado! El dueño tiene 30s para usar un Token de Fidelidad.`, "success");
         closeClausulazoModal();
         updateHeaderAndDashboardStats();
 
@@ -4078,8 +4335,22 @@
         c.id === clausulazoId ? { ...c, status: "completed" } : c
       );
       const incidencias = leagueData.incidencias || [];
+      const buyerSnap2 = await getDoc(buyerRef);
+      const buyerName2 = buyerSnap2.exists() ? (buyerSnap2.data().nombre_equipo || buyerSnap2.data().nombre_usuario || "Comprador") : "Comprador";
       incidencias.unshift(`✅ [CLAUSULAZO] Traspaso definitivo de ${playerName} ejecutado por cláusula (${(clausulaAmount/1e6).toFixed(2)}M$).`);
       await updateDoc(leagueRef, { pending_clausulazos: updatedPending, incidencias });
+
+      // Log en chat + marcar buzón como reclamado
+      window.sendSystemLeagueChatMessage(leagueCode, `✅ [TRASPASO DEFINITIVO] ¡${buyerName2} se lleva a ${playerName} tras ejecutar su cláusula de ${(clausulaAmount/1e6).toFixed(1)}M$! El traspaso es irreversible.`);
+      try {
+        await db.collection("users").doc(ownerUid).collection("mailbox").doc(clausulazoId).update({ claimed: true });
+        await db.collection("users").doc(buyerUid).collection("mailbox").add({
+          id: `czl_ok_${clausulazoId}`, type: "clausulazo_success",
+          title: `✅ ¡Traspaso completado: ${playerName}!`,
+          description: `Has adquirido a ${playerName} por clausulazo. El jugador ya está en tu plantilla.`,
+          amount: clausulaAmount, playerId, claimed: false, createdAt: Date.now()
+        });
+      } catch(e) { console.error("Error updating mailbox after finalize:", e); }
     }
 
     // --- Usar Token de Fidelidad para CANCELAR un clausulazo entrante ---
@@ -4115,6 +4386,18 @@
         incidencias.unshift(`🎖️ [Token Fidelidad] ${czl.playerName}: clausulazo CANCELADO por el dueño. El dinero fue devuelto.`);
         await updateDoc(leagueRef, { pending_clausulazos: updatedPending, incidencias });
 
+        // Log en chat + marcar buzón
+        window.sendSystemLeagueChatMessage(leagueCode, `🎖️ [RESCATE] ¡El dueño ha usado un Token de Fidelidad! El clausulazo de ${czl.buyerName} sobre ${czl.playerName} queda CANCELADO y el presupuesto devuelto.`);
+        try {
+          await db.collection("users").doc(currentUser.uid).collection("mailbox").doc(clausulazoId).update({ claimed: true });
+          await db.collection("users").doc(czl.buyerUid).collection("mailbox").add({
+            id: `czl_ref_${clausulazoId}`, type: "clausulazo_refund",
+            title: `🛡️ Clausulazo cancelado: ${czl.playerName}`,
+            description: `El dueño usó un Token de Fidelidad. Tu presupuesto de ${(czl.clausulaAmount/1e6).toFixed(1)}M$ ha sido devuelto.`,
+            amount: czl.clausulaAmount, claimed: false, createdAt: Date.now()
+          });
+        } catch(e) { console.error("Error updating mailbox after cancel:", e); }
+
         showNotification("🎖️ ¡Token de Fidelidad usado! El clausulazo ha sido cancelado y el dinero devuelto.", "success");
         updateHeaderAndDashboardStats();
       } catch (err) {
@@ -4124,6 +4407,41 @@
     };
 
     // =====================================================================
+
+    // --- Helper: Enviar mensaje de sistema al chat de liga ---
+    window.sendSystemLeagueChatMessage = async function(leagueCode, text) {
+      if (!leagueCode || !text) return;
+      try {
+        await db.collection("messages").add({
+          leagueCode, uid: "system", username: "Sistema",
+          text, timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          isSystem: true
+        });
+      } catch(e) { console.error("Error sending system chat message:", e); }
+    };
+
+    // --- Usar Token desde el buzón para cancelar clausulazo ---
+    window.counterClausulazo = async function(clausulazoId) {
+      await window.cancelClausulazoWithToken(clausulazoId);
+      try {
+        if (currentUser) {
+          await db.collection("users").doc(currentUser.uid).collection("mailbox").doc(clausulazoId).update({ claimed: true });
+        }
+      } catch(e) { console.error("counterClausulazo mailbox update error:", e); }
+    };
+
+    // --- Aceptar venta inmediatamente desde el buzón ---
+    window.resolveClausulazoTransfer = async function(clausulazoId) {
+      if (!currentUser || !currentActiveLeagueData) return;
+      try {
+        await finalizeClausulazo(clausulazoId, currentActiveLeagueData.id);
+        await db.collection("users").doc(currentUser.uid).collection("mailbox").doc(clausulazoId).update({ claimed: true });
+        showNotification("✅ Venta aceptada. El jugador ha sido transferido.", "success");
+      } catch(e) {
+        console.error("resolveClausulazoTransfer error:", e);
+        showNotification("Error al procesar la transferencia.", "error");
+      }
+    };
 
 
     function updateHeaderAndDashboardStats() {
@@ -5048,67 +5366,79 @@
 
     // --- ADMINISTRACIÓN DE APUESTAS FINANCIERAS ---
 
+    let adminBetsUnsubscribe = null;
+
     async function renderAdminPendingBets() {
       const container = document.getElementById("admin-pending-bets-container");
       if (!container) return;
 
+      if (adminBetsUnsubscribe) {
+        adminBetsUnsubscribe();
+      }
+
       container.innerHTML = `<div class="text-center text-slate-500 py-4 font-bold">Cargando apuestas...</div>`;
 
       try {
-        const betsSnap = await getDocs(collection(db, "club_bets"));
-        const pendingBets = [];
-        betsSnap.forEach(d => {
-          const data = d.data();
-          if (data.status === "pending") {
-            pendingBets.push({ id: d.id, ...data });
+        adminBetsUnsubscribe = onSnapshot(collection(db, "club_bets"), (snapshot) => {
+          const pendingBets = [];
+          snapshot.forEach(d => {
+            const data = d.data();
+            // Mostrar apuestas pendientes para la liga seleccionada
+            if (data.status === "pending" && (data.leagueId === adminSelectedLeagueId || !adminSelectedLeagueId)) {
+              pendingBets.push({ id: d.id, ...data });
+            }
+          });
+
+          if (pendingBets.length === 0) {
+            container.innerHTML = `<div class="py-4 text-center text-slate-500 font-bold">No hay apuestas financieras pendientes de validación.</div>`;
+            return;
           }
-        });
 
-        if (pendingBets.length === 0) {
-          container.innerHTML = `<div class="py-4 text-center text-slate-500 font-bold">No hay apuestas financieras pendientes de validación.</div>`;
-          return;
-        }
+          container.innerHTML = "";
 
-        container.innerHTML = "";
+          pendingBets.forEach(bet => {
+            const div = document.createElement("div");
+            div.className = "p-4 rounded-xl bg-slate-950/60 border border-purple-500/10 space-y-2 text-left animate-fade-in";
 
-        pendingBets.forEach(bet => {
-          const div = document.createElement("div");
-          div.className = "p-4 rounded-xl bg-slate-950/60 border border-purple-500/10 space-y-2 text-left";
+            let typeBadge = bet.betType === 1 ? "Ganador (x2)" : bet.betType === 2 ? "Goleador (x4)" : "Resultado Exacto (x5)";
 
-          let typeBadge = bet.betType === 1 ? "Ganador (x2)" : bet.betType === 2 ? "Goleador (x4)" : "Resultado Exacto (x5)";
-
-          div.innerHTML = `
-            <div class="flex justify-between items-start">
-              <div>
-                <p class="text-[9px] font-black text-purple-400 uppercase tracking-wider">${typeBadge}</p>
-                <p class="font-bold text-white text-xs mt-0.5">${bet.matchString}</p>
+            div.innerHTML = `
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="text-[9px] font-black text-purple-400 uppercase tracking-wider">${typeBadge}</p>
+                  <p class="font-bold text-white text-xs mt-0.5">${bet.matchString}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-[9px] text-slate-500 font-bold">Mánager: ${bet.username} (${bet.teamName})</p>
+                  <p class="text-[10px] text-purple-400 font-black mt-0.5">Depósito: ${bet.depositAmount.toLocaleString()} FC</p>
+                </div>
               </div>
-              <div class="text-right">
-                <p class="text-[9px] text-slate-500 font-bold">Mánager: ${bet.username} (${bet.teamName})</p>
-                <p class="text-[10px] text-emerald-400 font-black mt-0.5">Depósito: ${(bet.depositAmount / 1000000).toFixed(1)}M$</p>
+              
+              <div class="flex justify-between items-center bg-slate-900/60 p-2 rounded-lg mt-1 text-[10px]">
+                <span>Pronóstico: <strong class="text-gold font-extrabold">${bet.betSelection}</strong></span>
+                <span>Pago Potencial: <strong class="text-purple-400 font-extrabold">${bet.potentialPayout.toLocaleString()} FC</strong></span>
               </div>
-            </div>
-            
-            <div class="flex justify-between items-center bg-slate-900/60 p-2 rounded-lg mt-1 text-[10px]">
-              <span>Pronóstico: <strong class="text-gold font-extrabold">${bet.betSelection}</strong></span>
-              <span>Pago Potencial: <strong class="text-purple-400 font-extrabold">${(bet.potentialPayout / 1000000).toFixed(1)}M$</strong></span>
-            </div>
 
-            <div class="grid grid-cols-2 gap-2 pt-2">
-              <button onclick="resolveClubBet('${bet.id}', 'won')" class="py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] shadow transition cursor-pointer flex items-center justify-center gap-1">
-                <i data-lucide="check" class="w-3.5 h-3.5"></i> OK (Ganada)
-              </button>
-              <button onclick="resolveClubBet('${bet.id}', 'lost')" class="py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-black text-[10px] shadow transition cursor-pointer flex items-center justify-center gap-1">
-                <i data-lucide="x" class="w-3.5 h-3.5"></i> NO (Perdida)
-              </button>
-            </div>
-          `;
-          container.appendChild(div);
+              <div class="grid grid-cols-2 gap-2 pt-2">
+                <button onclick="resolveClubBet('${bet.id}', 'won')" class="py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] shadow transition cursor-pointer flex items-center justify-center gap-1">
+                  <i data-lucide="check" class="w-3.5 h-3.5"></i> OK (Ganada)
+                </button>
+                <button onclick="resolveClubBet('${bet.id}', 'lost')" class="py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-black text-[10px] shadow transition cursor-pointer flex items-center justify-center gap-1">
+                  <i data-lucide="x" class="w-3.5 h-3.5"></i> NO (Perdida)
+                </button>
+              </div>
+            `;
+            container.appendChild(div);
+          });
+
+          lucide.createIcons();
+        }, (err) => {
+          console.error("Error en onSnapshot de apuestas admin:", err);
+          container.innerHTML = `<div class="py-4 text-center text-rose-500 font-bold">Error al cargar apuestas en tiempo real.</div>`;
         });
-
-        lucide.createIcons();
       } catch (err) {
-        console.error("Error al renderizar apuestas de administrador:", err);
+        console.error("Error al inicializar snapshot de apuestas admin:", err);
+        container.innerHTML = `<div class="py-4 text-center text-rose-500 font-bold">Error en la base de datos de apuestas.</div>`;
       }
     }
 
@@ -5234,16 +5564,17 @@
       document.getElementById("admin-select-league").dispatchEvent(new Event("change"));
 
       // Rellenar selector de jugadores para otorgar
+      const searchModInput = document.getElementById("admin-player-mod-search");
+      if (searchModInput) searchModInput.value = "";
       const selectPlayerMod = document.getElementById("admin-player-mod");
-      if (selectPlayerMod.children.length === 0) {
-        const sortedPool = [...PLAYERS_POOL].sort((a, b) => a.nombre.localeCompare(b.nombre));
-        sortedPool.forEach(p => {
-          const opt = document.createElement("option");
-          opt.value = p.id;
-          opt.textContent = `${p.nombre} (${p.posicion.toUpperCase()} - ${(p.precio / 1000000).toFixed(1)}M$)`;
-          selectPlayerMod.appendChild(opt);
-        });
-      }
+      selectPlayerMod.innerHTML = "";
+      const sortedPool = [...PLAYERS_POOL].sort((a, b) => a.nombre.localeCompare(b.nombre));
+      sortedPool.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.nombre} (${p.posicion.toUpperCase()} - ${(p.precio / 1000000).toFixed(1)}M$)`;
+        selectPlayerMod.appendChild(opt);
+      });
     }
 
     // Cuando el admin cambia la liga
@@ -5392,6 +5723,10 @@
       document.getElementById("btn-admin-give-player").disabled = disabled;
       document.getElementById("btn-admin-take-player").disabled = disabled;
       document.getElementById("admin-player-mod").disabled = disabled;
+      const btnGiveCard = document.getElementById("btn-admin-give-card");
+      if (btnGiveCard) btnGiveCard.disabled = disabled;
+      const searchModInput = document.getElementById("admin-player-mod-search");
+      if (searchModInput) searchModInput.disabled = disabled;
 
       const btnViewEditSquad = document.getElementById("btn-admin-view-edit-squad");
       if (btnViewEditSquad) {
@@ -5599,6 +5934,44 @@
       } catch (err) {
         console.error("Admin error taking player:", err);
       }
+    });
+
+    // Admin: Otorgar Carta de Cromo al Mazo
+    document.getElementById("btn-admin-give-card").addEventListener("click", async () => {
+      if (!adminSelectedUserId) return;
+      const playerId = document.getElementById("admin-player-mod").value;
+      const player = PLAYERS_POOL.find(p => p.id === playerId);
+      if (!player) return;
+
+      try {
+        const userRef = doc(db, "users", adminSelectedUserId);
+        await updateDoc(userRef, {
+          user_inventory: arrayUnion(playerId)
+        });
+        showNotification(`🃏 Has otorgado la carta de ${player.nombre} al mazo del mánager.`);
+      } catch (err) {
+        console.error("Admin error giving card:", err);
+        showNotification("Error al otorgar carta de cromo.", "error");
+      }
+    });
+
+    // Admin: Filtrar selector de jugadores
+    document.getElementById("admin-player-mod-search").addEventListener("input", (e) => {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      const selectPlayerMod = document.getElementById("admin-player-mod");
+      if (!selectPlayerMod) return;
+      
+      selectPlayerMod.innerHTML = "";
+      const sortedPool = [...PLAYERS_POOL]
+        .filter(p => p.nombre.toLowerCase().includes(searchTerm) || p.pais.toLowerCase().includes(searchTerm))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+        
+      sortedPool.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.nombre} (${p.posicion.toUpperCase()} - ${(p.precio / 1000000).toFixed(1)}M$)`;
+        selectPlayerMod.appendChild(opt);
+      });
     });
 
 
@@ -6652,7 +7025,7 @@
     };
 
     // --- GENERAR AVATAR/FOTO PREMIUM PARA LA PLANTILLA ---
-    window.getPlayerCardAvatarHTML = function(id, player, sizeClass = "w-16 h-16", isCaptain = false) {
+    window.getPlayerCardAvatarHTML = function(id, player, sizeClass = "w-16 h-16", isCaptain = false, shapeClass = "rounded-full") {
       const photoUrl = window.getPlayerPhotoUrl(id);
       const posMap = { 
         portero: "from-teal-600 to-teal-950 text-teal-200 border-teal-500/40", 
@@ -6664,14 +7037,14 @@
       
       if (photoUrl) {
         return `
-          <div class="${sizeClass} rounded-full border-2 ${isCaptain ? 'border-gold shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-[pulseGold_2s_infinite]' : 'border-slate-700/60'} bg-slate-950 overflow-hidden relative shadow-lg flex items-center justify-center transition duration-200 mx-auto select-none pointer-events-none">
+          <div class="${sizeClass} ${shapeClass} border-2 ${isCaptain ? 'border-gold shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-[pulseGold_2s_infinite]' : 'border-slate-700/60'} bg-slate-950 overflow-hidden relative shadow-lg flex items-center justify-center transition duration-200 mx-auto select-none pointer-events-none">
             <img src="${photoUrl}" alt="${player.nombre}" class="w-full h-full object-cover object-top">
           </div>
         `;
       } else {
         const initials = player.nombre.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
         return `
-          <div class="${sizeClass} rounded-full border-2 ${isCaptain ? 'border-gold shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-[pulseGold_2s_infinite]' : 'border-slate-700/60'} bg-gradient-to-b ${posTheme} overflow-hidden relative shadow-lg flex flex-col items-center justify-center transition duration-200 mx-auto select-none pointer-events-none">
+          <div class="${sizeClass} ${shapeClass} border-2 ${isCaptain ? 'border-gold shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-[pulseGold_2s_infinite]' : 'border-slate-700/60'} bg-gradient-to-b ${posTheme} overflow-hidden relative shadow-lg flex flex-col items-center justify-center transition duration-200 mx-auto select-none pointer-events-none">
             <i data-lucide="shirt" class="w-1/2 h-1/2 opacity-15 absolute"></i>
             <span class="font-black text-xs tracking-wider z-10">${initials}</span>
           </div>
@@ -8678,19 +9051,21 @@
                 statusBadge = `<span class="text-[9px] bg-amber-500/10 border border-amber-500/20 text-amber-400 font-extrabold px-2 py-0.5 rounded">Pendiente</span>`;
               } else if (bet.status === "won") {
                 if (bet.claimed === true) {
-                  const methodStr = bet.claimedMethod === "FC" ? "FC" : "$";
-                  statusBadge = `<span class="text-[9px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-extrabold px-2 py-0.5 rounded">Cobrada (+${bet.potentialPayout.toLocaleString()} ${methodStr})</span>`;
+                  let rewardStr = "";
+                  if (bet.claimedMethod === "split") {
+                    rewardStr = `+${(bet.claimedFC || 0).toLocaleString()} FC y +${((bet.claimedUSD || 0) / 1000000).toFixed(2)}M$`;
+                  } else {
+                    const methodStr = bet.claimedMethod === "FC" ? "FC" : "$";
+                    rewardStr = `+${bet.potentialPayout.toLocaleString()} ${methodStr}`;
+                  }
+                  statusBadge = `<span class="text-[9px] bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-extrabold px-2 py-0.5 rounded">Cobrada (${rewardStr})</span>`;
                 } else {
                   statusBadge = `<span class="text-[9px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-extrabold px-2 py-0.5 rounded animate-pulse">¡Ganada! Sin cobrar</span>`;
                   actionButtons = `
-                    <div class="mt-3 grid grid-cols-2 gap-2 pt-2 border-t border-white/5">
-                      <button onclick="claimBetPayout('${bet.id}', 'FC')" 
-                        class="px-2 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-purple-100 font-black text-[9px] uppercase transition cursor-pointer active:scale-95 text-center flex items-center justify-center gap-1 shadow-md shadow-purple-900/20 border border-purple-500/30">
-                        <i data-lucide="coins" class="w-3.5 h-3.5 text-purple-300"></i> Cobrar FC
-                      </button>
-                      <button onclick="claimBetPayout('${bet.id}', 'USD')" 
-                        class="px-2 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-emerald-100 font-black text-[9px] uppercase transition cursor-pointer active:scale-95 text-center flex items-center justify-center gap-1 shadow-md shadow-emerald-900/20 border border-emerald-500/30">
-                        <i data-lucide="wallet" class="w-3.5 h-3.5 text-emerald-300"></i> Cobrar en $
+                    <div class="mt-3 pt-2 border-t border-white/5">
+                      <button onclick="openClaimBetSplitModal('${bet.id}', '${bet.matchString.replace(/'/g, "\\\'")}', '${bet.betSelection.replace(/'/g, "\\\'")}', ${bet.potentialPayout})" 
+                        class="w-full px-2 py-1.5 rounded-lg bg-purple-gradient text-slate-950 font-black text-[10px] uppercase transition cursor-pointer active:scale-95 text-center flex items-center justify-center gap-1 shadow-md shadow-purple-500/20 border border-purple-500/30">
+                        <i data-lucide="coins" class="w-3.5 h-3.5 text-slate-950"></i> Reclamar Premio (Elegir Cobro)
                       </button>
                     </div>
                   `;
@@ -8811,6 +9186,142 @@
     };
 
 
+    // --- COBRO MULTI-MONEDA / SPLIT (Fonda Bet) ---
+    let activeClaimingBetId = null;
+    let activeClaimingPayoutTotal = 0;
+
+    window.openClaimBetSplitModal = function (betId, matchString, selection, payoutTotal) {
+      activeClaimingBetId = betId;
+      activeClaimingPayoutTotal = payoutTotal;
+
+      document.getElementById("claim-bet-match").textContent = matchString;
+      document.getElementById("claim-bet-selection").textContent = selection;
+      document.getElementById("claim-bet-payout-total").textContent = payoutTotal + " FC";
+
+      const rangeInput = document.getElementById("claim-bet-split-range");
+      rangeInput.max = payoutTotal;
+      rangeInput.value = payoutTotal; // Por defecto todo en FC
+
+      const fcInput = document.getElementById("claim-bet-fc-input");
+      fcInput.max = payoutTotal;
+      fcInput.value = payoutTotal;
+
+      updateClaimBetSplitDisplay();
+
+      document.getElementById("modal-claim-bet-split").classList.remove("hidden");
+      lucide.createIcons();
+    };
+
+    window.closeClaimBetSplitModal = function () {
+      document.getElementById("modal-claim-bet-split").classList.add("hidden");
+      activeClaimingBetId = null;
+    };
+
+    window.updateClaimBetSplitDisplay = function () {
+      const rangeInput = document.getElementById("claim-bet-split-range");
+      const val = parseInt(rangeInput.value) || 0;
+      
+      const fcInput = document.getElementById("claim-bet-fc-input");
+      fcInput.value = val;
+
+      const usdFC = activeClaimingPayoutTotal - val;
+      const usdNet = usdFC * 195000;
+
+      document.getElementById("claim-bet-fc-display").textContent = val + " FC";
+      document.getElementById("claim-bet-usd-display").textContent = (usdNet / 1000000).toFixed(2) + "M$";
+      document.getElementById("claim-bet-usd-val").textContent = "+" + usdNet.toLocaleString() + " $";
+    };
+
+    window.onClaimBetFCInput = function () {
+      const fcInput = document.getElementById("claim-bet-fc-input");
+      let val = parseInt(fcInput.value) || 0;
+      if (val < 0) val = 0;
+      if (val > activeClaimingPayoutTotal) val = activeClaimingPayoutTotal;
+      fcInput.value = val;
+
+      const rangeInput = document.getElementById("claim-bet-split-range");
+      rangeInput.value = val;
+
+      const usdFC = activeClaimingPayoutTotal - val;
+      const usdNet = usdFC * 195000;
+
+      document.getElementById("claim-bet-fc-display").textContent = val + " FC";
+      document.getElementById("claim-bet-usd-display").textContent = (usdNet / 1000000).toFixed(2) + "M$";
+      document.getElementById("claim-bet-usd-val").textContent = "+" + usdNet.toLocaleString() + " $";
+    };
+
+    // Registrar listener del botón de confirmar cobro al cargar script
+    document.addEventListener("DOMContentLoaded", () => {
+      const btnConfirmClaim = document.getElementById("btn-confirm-bet-claim");
+      if (btnConfirmClaim) {
+        btnConfirmClaim.addEventListener("click", async () => {
+          if (!activeClaimingBetId) return;
+          
+          const fcInput = document.getElementById("claim-bet-fc-input");
+          const fcClaim = parseInt(fcInput.value) || 0;
+          
+          if (fcClaim < 0 || fcClaim > activeClaimingPayoutTotal) {
+            showNotification("El reparto no es válido.", "error");
+            return;
+          }
+
+          const usdFC = activeClaimingPayoutTotal - fcClaim;
+          const usdNet = usdFC * 195000;
+
+          const confirmMsg = `¿Confirmas cobrar tu premio de la siguiente manera?\n\n• Recibirás: ${fcClaim} FC\n• Convertirás: ${usdFC} FC a Presupuesto de Club ($)\n• Ingreso neto en $: +${usdNet.toLocaleString()} $ (35% penalización aplicada)`;
+          if (!confirm(confirmMsg)) return;
+
+          const btn = document.getElementById("btn-confirm-bet-claim");
+          btn.disabled = true;
+          btn.innerHTML = `Procesando cobro... <i data-lucide="loader" class="w-4 h-4 animate-spin"></i>`;
+          lucide.createIcons();
+
+          try {
+            const betRef = doc(db, "club_bets", activeClaimingBetId);
+            const userRef = doc(db, "users", currentUser.uid);
+
+            const currentFC = currentUserProfile.fonda_coins || 0;
+            const newFC = currentFC + fcClaim;
+
+            const currentUSD = currentUserProfile.presupuesto_club || 0;
+            const newUSD = currentUSD + usdNet;
+
+            const currentLegacyUSD = currentUserProfile.presupuesto_actual || 0;
+            const newLegacyUSD = currentLegacyUSD + usdNet;
+
+            await updateDoc(userRef, {
+              fonda_coins: newFC,
+              presupuesto_club: newUSD,
+              presupuesto_actual: newLegacyUSD
+            });
+
+            currentUserProfile.fonda_coins = newFC;
+            currentUserProfile.presupuesto_club = newUSD;
+            currentUserProfile.presupuesto_actual = newLegacyUSD;
+
+            await updateDoc(betRef, {
+              claimed: true,
+              claimedMethod: "split",
+              claimedFC: fcClaim,
+              claimedUSD: usdNet,
+              claimedAt: new Date().toISOString()
+            });
+
+            showNotification("🎉 ¡Premio reclamado con éxito!", "success");
+            closeClaimBetSplitModal();
+            renderBetsPanel();
+            updateHeaderAndDashboardStats();
+          } catch (err) {
+            console.error("Error al reclamar el premio:", err);
+            showNotification("Error de base de datos al reclamar el premio.", "error");
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-slate-950"></i> Confirmar y Cobrar Premio`;
+            lucide.createIcons();
+          }
+        });
+      }
+    });
 
 
     // =====================================================================
@@ -9231,6 +9742,7 @@
       const hasJugador12 = chips.jugador_12?.usado_en_jornada === jornadaActiva;
       const extraPlayerId = chips.jugador_12?.jugador_extra_id;
       const hasCapitanMaximo = chips.capitan_maximo?.usado_en_jornada === jornadaActiva;
+      const motivacionMap = team.motivacion_plus || {};
 
       let puntosJornada = 0;
       const titularesIds = [
@@ -9258,6 +9770,7 @@
         const p = livePlayers[id];
         if (p) {
           let pts = p.puntos_jornadas?.[jornadaActiva] || 0;
+          if (motivacionMap[id]) pts += 2; // 🔥 Motivación Plus bonus
           if (hasCapitanMaximo) {
             if (id === maxPointsPlayerId) {
               pts = pts * 3;
@@ -10316,10 +10829,10 @@
             <span class="px-1.5 py-0.5 rounded font-black text-[8px] uppercase bg-${posCol}-500/10 text-${posCol}-400">${posLabel}</span>
             <span class="text-xs">${player.flag || "⚽"}</span>
           </div>
-          <div class="flex-grow flex items-center justify-center z-10 my-2">
-            ${window.getPlayerCardAvatarHTML(player.id, player, "w-16 h-16", false)}
+          <div class="w-full h-24 z-10 my-1.5">
+            ${window.getPlayerCardAvatarHTML(player.id, player, "w-full h-full", false, "rounded-xl")}
           </div>
-          <div class="space-y-0.5 z-10 text-center border-t border-white/5 pt-1.5">
+          <div class="space-y-0.5 z-10 text-center border-t border-white/5 pt-1">
             <p class="text-[9px] font-black text-white truncate uppercase">${player.nombre}</p>
             <div class="flex justify-between items-center">
               <span class="text-[7px] text-slate-500 font-bold truncate">${player.pais}</span>
@@ -10334,7 +10847,7 @@
 
     // ---- Tab switcher sub-packs ----
     window.switchPacksTab = function (tab) {
-      ["shop", "album", "deck", "trade"].forEach(t => {
+      ["shop", "album", "deck", "consumables", "trade"].forEach(t => {
         const panel = document.getElementById(`packs-panel-${t}`);
         const btn = document.getElementById(`packs-tab-${t}`);
         if (!panel || !btn) return;
@@ -10349,6 +10862,7 @@
       if (tab === "album") renderAlbumCountryNav();
       if (tab === "deck") renderDeckGrid();
       if (tab === "trade") initTradePanel();
+      if (tab === "consumables") renderConsumablesGrid();
     };
 
     // ---- Pack drawing algorithm ----
@@ -10398,19 +10912,26 @@
         const newFC = currentFC - price;
         const userRef = doc(db, "users", currentUser.uid);
 
-        // --- Token de Fidelidad Drop (por cada carta del sobre) ---
+        // --- Token de Fidelidad Drop ---
         let tokensGanados = 0;
         for (let i = 0; i < ids.length; i++) {
           if (rollTokenDrop(type)) tokensGanados++;
         }
 
+        // --- Consumibles Drop ---
+        const wonSeguro = Math.random() < 0.10;     // 10% Seguro 24h
+        const wonMotivacion = Math.random() < 0.15; // 15% Motivación Plus
+
         const updatePayload = { user_inventory: arrayUnion(...ids), fonda_coins: newFC };
-        if (tokensGanados > 0) {
-          updatePayload.tokens_fidelidad = (currentUserProfile.tokens_fidelidad || 0) + tokensGanados;
-        }
+        if (tokensGanados > 0) updatePayload.tokens_fidelidad = (currentUserProfile.tokens_fidelidad || 0) + tokensGanados;
+        if (wonSeguro) updatePayload.seguro_24h_count = (currentUserProfile.seguro_24h_count || 0) + 1;
+        if (wonMotivacion) updatePayload.motivacion_plus_count = (currentUserProfile.motivacion_plus_count || 0) + 1;
+
         await updateDoc(userRef, updatePayload);
         currentUserProfile.fonda_coins = newFC;
         if (tokensGanados > 0) currentUserProfile.tokens_fidelidad = (currentUserProfile.tokens_fidelidad || 0) + tokensGanados;
+        if (wonSeguro) currentUserProfile.seguro_24h_count = (currentUserProfile.seguro_24h_count || 0) + 1;
+        if (wonMotivacion) currentUserProfile.motivacion_plus_count = (currentUserProfile.motivacion_plus_count || 0) + 1;
 
         if (!currentUserProfile.user_inventory) currentUserProfile.user_inventory = [];
         ids.forEach(id => { if (!currentUserProfile.user_inventory.includes(id)) currentUserProfile.user_inventory.push(id); });
@@ -10427,6 +10948,9 @@
             grid.appendChild(wrap);
             setTimeout(() => { wrap.classList.remove("scale-0", "opacity-0"); wrap.classList.add("scale-100", "opacity-100"); }, (idx + 1) * 280);
           });
+
+          let extraIdx = players.length;
+
           // Token reveal card
           if (tokensGanados > 0) {
             const tokenWrap = document.createElement("div");
@@ -10436,13 +10960,63 @@
               <div><p class="font-black text-emerald-300 text-sm">¡Token de Fidelidad obtenido!</p>
               <p class="text-[10px] text-slate-400">+${tokensGanados} token${tokensGanados>1?'s':''} añadido${tokensGanados>1?'s':''} a tu colección.</p></div></div>`;
             grid.appendChild(tokenWrap);
-            setTimeout(() => { tokenWrap.classList.remove("scale-0","opacity-0"); tokenWrap.classList.add("scale-100","opacity-100"); }, (players.length+1)*280);
+            setTimeout(() => { tokenWrap.classList.remove("scale-0","opacity-0"); tokenWrap.classList.add("scale-100","opacity-100"); }, (++extraIdx)*280);
           }
-          setTimeout(() => { lucide.createIcons(); updatePacksStats(); }, players.length * 280 + 100);
+
+          // Seguro 24h reveal card
+          if (wonSeguro) {
+            const seguroWrap = document.createElement("div");
+            seguroWrap.className = "transform scale-0 opacity-0 transition-all duration-700 ease-out";
+            seguroWrap.innerHTML = `<div class="glass-panel p-4 rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/50 to-slate-950/70 shadow-xl flex flex-col items-center justify-between text-center gap-3 min-h-[200px]">
+              <div class="text-[9px] font-black uppercase text-emerald-400 tracking-wider">🔒 Consumible Especial</div>
+              <div class="space-y-2">
+                <div class="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-3xl animate-bounce">🛡️</div>
+                <h4 class="font-extrabold text-white text-sm">Seguro 24h</h4>
+                <p class="text-[9px] text-slate-400">Protege a un jugador de clausulazos durante 24 horas.</p>
+              </div>
+              <div class="w-full py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-[9px] uppercase tracking-wider">¡OBTENIDO! (${currentUserProfile.seguro_24h_count} total)</div>
+            </div>`;
+            grid.appendChild(seguroWrap);
+            setTimeout(() => { seguroWrap.classList.remove("scale-0","opacity-0"); seguroWrap.classList.add("scale-100","opacity-100"); }, (++extraIdx)*280);
+          }
+
+          // Motivación Plus reveal card
+          if (wonMotivacion) {
+            const motivWrap = document.createElement("div");
+            motivWrap.className = "transform scale-0 opacity-0 transition-all duration-700 ease-out";
+            motivWrap.innerHTML = `<div class="glass-panel p-4 rounded-3xl border border-rose-500/30 bg-gradient-to-b from-rose-950/50 to-slate-950/70 shadow-xl flex flex-col items-center justify-between text-center gap-3 min-h-[200px]">
+              <div class="text-[9px] font-black uppercase text-rose-400 tracking-wider">🔥 Consumible Especial</div>
+              <div class="space-y-2">
+                <div class="w-14 h-14 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mx-auto text-3xl animate-pulse">🔥</div>
+                <h4 class="font-extrabold text-white text-sm">Motivación Plus</h4>
+                <p class="text-[9px] text-slate-400">+2 puntos extra a un jugador de tu plantilla.</p>
+              </div>
+              <div class="w-full py-1.5 rounded-xl bg-rose-500 text-slate-950 font-black text-[9px] uppercase tracking-wider">¡OBTENIDO! (${currentUserProfile.motivacion_plus_count} total)</div>
+            </div>`;
+            grid.appendChild(motivWrap);
+            setTimeout(() => { motivWrap.classList.remove("scale-0","opacity-0"); motivWrap.classList.add("scale-100","opacity-100"); }, (++extraIdx)*280);
+          }
+
+          setTimeout(() => { lucide.createIcons(); updatePacksStats(); }, (extraIdx + 1) * 280);
         }
-        let notifMsg = `🎴 ¡Sobre ${type} abierto! -${price.toLocaleString()} FC. +${ids.length} cromos al mazo.`;
+
+        let notifMsg = `🎴 ¡Sobre ${type} abierto! -${price.toLocaleString()} FC. +${ids.length} cromos.`;
         if (tokensGanados > 0) notifMsg += ` 🎖️ +${tokensGanados} Token de Fidelidad`;
+        if (wonSeguro) notifMsg += ` 🛡️ +1 Seguro 24h`;
+        if (wonMotivacion) notifMsg += ` 🔥 +1 Motivación Plus`;
         showNotification(notifMsg, "success");
+
+        // Log en chat de liga
+        if (currentActiveLeague && (wonSeguro || wonMotivacion || tokensGanados > 0)) {
+          const playerNames = players.slice(0, 2).map(p => p.nombre).join(", ");
+          let chatMsg = `🎴 [SOBRE] ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} abrió un sobre ${type}`;
+          if (wonSeguro) chatMsg += ` y obtuvo un 🛡️ Seguro 24h`;
+          if (wonMotivacion) chatMsg += `${wonSeguro?' y':' y'} un 🔥 Motivación Plus`;
+          if (tokensGanados > 0) chatMsg += ` y ${tokensGanados} 🎖️ Token${tokensGanados>1?'s':''} de Fidelidad`;
+          chatMsg += `!`;
+          window.sendSystemLeagueChatMessage(currentActiveLeague, chatMsg);
+        }
+
         updateHeaderAndDashboardStats();
       } catch (err) {
         console.error("Error abriendo sobre:", err);
@@ -10463,28 +11037,49 @@
 
       const allIds = [];
       let tokensGanadosMulti = 0;
+      let seguroGanadosMulti = 0;
+      let motivacionGanadosMulti = 0;
       for (let i = 0; i < count; i++) {
         const { ids } = drawPack(type, 3);
         ids.forEach(id => allIds.push(id));
         for (let j = 0; j < ids.length; j++) { if (rollTokenDrop(type)) tokensGanadosMulti++; }
+        if (Math.random() < 0.10) seguroGanadosMulti++;
+        if (Math.random() < 0.15) motivacionGanadosMulti++;
       }
       try {
         const newFC = currentFC - price;
         const userRef = doc(db, "users", currentUser.uid);
         const multiPayload = { user_inventory: arrayUnion(...allIds), fonda_coins: newFC };
-        if (tokensGanadosMulti > 0) {
-          multiPayload.tokens_fidelidad = (currentUserProfile.tokens_fidelidad || 0) + tokensGanadosMulti;
-        }
+        if (tokensGanadosMulti > 0) multiPayload.tokens_fidelidad = (currentUserProfile.tokens_fidelidad || 0) + tokensGanadosMulti;
+        if (seguroGanadosMulti > 0) multiPayload.seguro_24h_count = (currentUserProfile.seguro_24h_count || 0) + seguroGanadosMulti;
+        if (motivacionGanadosMulti > 0) multiPayload.motivacion_plus_count = (currentUserProfile.motivacion_plus_count || 0) + motivacionGanadosMulti;
+
         await updateDoc(userRef, multiPayload);
         currentUserProfile.fonda_coins = newFC;
         if (tokensGanadosMulti > 0) currentUserProfile.tokens_fidelidad = (currentUserProfile.tokens_fidelidad || 0) + tokensGanadosMulti;
+        if (seguroGanadosMulti > 0) currentUserProfile.seguro_24h_count = (currentUserProfile.seguro_24h_count || 0) + seguroGanadosMulti;
+        if (motivacionGanadosMulti > 0) currentUserProfile.motivacion_plus_count = (currentUserProfile.motivacion_plus_count || 0) + motivacionGanadosMulti;
 
         if (!currentUserProfile.user_inventory) currentUserProfile.user_inventory = [];
         allIds.forEach(id => { if (!currentUserProfile.user_inventory.includes(id)) currentUserProfile.user_inventory.push(id); });
         updatePacksStats();
+
         let multiMsg = `⚡ ¡${count} sobres ${type} abiertos! -${price.toLocaleString()} FC. +${totalCards} cromos.`;
         if (tokensGanadosMulti > 0) multiMsg += ` 🎖️ +${tokensGanadosMulti} Token${tokensGanadosMulti>1?'s':''} de Fidelidad`;
+        if (seguroGanadosMulti > 0) multiMsg += ` 🛡️ +${seguroGanadosMulti} Seguro${seguroGanadosMulti>1?'s':''} 24h`;
+        if (motivacionGanadosMulti > 0) multiMsg += ` 🔥 +${motivacionGanadosMulti} Motivación Plus`;
         showNotification(multiMsg, "success");
+
+        // Log en chat de liga
+        if (currentActiveLeague && (seguroGanadosMulti > 0 || motivacionGanadosMulti > 0 || tokensGanadosMulti > 0)) {
+          let chatMsg = `⚡ [SOBRES] ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} abrió ${count} sobres ${type}`;
+          if (seguroGanadosMulti > 0) chatMsg += ` y obtuvo ${seguroGanadosMulti} 🛡️ Seguro${seguroGanadosMulti>1?'s':''} 24h`;
+          if (motivacionGanadosMulti > 0) chatMsg += ` y ${motivacionGanadosMulti} 🔥 Motivación Plus`;
+          if (tokensGanadosMulti > 0) chatMsg += ` y ${tokensGanadosMulti} 🎖️ Token${tokensGanadosMulti>1?'s':''} de Fidelidad`;
+          chatMsg += `!`;
+          window.sendSystemLeagueChatMessage(currentActiveLeague, chatMsg);
+        }
+
         updateHeaderAndDashboardStats();
       } catch (err) {
         console.error("Error en apertura múltiple:", err);
@@ -10521,11 +11116,88 @@
       const nav = document.getElementById("album-country-nav");
       if (!nav) return;
       const countries = [...new Set(PLAYERS_POOL.map(p => p.pais))].sort();
+      const album = currentUserProfile?.user_album || [];
+
+      nav.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 w-full";
       nav.innerHTML = countries.map(c => {
         const flag = PLAYERS_POOL.find(p => p.pais === c)?.flag || "";
-        return `<button onclick="renderAlbumCountryPage('${c}')" class="px-3 py-1.5 rounded-xl text-[10px] font-black border border-white/10 bg-white/5 hover:bg-white/10 text-white transition cursor-pointer">${flag} ${c}</button>`;
+        const total = PLAYERS_POOL.filter(p => p.pais === c).length;
+        const collected = PLAYERS_POOL.filter(p => p.pais === c && album.includes(p.id)).length;
+        const complete = collected === total;
+        return `
+          <button onclick="selectAlbumCountry('${c.replace(/'/g,"\\'")}', this)"
+            class="album-nav-btn flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl border border-white/5 bg-slate-900/40 hover:bg-slate-800/80 hover:border-amber-500/30 text-slate-300 hover:text-white transition duration-200 cursor-pointer ${complete ? 'ring-1 ring-amber-500/40' : ''}">
+            <span class="text-xl leading-none">${flag}</span>
+            <span class="text-[9px] font-black truncate w-full text-center leading-tight">${c}</span>
+            <span class="text-[8px] ${complete ? 'text-amber-400' : 'text-slate-500'} font-bold">${collected}/${total}</span>
+          </button>`;
       }).join("");
+
+      // Auto-select first country
+      const firstBtn = nav.querySelector("button");
+      if (firstBtn) firstBtn.click();
     }
+
+    window.selectAlbumCountry = function (country, btnElement) {
+      document.querySelectorAll(".album-nav-btn").forEach(b => {
+        b.classList.remove("bg-amber-500", "text-slate-950", "border-transparent", "shadow-lg", "shadow-amber-500/20");
+        b.classList.add("bg-slate-900/40", "text-slate-300", "border-white/5");
+      });
+      if (btnElement) {
+        btnElement.classList.remove("bg-slate-900/40", "text-slate-300", "border-white/5");
+        btnElement.classList.add("bg-amber-500", "text-slate-950", "border-transparent", "shadow-lg", "shadow-amber-500/20");
+      }
+      renderAlbumCountryPage(country);
+    };
+
+    // ---- Consumibles grid ----
+    window.renderConsumablesGrid = function () {
+      const grid = document.getElementById("consumables-cards-grid");
+      if (!grid) return;
+      const profile = currentUserProfile || {};
+      const tokensCount = profile.tokens_fidelidad || 0;
+      const seguroCount = profile.seguro_24h_count || 0;
+      const motivacionCount = profile.motivacion_plus_count || 0;
+
+      grid.innerHTML = `
+        <div class="glass-panel p-5 rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/40 via-slate-900/90 to-slate-950/95 flex flex-col items-center text-center gap-4 relative overflow-hidden group shadow-xl">
+          <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none"></div>
+          <div class="absolute top-0 right-0 bg-emerald-500/10 border-b border-l border-emerald-500/20 px-3 py-1 rounded-bl-xl text-[10px] font-black text-emerald-400 uppercase tracking-widest">x${tokensCount} Disp.</div>
+          <div class="text-[9px] font-black uppercase text-emerald-400 tracking-widest mt-4">Loyalty Shield</div>
+          <div class="w-20 h-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500/30 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition duration-300">🎖️</div>
+          <div class="space-y-1 flex-grow">
+            <h4 class="font-extrabold text-white text-sm">Token de Fidelidad</h4>
+            <p class="text-[10px] text-slate-400 leading-relaxed">Cancela un clausulazo hostil. El jugador vuelve a tu plantilla y el agresor pierde el dinero.</p>
+          </div>
+          <div class="w-full py-2 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-emerald-300 font-extrabold text-xs">🛡️ Escudo Anti-Clausulazo</div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-3xl border border-blue-500/30 bg-gradient-to-b from-blue-950/40 via-slate-900/90 to-slate-950/95 flex flex-col items-center text-center gap-4 relative overflow-hidden group shadow-xl">
+          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent pointer-events-none"></div>
+          <div class="absolute top-0 right-0 bg-blue-500/10 border-b border-l border-blue-500/20 px-3 py-1 rounded-bl-xl text-[10px] font-black text-blue-400 uppercase tracking-widest">x${seguroCount} Disp.</div>
+          <div class="text-[9px] font-black uppercase text-blue-400 tracking-widest mt-4">Squad Insurance</div>
+          <div class="w-20 h-20 rounded-full bg-blue-500/10 border-2 border-blue-500/30 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition duration-300">🛡️</div>
+          <div class="space-y-1 flex-grow">
+            <h4 class="font-extrabold text-white text-sm">Seguro de Plantilla 24h</h4>
+            <p class="text-[10px] text-slate-400 leading-relaxed">Protege a un jugador de tu plantilla contra cualquier clausulazo por 24 horas continuas.</p>
+          </div>
+          <div class="w-full py-2 rounded-xl bg-blue-950/60 border border-blue-500/20 text-blue-300 font-extrabold text-xs">🔒 Aplicar desde el Perfil del Jugador</div>
+        </div>
+
+        <div class="glass-panel p-5 rounded-3xl border border-rose-500/30 bg-gradient-to-b from-rose-950/40 via-slate-900/90 to-slate-950/95 flex flex-col items-center text-center gap-4 relative overflow-hidden group shadow-xl">
+          <div class="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent pointer-events-none"></div>
+          <div class="absolute top-0 right-0 bg-rose-500/10 border-b border-l border-rose-500/20 px-3 py-1 rounded-bl-xl text-[10px] font-black text-rose-400 uppercase tracking-widest">x${motivacionCount} Disp.</div>
+          <div class="text-[9px] font-black uppercase text-rose-400 tracking-widest mt-4">Performance Boost</div>
+          <div class="w-20 h-20 rounded-full bg-rose-500/10 border-2 border-rose-500/30 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition duration-300">🔥</div>
+          <div class="space-y-1 flex-grow">
+            <h4 class="font-extrabold text-white text-sm">Motivación Plus</h4>
+            <p class="text-[10px] text-slate-400 leading-relaxed">Suma +2 puntos de bonificación en la próxima jornada al jugador titular al que lo apliques.</p>
+          </div>
+          <div class="w-full py-2 rounded-xl bg-rose-950/60 border border-rose-500/20 text-rose-300 font-extrabold text-xs">⚡ Aplicar desde el Perfil del Jugador</div>
+        </div>
+      `;
+      lucide.createIcons();
+    };
 
     window.renderAlbumCountryPage = function (country) {
       const page = document.getElementById("album-country-page");
@@ -10605,6 +11277,95 @@
       } catch (err) {
         console.error("Error pegando cromo:", err);
         showNotification("Error al pegar el cromo.", "error");
+      }
+    };
+
+    // ---- Auto paste all stickers ----
+    window.autoPasteAllStickers = async function () {
+      if (!currentUser || !currentUserProfile) return;
+      const inventory = currentUserProfile.user_inventory || [];
+      if (inventory.length === 0) {
+        showNotification("No tienes cromos en tu mazo para pegar.", "error");
+        return;
+      }
+      const album = currentUserProfile.user_album || [];
+      const toPaste = [];
+      const newInventory = [...inventory];
+
+      // Identify cards in inventory that are not yet in album
+      const uniqueInventory = [...new Set(inventory)];
+      uniqueInventory.forEach(playerId => {
+        if (!album.includes(playerId)) {
+          toPaste.push(playerId);
+          const idx = newInventory.indexOf(playerId);
+          if (idx !== -1) {
+            newInventory.splice(idx, 1);
+          }
+        }
+      });
+
+      if (toPaste.length === 0) {
+        showNotification("Todos los cromos de tu mazo ya están pegados en el álbum o son repetidos.", "warning");
+        return;
+      }
+
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        const newAlbum = [...album, ...toPaste];
+        
+        await updateDoc(userRef, {
+          user_inventory: newInventory,
+          user_album: newAlbum
+        });
+
+        currentUserProfile.user_inventory = newInventory;
+        currentUserProfile.user_album = newAlbum;
+
+        updatePacksStats();
+        renderDeckGrid();
+        updateHeaderAndDashboardStats();
+
+        // Check for completed countries
+        const countriesToCheck = [...new Set(toPaste.map(id => PLAYERS_POOL.find(p => p.id === id)?.pais).filter(Boolean))];
+        let totalBonus = 0;
+        const newlyCompletedCountries = [];
+        
+        for (const country of countriesToCheck) {
+          const countryPlayers = PLAYERS_POOL.filter(p => p.pais === country);
+          const collectedCountryPlayers = countryPlayers.filter(p => currentUserProfile.user_album.includes(p.id));
+          
+          if (collectedCountryPlayers.length === countryPlayers.length) {
+            const completedCountries = currentUserProfile.completed_countries || [];
+            if (!completedCountries.includes(country)) {
+              newlyCompletedCountries.push(country);
+              totalBonus += 30; // 30 FC per completed country
+            }
+          }
+        }
+
+        if (newlyCompletedCountries.length > 0) {
+          const finalFC = (currentUserProfile.fonda_coins || 0) + totalBonus;
+          await updateDoc(userRef, {
+            completed_countries: arrayUnion(...newlyCompletedCountries),
+            fonda_coins: finalFC
+          });
+          currentUserProfile.completed_countries = [...(currentUserProfile.completed_countries || []), ...newlyCompletedCountries];
+          currentUserProfile.fonda_coins = finalFC;
+          showNotification(`🏆 ¡LOGRO! Has completado ${newlyCompletedCountries.join(", ")}. ¡Bono de +${totalBonus} FC!`, "success");
+          updateHeaderAndDashboardStats();
+        }
+
+        showNotification(`📌 ¡Has pegado ${toPaste.length} cromo${toPaste.length>1?'s':''} en el álbum! Las copias repetidas se quedaron en tu mazo.`, "success");
+        
+        // Refresh album page if a country is active
+        const countryTitleEl = document.querySelector("#album-country-page h4");
+        if (countryTitleEl) {
+          const activeCountry = countryTitleEl.textContent.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, "").trim();
+          if (activeCountry) renderAlbumCountryPage(activeCountry);
+        }
+      } catch (err) {
+        console.error("Error auto-pasting stickers:", err);
+        showNotification("Error al auto-pegar los cromos.", "error");
       }
     };
 

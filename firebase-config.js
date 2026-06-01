@@ -297,7 +297,7 @@
     }
 
     // 1. Catálogos globales
-    if (collName === "leagues" || collName === "users" || collName === "players" || collName === "partidos" || collName === "matches") {
+    if (collName === "leagues" || collName === "users" || collName === "players" || collName === "partidos" || collName === "matches" || collName === "club_bets") {
       return id ? `${collName}/${id}` : collName;
     }
 
