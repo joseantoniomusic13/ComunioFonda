@@ -4,19 +4,23 @@
 :root {
   --font-title: 'Outfit', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
-  
+
   /* Paleta de Colores Exclusiva: Fonda Fanegas */
   --bg-dark: #070706;
   --bg-stadium-glow: radial-gradient(circle at 50% 30%, #153123 0%, #070706 70%);
   --bg-card: rgba(18, 17, 15, 0.75);
   --border-card: rgba(226, 183, 71, 0.12);
   --border-card-hover: rgba(226, 183, 71, 0.25);
-  
+
   --accent-gold: #e2b747;
-  --accent-emerald: #10b981;  /* El '2' de 2026 en el logo */
-  --accent-scarlet: #ef4444;  /* El '6' de 2026 en el logo */
-  --text-primary: #faf9f6;    /* Blanco Marfil */
-  --text-secondary: #a19e99;  /* Gris Ceniza */
+  --accent-emerald: #10b981;
+  /* El '2' de 2026 en el logo */
+  --accent-scarlet: #ef4444;
+  /* El '6' de 2026 en el logo */
+  --text-primary: #faf9f6;
+  /* Blanco Marfil */
+  --text-secondary: #a19e99;
+  /* Gris Ceniza */
 }
 
 body {
@@ -28,7 +32,12 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-title);
   letter-spacing: -0.02em;
 }
@@ -155,10 +164,10 @@ h1, h2, h3, h4, h5, h6 {
 /* Tarjeta del Jugador en el Campo */
 .player-pitch-card {
   display: flex;
-  flex-col: column;
+  flex-direction: column;
   align-items: center;
   text-align: center;
-  width: 75px;
+  width: 90px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
@@ -180,7 +189,7 @@ h1, h2, h3, h4, h5, h6 {
   padding: 2px 4px;
   margin-top: 4px;
   width: 100%;
-  max-width: 85px;
+  max-width: 95px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
@@ -190,6 +199,7 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 0;
     transform: translateY(15px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -197,10 +207,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes pulseGold {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(226, 183, 71, 0.5);
     border-color: rgba(226, 183, 71, 0.8);
   }
+
   50% {
     box-shadow: 0 0 15px 4px rgba(226, 183, 71, 0.2);
     border-color: rgba(226, 183, 71, 0.3);
@@ -322,10 +335,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Corrección de Visibilidad para Desplegables (Fonda Dropdowns) */
-select, 
+select,
 select option,
 .glass-input option {
   background-color: #0d111d !important;
   color: #faf9f6 !important;
 }
-

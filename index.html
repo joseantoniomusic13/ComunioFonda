@@ -111,6 +111,17 @@
       box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
       border: 2px solid rgba(239, 68, 68, 0.45);
     }
+
+    @keyframes pulseGold {
+      0%, 100% {
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        border-color: rgba(245, 158, 11, 0.6);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.7);
+        border-color: rgba(245, 158, 11, 1);
+      }
+    }
   </style>
 
   <!-- Lucide Icons CDN -->
@@ -361,102 +372,82 @@
 
     </section>
 
-    <!-- ================= 2. PORTAL DE LIGAS (LIGAS HUB) ================= -->
+    <!-- ================= 2. PORTAL DE LIGAS (ACCESO EXCLUSIVO A FONDA FANEGAS) ================= -->
     <section id="leagues-hub-section"
-      class="w-full max-w-xl hidden flex flex-col gap-6 animate-fade-in-up py-6 text-center">
-      <div class="glass-panel p-8 rounded-3xl border border-gold/15 space-y-6 flex flex-col items-center">
+      class="w-full max-w-md hidden flex flex-col gap-6 animate-fade-in-up py-6 text-center">
+      <div class="glass-panel p-8 rounded-3xl border border-gold/20 space-y-6 flex flex-col items-center shadow-2xl relative overflow-hidden bg-fonda-900/90">
+        
+        <!-- Glow decorativo -->
+        <div class="absolute -top-12 -left-12 w-24 h-24 bg-gold/10 rounded-full blur-xl pointer-events-none"></div>
+        <div class="absolute -bottom-12 -right-12 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
+
         <img src="img/logo.jpeg"
-          class="w-20 h-20 rounded-full border-2 border-gold shadow-md shadow-gold/20 object-cover"
+          class="w-20 h-20 rounded-full border-2 border-gold shadow-md shadow-gold/20 object-cover transform hover:scale-105 transition duration-300"
           alt="Fonda Fanegas Logo">
 
         <div class="space-y-2">
-          <h2 class="text-3xl font-black text-white">🏆 Centro de Ligas</h2>
-          <p class="text-slate-400 text-xs md:text-sm max-w-sm mx-auto">
-            Únete a una liga privada ingresando el código facilitado por tu administrador y elige el nombre de tu equipo
-            fantasy.
+          <h2 class="text-2xl font-black text-gold-gradient flex items-center justify-center gap-2">
+            <i data-lucide="trophy" class="w-6 h-6 text-gold animate-bounce"></i> LIGA FONDA FANEGAS
+          </h2>
+          <p class="text-slate-350 text-xs leading-relaxed max-w-sm mx-auto">
+            ¡Te damos la bienvenida al Comunio oficial! Para poder gestionar tu plantilla e iniciar tu andadura fantasy, debes unirte a la liga única <strong>Fonda Fanegas</strong>.
           </p>
         </div>
 
-        <!-- Mis Ligas Activas (Solo se muestra si tiene ligas, ahora en primer lugar) -->
-        <div id="mis-ligas-container" class="w-full hidden">
-          <div class="w-full">
-            <h4
-              class="text-xs font-black uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-center gap-1.5">
-              <i data-lucide="list" class="w-3.5 h-3.5"></i> Mis Ligas Activas
-            </h4>
-            <div id="mis-ligas-list" class="space-y-2 max-h-56 overflow-y-auto">
-              <!-- Rellenado dinámicamente -->
+        <div class="w-full space-y-4">
+          <!-- Formulario Directo de Acceso a Fonda Fanegas -->
+          <div class="w-full bg-slate-950/40 p-5 rounded-2xl border border-white/5 space-y-4 text-left">
+            <div class="text-gold text-sm font-extrabold flex items-center gap-2 border-b border-white/5 pb-2">
+              <i data-lucide="shield-check" class="w-4 h-4 text-gold"></i> Validar Acceso Oficial
             </div>
-          </div>
-        </div>
 
-        <!-- Botón para Mostrar/Ocultar Panel de Unirse (se muestra solo si el usuario ya tiene ligas) -->
-        <button id="btn-toggle-join-form" type="button"
-          onclick="const panel = document.getElementById('join-league-form-panel'); panel.classList.toggle('hidden'); const arrow = this.querySelector('.arrow-toggle'); if(panel.classList.contains('hidden')){arrow.classList.remove('rotate-180')}else{arrow.classList.add('rotate-180')}"
-          class="hidden w-full py-2.5 rounded-xl border border-dashed border-emerald-500/30 text-emerald-400 hover:text-emerald-350 bg-emerald-950/5 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-2">
-          <i data-lucide="plus-circle" class="w-4 h-4"></i> Unirse o Crear otra Liga <i data-lucide="chevron-down" class="arrow-toggle w-3.5 h-3.5 transition-transform duration-300"></i>
-        </button>
-
-        <!-- Panel contenedor para unir/explorar ligas (se ocultará si ya tiene ligas) -->
-        <div id="join-league-form-panel" class="w-full space-y-4">
-          <!-- Panel de Unirse por Código (Formulario Directo) -->
-          <div class="w-full bg-slate-900/60 p-6 rounded-2xl border border-white/5 space-y-4 text-left">
-            <div class="text-emerald-400 text-lg font-black flex items-center gap-2">
-              <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-400"></i> Unirse a una Liga por Código
-            </div>
+            <!-- Inputs invisibles/ocultos para el código de liga -->
+            <input type="hidden" id="league-join-code-direct" value="FF-FONDA">
 
             <div class="space-y-3">
               <div class="space-y-1">
-                <label for="league-join-code-direct"
-                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Código de la Liga
-                  (Facilitado por el Admin)</label>
-                <input type="text" id="league-join-code-direct"
-                  class="glass-input w-full px-4 py-2.5 rounded-xl text-xs uppercase" placeholder="FF-XXXX">
-              </div>
-
-              <div class="space-y-1">
                 <label for="league-join-pass-direct"
-                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Contraseña de
-                  Acceso</label>
-                <input type="password" id="league-join-pass-direct"
-                  class="glass-input w-full px-4 py-2.5 rounded-xl text-xs" placeholder="••••••••">
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Contraseña de la Liga</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                    <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                  </span>
+                  <input type="password" id="league-join-pass-direct" required
+                    class="glass-input w-full pl-9 pr-4 py-2.5 rounded-xl text-xs" placeholder="mariacatena">
+                </div>
               </div>
 
               <div class="space-y-1">
                 <label for="league-join-team-direct"
-                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nombre de tu Equipo
-                  Fantasy</label>
-                <input type="text" id="league-join-team-direct" class="glass-input w-full px-4 py-2.5 rounded-xl text-xs"
-                  placeholder="Ej: Fonda Club de Fútbol">
+                  class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nombre de tu Equipo</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                    <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+                  </span>
+                  <input type="text" id="league-join-team-direct" required
+                    class="glass-input w-full pl-9 pr-4 py-2.5 rounded-xl text-xs"
+                    placeholder="Ej: Fonda Club de Fútbol">
+                </div>
               </div>
             </div>
 
             <button id="btn-join-league-direct"
-              class="w-full bg-emerald-gradient text-slate-950 font-black py-3.5 px-4 rounded-xl text-xs shadow-lg shadow-emerald-500/10 hover:scale-[1.01] active:scale-95 transition duration-200 flex justify-center items-center gap-2 cursor-pointer mt-4">
-              Unirse a Liga y Crear 11 Cracks <i data-lucide="sparkles" class="w-4 h-4"></i>
+              class="w-full bg-gold-gradient text-slate-950 font-black py-3.5 px-4 rounded-xl text-xs shadow-lg shadow-gold/10 hover:scale-[1.01] active:scale-95 transition duration-200 flex justify-center items-center gap-2 cursor-pointer mt-4">
+              Unirse a la Liga y Generar 11 Cracks <i data-lucide="sparkles" class="w-4 h-4 text-slate-950"></i>
             </button>
-          </div>
-
-          <!-- Explorador de Ligas (Opcional Toggled) -->
-          <div class="w-full">
-            <button type="button"
-              onclick="const list = document.getElementById('server-leagues-explorer-box'); list.classList.toggle('hidden'); const chev = document.getElementById('explore-chevron'); if(list.classList.contains('hidden')){chev.classList.remove('rotate-180')}else{chev.classList.add('rotate-180')}"
-              class="text-xs text-slate-400 hover:text-slate-200 font-bold transition flex items-center justify-center gap-1 mx-auto py-2 cursor-pointer">
-              <i data-lucide="compass" class="w-3.5 h-3.5"></i> Explorar Ligas Activas en el Servidor <i
-                id="explore-chevron" data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-300"></i>
-            </button>
-
-            <div id="server-leagues-explorer-box"
-              class="hidden w-full bg-slate-900/60 p-4 rounded-xl border border-white/5 text-left mt-2 space-y-2">
-              <p class="text-[10px] text-slate-500 font-bold">Haz clic en "Seleccionar" en cualquier liga del servidor
-                para rellenar automáticamente el formulario de arriba.</p>
-              <div id="all-server-leagues-list" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                <div class="text-[10px] text-slate-500 text-center font-bold py-4">Cargando ligas del servidor...</div>
-              </div>
-            </div>
           </div>
         </div>
 
+      </div>
+
+      <!-- Elementos Legacy Ocultos para Evitar Fallos en el Script JS -->
+      <div class="hidden">
+        <div id="mis-ligas-container"></div>
+        <div id="mis-ligas-list"></div>
+        <button id="btn-toggle-join-form"></button>
+        <div id="join-league-form-panel"></div>
+        <div id="server-leagues-explorer-box"></div>
+        <div id="all-server-leagues-list"></div>
       </div>
     </section>
 
@@ -493,14 +484,17 @@
                 id="chevron-acc-admin-leagues"></i>
             </button>
             <div id="acc-admin-leagues" class="p-5 space-y-4 bg-fonda-950/40 hidden">
-              <!-- Selector de Liga -->
+              <!-- Liga Única: FONDA FANEGAS (fija) -->
               <div class="space-y-2">
-                <label for="admin-select-league"
-                  class="block text-xs font-bold uppercase tracking-wider text-slate-400">Seleccionar Liga
-                  Activa</label>
-                <select id="admin-select-league"
-                  class="glass-input w-full px-3 py-2.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-amber-500/20">
-                  <option value="">Selecciona liga...</option>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Liga Activa</label>
+                <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gold/10 border border-gold/30">
+                  <i data-lucide="trophy" class="w-4 h-4 text-gold"></i>
+                  <span class="text-sm font-black text-gold">FONDA FANEGAS</span>
+                  <span class="ml-auto text-[9px] bg-gold/20 text-gold px-2 py-0.5 rounded-full font-black uppercase">Liga Oficial</span>
+                </div>
+                <!-- Hidden input para que el JS siga funcionando con el mismo ID -->
+                <select id="admin-select-league" class="hidden">
+                  <option value="FF-FONDA" selected>FONDA FANEGAS</option>
                 </select>
               </div>
 
@@ -510,34 +504,8 @@
                   class="block text-xs font-bold uppercase tracking-wider text-slate-400">Seleccionar Mánager</label>
                 <select id="admin-select-user" disabled
                   class="glass-input w-full px-3 py-2.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-amber-500/20">
-                  <option value="">Primero selecciona liga...</option>
+                  <option value="">Cargando mánagers...</option>
                 </select>
-              </div>
-
-              <!-- NUEVO: Crear Nueva Liga (Solo Admin) -->
-              <div class="border-t border-white/5 pt-4 space-y-3">
-                <h4 class="text-xs font-black uppercase text-gold flex items-center gap-1.5"><i
-                    data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Crear Nueva Liga Oficial</h4>
-                <p class="text-[10px] text-slate-400 leading-relaxed">Crea una liga privada en el servidor. Los usuarios
-                  normales solo podrán ingresar mediante el código y la contraseña especificada.</p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nombre de la
-                      Liga</label>
-                    <input type="text" id="admin-create-league-name"
-                      class="glass-input w-full px-3 py-2 rounded-xl text-xs" placeholder="Ej: Liga de la Fonda">
-                  </div>
-                  <div>
-                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contraseña de
-                      la Liga</label>
-                    <input type="password" id="admin-create-league-pass"
-                      class="glass-input w-full px-3 py-2 rounded-xl text-xs" placeholder="Contraseña de unión">
-                  </div>
-                </div>
-                <button id="btn-admin-create-league"
-                  class="w-full bg-gold hover:bg-amber-500 text-slate-950 font-black py-2.5 rounded-xl text-xs shadow transition cursor-pointer flex justify-center items-center gap-1.5 mt-2">
-                  Crear Liga Oficial <i data-lucide="check" class="w-3.5 h-3.5"></i>
-                </button>
               </div>
             </div>
           </div>
@@ -906,21 +874,18 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Expulsar Mánager de la Liga -->
                 <div class="space-y-2">
-                  <p class="text-[10px] text-slate-400 font-bold leading-relaxed">Expulsa el mánager seleccionado de la
-                    liga activa. Se eliminarán sus datos de plantilla en esa liga.</p>
+                  <p class="text-[10px] text-slate-400 font-bold leading-relaxed">Expulsa al mánager seleccionado de FONDA FANEGAS. Se eliminarán sus datos de plantilla en la liga.</p>
                   <button id="btn-admin-kick-user" disabled
                     class="w-full bg-orange-500/10 hover:bg-orange-500 hover:text-slate-950 border border-orange-500/30 hover:border-transparent text-orange-400 font-extrabold py-2.5 rounded-xl text-[10px] transition cursor-pointer flex items-center justify-center gap-1.5">
                     <i data-lucide="user-x" class="w-3.5 h-3.5"></i> Expulsar Mánager de la Liga
                   </button>
                 </div>
-                <!-- Eliminar Liga Completa -->
+                <!-- Eliminar Cuenta Permanentemente -->
                 <div class="space-y-2">
-                  <p class="text-[10px] text-slate-400 font-bold leading-relaxed">Elimina permanentemente la liga
-                    seleccionada y todos sus datos asociados. <span class="text-rose-400 font-extrabold">No se puede
-                      deshacer.</span></p>
-                  <button id="btn-admin-delete-league" disabled
+                  <p class="text-[10px] text-slate-400 font-bold leading-relaxed">Elimina permanentemente la cuenta del mánager seleccionado del sistema. <span class="text-rose-400 font-extrabold">No se puede deshacer.</span></p>
+                  <button id="btn-admin-delete-account" disabled
                     class="w-full bg-rose-500/10 hover:bg-rose-600 border border-rose-500/30 hover:border-transparent text-rose-400 hover:text-white font-extrabold py-2.5 rounded-xl text-[10px] transition cursor-pointer flex items-center justify-center gap-1.5">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Eliminar Liga Completa
+                    <i data-lucide="user-minus" class="w-3.5 h-3.5"></i> Eliminar Cuenta Permanentemente
                   </button>
                 </div>
               </div>
@@ -999,6 +964,10 @@
                       class="text-white font-extrabold underline decoration-purple-500/50"></span>
                   </span>
                   <div class="flex items-center gap-2">
+                    <button id="btn-squad-make-captain"
+                      class="bg-gold hover:bg-amber-400 text-slate-950 font-black px-3.5 py-1.5 rounded-xl cursor-pointer transition flex items-center gap-1 hidden">
+                      <i data-lucide="crown" class="w-3.5 h-3.5 text-slate-950"></i> Hacer Capitán
+                    </button>
                     <button id="btn-squad-send-to-reserves"
                       class="bg-purple-600 hover:bg-purple-500 text-white font-black px-3.5 py-1.5 rounded-xl cursor-pointer transition flex items-center gap-1">
                       <i data-lucide="archive" class="w-3.5 h-3.5"></i> Enviar a Reservas
@@ -1155,7 +1124,7 @@
             </div>
 
             <!-- Botón Cambiar de Liga -->
-            <div class="pt-3 border-t border-white/5 flex justify-end">
+            <div class="pt-3 border-t border-white/5 flex justify-end hidden">
               <button id="btn-switch-league"
                 class="px-3 py-1.5 rounded-xl font-bold text-[9px] uppercase bg-fonda-950 hover:bg-fonda-800 text-gold border border-gold/20 hover:border-gold/50 flex items-center gap-1 cursor-pointer transition">
                 <i data-lucide="arrow-left" class="w-3 h-3 text-gold"></i> Cambiar / Salir de Liga
@@ -2045,6 +2014,20 @@
             <div class="col-span-full py-12 text-center text-slate-500 text-xs italic">Cargando tu buzón...</div>
           </div>
         </div>
+
+        <!-- CLAUSULAZOS ACTIVOS - Panel de alertas urgentes -->
+        <div id="clausulazos-alert-panel" class="hidden glass-panel p-6 rounded-3xl border border-rose-500/25 bg-rose-950/10 space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-black uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+              <i data-lucide="swords" class="w-4 h-4"></i> ⚡ Clausulazos en tu Plantilla
+            </h4>
+            <span id="clausulazo-count-badge" class="text-xs px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-400 font-extrabold animate-pulse">0 Activos</span>
+          </div>
+          <p class="text-[10px] text-slate-400">Un rival ha activado la cláusula de rescisión de uno de tus jugadores. Usa un Token de Fidelidad para bloquearlo.</p>
+          <div id="clausulazos-list" class="space-y-3">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
       </div>
 
     </section>
@@ -2258,11 +2241,185 @@
     </div>
   </div>
 
-  <!-- ================= INYECCIÓN DE SCRIPTS Y LÓGICA DE CONTROL ================= -->
+  <!-- ===== MODAL: PERFIL DEL JUGADOR (FICHA COMPLETA + ACCIONES) ===== -->
+  <div id="modal-player-profile"
+    class="hidden fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md"
+    onclick="if(event.target===this) closePlayerProfileModal()">
+    <div
+      class="glass-panel w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-white/10 bg-fonda-950/95 shadow-2xl overflow-hidden transform transition-all duration-300"
+      style="max-height:92vh; overflow-y:auto;">
+      <!-- Header con avatar y nombre -->
+      <div id="ppm-header" class="relative p-5 pb-3">
+        <!-- Cerrar -->
+        <button onclick="closePlayerProfileModal()"
+          class="absolute top-4 right-4 text-slate-500 hover:text-white transition cursor-pointer z-10">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <!-- Degradado de fondo según rareza -->
+        <div id="ppm-bg-gradient" class="absolute inset-0 opacity-20 pointer-events-none"></div>
+        <div class="relative flex items-center gap-4">
+          <div id="ppm-avatar" class="flex-shrink-0"></div>
+          <div class="flex-grow min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 id="ppm-nombre" class="text-xl font-black text-white truncate"></h2>
+              <span id="ppm-capitan-badge" class="hidden px-2 py-0.5 rounded-full bg-gold text-slate-950 font-black text-[9px] flex items-center gap-0.5">
+                <i data-lucide="crown" class="w-2.5 h-2.5"></i> CAPITÁN
+              </span>
+            </div>
+            <div class="flex items-center gap-2 mt-1 flex-wrap">
+              <span id="ppm-pos-badge" class="px-2 py-0.5 rounded text-[10px] font-black uppercase"></span>
+              <span id="ppm-pais" class="text-slate-400 text-xs font-bold"></span>
+              <span id="ppm-estado-badge" class="text-[10px] font-black uppercase px-2 py-0.5 rounded"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="px-5 py-3 grid grid-cols-3 gap-3">
+        <div class="bg-white/[0.03] border border-white/5 rounded-2xl p-3 text-center">
+          <p class="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">Valor de Mercado</p>
+          <p id="ppm-valor" class="text-base font-black text-emerald-400"></p>
+        </div>
+        <div class="bg-white/[0.03] border border-white/5 rounded-2xl p-3 text-center">
+          <p class="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">Puntos Totales</p>
+          <p id="ppm-puntos-total" class="text-base font-black text-gold"></p>
+        </div>
+        <div class="bg-white/[0.03] border border-white/5 rounded-2xl p-3 text-center">
+          <p class="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">Media/Jornada</p>
+          <p id="ppm-media" class="text-base font-black text-blue-400"></p>
+        </div>
+        <div class="bg-white/[0.03] border border-white/5 rounded-2xl p-3 text-center">
+          <p class="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">Goles Totales</p>
+          <p id="ppm-goles" class="text-base font-black text-rose-400"></p>
+        </div>
+        <div class="bg-white/[0.03] border border-white/5 rounded-2xl p-3 text-center">
+          <p class="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">Asistencias</p>
+          <p id="ppm-asistencias" class="text-base font-black text-purple-400"></p>
+        </div>
+        <div class="bg-white/[0.03] border border-white/5 rounded-2xl p-3 text-center">
+          <p class="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-1">Partidos</p>
+          <p id="ppm-partidos" class="text-base font-black text-slate-300"></p>
+        </div>
+      </div>
+
+      <!-- Sección Cláusula de Rescisión -->
+      <div class="mx-5 my-2 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <i data-lucide="shield" class="w-4 h-4 text-amber-400"></i>
+            <span class="text-xs font-black text-amber-300 uppercase tracking-wide">Cláusula de Rescisión</span>
+            <span id="ppm-clausula-blindado-badge" class="hidden px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 text-[8px] font-black uppercase">🛡️ BLINDADO</span>
+          </div>
+          <span id="ppm-clausula-valor" class="text-base font-black text-amber-400"></span>
+        </div>
+        <div class="flex items-center gap-2 mt-3">
+          <div class="relative flex-grow">
+            <input type="number" id="ppm-blindaje-input" step="1" min="1"
+              class="w-full pl-3 pr-10 py-2 text-xs rounded-xl border border-amber-500/20 bg-slate-900/60 font-bold text-slate-100 focus:outline-none focus:border-amber-500/50"
+              placeholder="Invierte M$ del club...">
+            <span class="absolute right-2.5 inset-y-0 flex items-center text-[10px] text-amber-500/70 font-bold">M$</span>
+          </div>
+          <button id="ppm-btn-blindaje"
+            class="bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-slate-950 font-black px-3 py-2 rounded-xl text-[10px] cursor-pointer transition flex items-center gap-1 whitespace-nowrap">
+            <i data-lucide="shield-plus" class="w-3.5 h-3.5"></i> Blindar x2
+          </button>
+        </div>
+        <p class="text-[9px] text-slate-500 mt-1.5">Cada M$ invertido sube la cláusula en 2M$. Se deduce de tu presupuesto.</p>
+        <div id="ppm-token-section" class="hidden mt-3 p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🎖️</span>
+              <div>
+                <p class="text-[10px] font-black text-emerald-300">Token de Fidelidad</p>
+                <p class="text-[8px] text-slate-500">Tienes <span id="ppm-token-count" class="text-emerald-400 font-black">0</span> tokens disponibles</p>
+              </div>
+            </div>
+            <button id="ppm-btn-use-token"
+              class="bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 font-black px-3 py-1.5 rounded-xl text-[9px] cursor-pointer transition flex items-center gap-1">
+              <i data-lucide="lock" class="w-3 h-3"></i> Blindaje Total
+            </button>
+          </div>
+          <p class="text-[8px] text-slate-500 mt-1">Activa un escudo absoluto: ningún rival podrá ejecutar el clausulazo durante el resto del torneo.</p>
+        </div>
+      </div>
+
+      <!-- Acciones principales -->
+      <div class="px-5 py-4 space-y-2">
+        <p class="text-[9px] font-black uppercase tracking-wider text-slate-500 mb-2">Acciones del Mánager</p>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="ppm-btn-reservas"
+            class="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-300 font-bold text-xs transition cursor-pointer">
+            <i data-lucide="archive" class="w-3.5 h-3.5"></i> Enviar a Reservas
+          </button>
+          <button id="ppm-btn-venta"
+            class="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-300 font-bold text-xs transition cursor-pointer">
+            <i data-lucide="tag" class="w-3.5 h-3.5"></i> Poner en Venta
+          </button>
+        </div>
+        <!-- Panel venta inline -->
+        <div id="ppm-venta-panel" class="hidden p-3 rounded-xl bg-white/[0.02] border border-emerald-500/15 space-y-2">
+          <p class="text-[10px] font-bold text-slate-400">Precio mínimo de venta (M$):</p>
+          <div class="flex gap-2">
+            <input type="number" id="ppm-venta-price" step="0.5" min="0.5"
+              class="flex-grow pl-3 pr-2 py-2 text-xs rounded-xl border border-white/10 bg-slate-900/60 font-bold text-slate-100 focus:outline-none focus:border-emerald-500/40"
+              placeholder="Ej: 12.5">
+            <button id="ppm-btn-confirmar-venta"
+              class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-4 py-2 rounded-xl text-xs cursor-pointer transition">
+              Publicar
+            </button>
+          </div>
+        </div>
+        <button id="ppm-btn-capitan"
+          class="hidden w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gold/10 hover:bg-gold/20 border border-gold/20 text-gold font-bold text-xs transition cursor-pointer">
+          <i data-lucide="crown" class="w-3.5 h-3.5"></i> Hacer Capitán (x2 puntos)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: EJECUTAR CLAUSULAZO (Vista de rival) ===== -->
+  <div id="modal-clausulazo"
+    class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+    onclick="if(event.target===this) closeClausulazoModal()">
+    <div class="glass-panel w-full max-w-sm rounded-3xl border border-rose-500/30 bg-fonda-950/95 shadow-2xl p-6 space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/25">
+          <i data-lucide="swords" class="w-5 h-5 text-rose-400"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-black text-white">¡Ejecutar Clausulazo!</h3>
+          <p class="text-[10px] text-slate-400">Robar un jugador pagando su cláusula de rescisión</p>
+        </div>
+        <button onclick="closeClausulazoModal()" class="ml-auto text-slate-500 hover:text-white transition cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="czm-player-info" class="p-3 rounded-2xl bg-white/[0.03] border border-white/5 text-center">
+        <p id="czm-player-name" class="font-black text-white text-sm"></p>
+        <p class="text-[10px] text-slate-400 mt-0.5">Propietario: <span id="czm-owner-name" class="text-slate-300 font-bold"></span></p>
+      </div>
+      <div class="p-3 rounded-2xl bg-rose-500/5 border border-rose-500/20 flex items-center justify-between">
+        <span class="text-xs text-slate-400 font-bold">Cláusula a Pagar</span>
+        <span id="czm-clausula-amount" class="text-xl font-black text-rose-400"></span>
+      </div>
+      <div class="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+        <span class="text-xs text-slate-400 font-bold">Tu Presupuesto</span>
+        <span id="czm-my-budget" class="text-base font-black text-emerald-400"></span>
+      </div>
+      <p class="text-[9px] text-slate-500 leading-relaxed text-center">El dueño recibirá una alerta urgente en su buzón y tendrá la opción de usar un Token de Fidelidad para cancelar el traspaso.</p>
+      <button id="czm-btn-ejecutar"
+        class="w-full py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-black text-sm transition cursor-pointer flex items-center justify-center gap-2">
+        <i data-lucide="swords" class="w-4 h-4"></i> Confirmar Clausulazo
+      </button>
+    </div>
+  </div>
+
+
   <!-- Firebase Compat (v9/v10) needed if using Cloud mode -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Catálogo de jugadores e infraestructura del juego -->
@@ -2685,16 +2842,26 @@
         document.getElementById("btn-tab-market").classList.remove("hidden");
 
         const ligaActiva = profile.liga_activa;
+        const ligas = profile.ligas || [];
+
+        // Auto-activar FF-FONDA si ya pertenecen a ella pero no está activa
+        if (ligaActiva !== "FF-FONDA" && ligas.includes("FF-FONDA")) {
+          console.log("🔄 Auto-activando liga FF-FONDA...");
+          const userRef = doc(db, "users", user.uid);
+          updateDoc(userRef, { liga_activa: "FF-FONDA" }).catch(e => console.error("Error auto-activating league:", e));
+          return; // Esperar al siguiente snapshot
+        }
+
         currentActiveLeague = ligaActiva || "";
 
-        if (!ligaActiva) {
-          // Sin liga → mostrar Hub de Ligas
+        if (ligaActiva !== "FF-FONDA") {
+          // Sin la liga oficial activa → mostrar pantalla de validación
           leaguesHubSection.classList.remove("hidden");
           dashboardSection.classList.add("hidden");
           renderMisLigas();
           initServerLeaguesExplorer();
         } else {
-          // Con liga → mostrar Dashboard
+          // Con liga Fonda Fanegas → mostrar Dashboard
           leaguesHubSection.classList.add("hidden");
           dashboardSection.classList.remove("hidden");
           switchDashboardTab("squad");
@@ -3119,10 +3286,14 @@
             }
 
             await updateDoc(winnerRef, { presupuesto_actual: nuevoB });
+            // Cláusula inicial automática = 150% del precio de subasta
+            const clausulaInicial = Math.round(offerPrice * 1.5);
+            const prevClausulas = winnerTeam.clausulas || {};
             await updateDoc(winnerTeamRef, {
               jugadores_ids: nuevosJugadoresIds,
               alineacion: { titulares, suplentes },
-              players: buildPlayersArrayFromAlineacion(titulares, suplentes, nuevosJugadoresIds)
+              players: buildPlayersArrayFromAlineacion(titulares, suplentes, nuevosJugadoresIds),
+              clausulas: { ...prevClausulas, [item.id]: clausulaInicial }
             });
 
             newIncidencias.unshift(`🔔 [Subasta] ¡${winnerProfile.nombre_equipo} adquiere a ${player.nombre} en subasta por ${(offerPrice / 1000000).toFixed(2)}M$! (${bids.length} pujas recibidas).`);
@@ -3358,10 +3529,14 @@
         });
 
         await updateDoc(buyerRef, { presupuesto_actual: nuevoPresupuestoComprador });
+        // Cláusula inicial automática = 150% del precio de transferencia
+        const clausulaInicialComprador = Math.round(offerPrice * 1.5);
+        const prevClausulasComprador = buyerTeam.clausulas || {};
         await updateDoc(buyerTeamRef, {
           jugadores_ids: nuevosJugadoresIdsComprador,
           alineacion: { titulares: titularesComprador, suplentes: suplentesComprador },
-          players: buildPlayersArrayFromAlineacion(titularesComprador, suplentesComprador, nuevosJugadoresIdsComprador)
+          players: buildPlayersArrayFromAlineacion(titularesComprador, suplentesComprador, nuevosJugadoresIdsComprador),
+          clausulas: { ...prevClausulasComprador, [playerId]: clausulaInicialComprador }
         });
 
         const updatedSecondary = (currentActiveLeagueData.secondary_market || []).filter(x => x.id !== playerId);
@@ -3404,7 +3579,459 @@
       }
     }
 
-    // --- ACTUALIZACIÓN DE ESTADÍSTICAS Y NOTIFICACIONES DE ENCABEZADO ---
+    // =====================================================================
+    // MÓDULO 8: FICHA DE JUGADOR + CLÁUSULAS/BLINDAJE/TOKEN FIDELIDAD
+    // =====================================================================
+
+    let _ppmCurrentPlayerId = null;
+    let _czmCurrentData = null; // { playerId, ownerUid, ownerName, clausula }
+
+    window.openPlayerProfileModal = function(playerId) {
+      if (!currentUser || !currentUserTeam || !currentUserProfile) return;
+
+      const fPlayer = firestorePlayersList.find(p => p.id === playerId);
+      const staticPlayer = PLAYERS_POOL.find(p => p.id === playerId);
+      const player = fPlayer || staticPlayer;
+      if (!player) return;
+
+      _ppmCurrentPlayerId = playerId;
+
+      const modal = document.getElementById("modal-player-profile");
+      modal.classList.remove("hidden");
+
+      // --- Avatar ---
+      const avatarEl = document.getElementById("ppm-avatar");
+      if (window.getPlayerCardAvatarHTML) {
+        const isCap = (currentUserTeam.capitan_id === playerId);
+        avatarEl.innerHTML = window.getPlayerCardAvatarHTML(playerId, player, "w-20 h-20", isCap);
+      }
+
+      // --- Nombre y capitán badge ---
+      document.getElementById("ppm-nombre").textContent = player.nombre;
+      const capBadge = document.getElementById("ppm-capitan-badge");
+      if (currentUserTeam.capitan_id === playerId) capBadge.classList.remove("hidden");
+      else capBadge.classList.add("hidden");
+
+      // --- Posición badge ---
+      const posMap = {
+        portero: ["POR", "bg-amber-500/10 text-amber-400"],
+        defensa: ["DFC", "bg-blue-500/10 text-blue-400"],
+        mediocampista: ["MC", "bg-emerald-500/10 text-emerald-400"],
+        delantero: ["DEL", "bg-rose-500/10 text-rose-400"]
+      };
+      const [posLabel, posCls] = posMap[player.posicion] || ["JUG", "bg-slate-500/10 text-slate-400"];
+      const posBadge = document.getElementById("ppm-pos-badge");
+      posBadge.textContent = posLabel;
+      posBadge.className = `px-2 py-0.5 rounded text-[10px] font-black uppercase ${posCls}`;
+
+      // --- País ---
+      document.getElementById("ppm-pais").textContent = `${player.flag || "⚽"} ${player.pais || ""}`;
+
+      // --- Estado (titular/suplente/reserva) ---
+      const titulares = currentUserTeam.alineacion?.titulares || {};
+      const suplentes = currentUserTeam.alineacion?.suplentes || {};
+      const allTit = [...(titulares.portero||[]),...(titulares.defensas||[]),...(titulares.mediocampistas||[]),...(titulares.delanteros||[])];
+      const allSup = [...(suplentes.portero||[]),...(suplentes.defensas||[]),...(suplentes.mediocampistas||[]),...(suplentes.delanteros||[])];
+      const estadoBadge = document.getElementById("ppm-estado-badge");
+      if (allTit.includes(playerId)) {
+        estadoBadge.textContent = "TITULAR";
+        estadoBadge.className = "text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400";
+      } else if (allSup.includes(playerId)) {
+        estadoBadge.textContent = "SUPLENTE";
+        estadoBadge.className = "text-[10px] font-black uppercase px-2 py-0.5 rounded bg-blue-500/15 text-blue-400";
+      } else {
+        estadoBadge.textContent = "RESERVA";
+        estadoBadge.className = "text-[10px] font-black uppercase px-2 py-0.5 rounded bg-slate-500/15 text-slate-400";
+      }
+
+      // --- Fondo según rareza ---
+      const bgEl = document.getElementById("ppm-bg-gradient");
+      const precio = player.precio || 0;
+      if (precio >= 7000000) bgEl.style.background = "linear-gradient(135deg, #f59e0b, #b45309)";
+      else if (precio >= 3000000) bgEl.style.background = "linear-gradient(135deg, #3b82f6, #1e40af)";
+      else bgEl.style.background = "linear-gradient(135deg, #475569, #1e293b)";
+
+      // --- Stats: puntos por jornada ---
+      const ptsJornadas = player.puntos_jornadas || {};
+      const ptsValues = Object.values(ptsJornadas).map(Number);
+      const ptsTotal = ptsValues.reduce((a, b) => a + b, 0);
+      const ptsMedia = ptsValues.length > 0 ? (ptsTotal / ptsValues.length).toFixed(1) : "0.0";
+
+      document.getElementById("ppm-valor").textContent = `${(precio / 1000000).toFixed(1)}M$`;
+      document.getElementById("ppm-puntos-total").textContent = ptsTotal > 0 ? ptsTotal : (player.puntos || 0);
+      document.getElementById("ppm-media").textContent = ptsMedia;
+      document.getElementById("ppm-goles").textContent = player.goles || player.goals || 0;
+      document.getElementById("ppm-asistencias").textContent = player.asistencias || player.assists || 0;
+      document.getElementById("ppm-partidos").textContent = player.partidos || player.matches || ptsValues.length || 0;
+
+      // --- Cláusula ---
+      const teamData = currentUserTeam;
+      const clausulas = teamData.clausulas || {};
+      const clausulaActual = clausulas[playerId] || Math.round(precio * 1.5);
+      const isBlindado = teamData.blindados && teamData.blindados[playerId];
+
+      document.getElementById("ppm-clausula-valor").textContent = `${(clausulaActual / 1000000).toFixed(2)}M$`;
+      const blindadoBadge = document.getElementById("ppm-clausula-blindado-badge");
+      if (isBlindado) blindadoBadge.classList.remove("hidden");
+      else blindadoBadge.classList.add("hidden");
+
+      // --- Token de fidelidad ---
+      const tokens = currentUserProfile.tokens_fidelidad || 0;
+      const tokenSection = document.getElementById("ppm-token-section");
+      if (tokens > 0) {
+        tokenSection.classList.remove("hidden");
+        document.getElementById("ppm-token-count").textContent = tokens;
+      } else {
+        tokenSection.classList.add("hidden");
+      }
+
+      // --- Botón Capitán (solo si es titular) ---
+      const btnCap = document.getElementById("ppm-btn-capitan");
+      if (allTit.includes(playerId) && currentUserTeam.capitan_id !== playerId) {
+        btnCap.classList.remove("hidden");
+      } else {
+        btnCap.classList.add("hidden");
+      }
+
+      // --- Wiring Blindaje x2 ---
+      const btnBlindaje = document.getElementById("ppm-btn-blindaje");
+      const inputBlindaje = document.getElementById("ppm-blindaje-input");
+      btnBlindaje.onclick = async () => {
+        const investM = parseFloat(inputBlindaje.value) || 0;
+        if (investM <= 0) { showNotification("Introduce una cantidad válida (en M$).", "error"); return; }
+        await upgradeClausula(playerId, investM);
+        inputBlindaje.value = "";
+      };
+
+      // --- Wiring Token Blindaje Total ---
+      const btnToken = document.getElementById("ppm-btn-use-token");
+      btnToken.onclick = async () => { await activateTokenBlindaje(playerId); };
+
+      // --- Wiring Enviar a Reservas ---
+      const btnRes = document.getElementById("ppm-btn-reservas");
+      btnRes.onclick = async () => {
+        closePlayerProfileModal();
+        swapActiveSourceId = playerId;
+        await handleMoveToReservas(playerId);
+      };
+
+      // --- Wiring Poner en Venta ---
+      const btnVenta = document.getElementById("ppm-btn-venta");
+      const ventaPanel = document.getElementById("ppm-venta-panel");
+      const ventaPrice = document.getElementById("ppm-venta-price");
+      ventaPrice.value = (precio / 1000000).toFixed(1);
+      btnVenta.onclick = () => {
+        ventaPanel.classList.toggle("hidden");
+      };
+      document.getElementById("ppm-btn-confirmar-venta").onclick = async () => {
+        const priceM = parseFloat(ventaPrice.value) || 0;
+        if (priceM <= 0) { showNotification("Indica un precio de venta válido.", "error"); return; }
+        await listPlayerOnSecondaryFromModal(playerId, priceM);
+      };
+
+      // --- Wiring Capitán ---
+      btnCap.onclick = async () => {
+        closePlayerProfileModal();
+        await setCaptain(playerId);
+      };
+
+      lucide.createIcons();
+    };
+
+    window.closePlayerProfileModal = function() {
+      document.getElementById("modal-player-profile").classList.add("hidden");
+      _ppmCurrentPlayerId = null;
+    };
+
+    // --- Blindaje Multiplicador x2 ---
+    async function upgradeClausula(playerId, investAmountM) {
+      if (!currentUser || !currentUserTeam || !currentUserProfile) return;
+      const investAmount = Math.round(investAmountM * 1_000_000);
+      const boost = investAmount * 2; // x2 multiplier
+
+      if (currentUserProfile.presupuesto_actual < investAmount) {
+        showNotification("No tienes suficiente presupuesto para esta inversión.", "error"); return;
+      }
+
+      const clausulas = currentUserTeam.clausulas || {};
+      const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
+      const precio = player?.precio || 10_000_000;
+      const clausulaActual = clausulas[playerId] || Math.round(precio * 1.5);
+      const nuevaClausula = clausulaActual + boost;
+
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        const teamRef = doc(db, "user_teams", getTeamDocId());
+
+        const updatedClausulas = { ...clausulas, [playerId]: nuevaClausula };
+
+        await updateDoc(userRef, { presupuesto_actual: currentUserProfile.presupuesto_actual - investAmount });
+        await updateDoc(teamRef, { clausulas: updatedClausulas });
+
+        currentUserProfile.presupuesto_actual -= investAmount;
+        if (!currentUserTeam.clausulas) currentUserTeam.clausulas = {};
+        currentUserTeam.clausulas[playerId] = nuevaClausula;
+
+        document.getElementById("ppm-clausula-valor").textContent = `${(nuevaClausula / 1_000_000).toFixed(2)}M$`;
+        showNotification(`🛡️ ¡Cláusula blindada! ${player?.nombre} ahora tiene cláusula de ${(nuevaClausula/1e6).toFixed(2)}M$ (+${(boost/1e6).toFixed(1)}M$).`, "success");
+        updateHeaderAndDashboardStats();
+      } catch (err) {
+        console.error("Error upgrading clausula:", err);
+        showNotification("Error al actualizar la cláusula.", "error");
+      }
+    }
+
+    // --- Activar Token de Fidelidad (Blindaje Total) ---
+    async function activateTokenBlindaje(playerId) {
+      if (!currentUser || !currentUserProfile) return;
+      const tokens = currentUserProfile.tokens_fidelidad || 0;
+      if (tokens <= 0) { showNotification("No tienes Tokens de Fidelidad disponibles.", "error"); return; }
+
+      try {
+        const userRef = doc(db, "users", currentUser.uid);
+        const teamRef = doc(db, "user_teams", getTeamDocId());
+
+        const blindados = currentUserTeam.blindados || {};
+        blindados[playerId] = true;
+
+        await updateDoc(userRef, { tokens_fidelidad: tokens - 1 });
+        await updateDoc(teamRef, { blindados });
+
+        currentUserProfile.tokens_fidelidad = tokens - 1;
+        if (!currentUserTeam.blindados) currentUserTeam.blindados = {};
+        currentUserTeam.blindados[playerId] = true;
+
+        document.getElementById("ppm-clausula-blindado-badge").classList.remove("hidden");
+        document.getElementById("ppm-token-count").textContent = tokens - 1;
+        if (tokens - 1 === 0) document.getElementById("ppm-token-section").classList.add("hidden");
+
+        const player = PLAYERS_POOL.find(p => p.id === playerId);
+        showNotification(`🎖️ ¡Token de Fidelidad activado! ${player?.nombre} está protegido contra clausulazos.`, "success");
+      } catch (err) {
+        console.error("Error activating token:", err);
+        showNotification("Error al activar el Token de Fidelidad.", "error");
+      }
+    }
+
+    // --- Poner en Venta desde Modal de Perfil ---
+    async function listPlayerOnSecondaryFromModal(playerId, minPriceM) {
+      if (!currentUser || !currentActiveLeagueData || !currentUserProfile) return;
+      const minPrice = Math.round(minPriceM * 1_000_000);
+      const leagueCode = currentActiveLeagueData.id;
+      const leagueRef = doc(db, "leagues", leagueCode);
+      const secondaryMarket = currentActiveLeagueData.secondary_market || [];
+      if (secondaryMarket.some(x => x.id === playerId)) {
+        showNotification("Este jugador ya está en el mercado.", "error"); return;
+      }
+      const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
+      const clausulaActual = (currentUserTeam.clausulas || {})[playerId] || Math.round((player?.precio || 10_000_000) * 1.5);
+      try {
+        const newListing = {
+          id: playerId, owner_uid: currentUser.uid,
+          owner_name: currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario,
+          min_price: minPrice, clausula: clausulaActual, bids: [],
+          listed_at: Date.now()
+        };
+        const updated = [...secondaryMarket, newListing];
+        await updateDoc(leagueRef, { secondary_market: updated });
+        showNotification(`✅ ${player?.nombre} publicado en el mercado de traspasos.`, "success");
+        closePlayerProfileModal();
+        renderMarketTable();
+      } catch (err) {
+        console.error("Error listing player:", err);
+        showNotification("Error al publicar el jugador.", "error");
+      }
+    }
+
+    // --- Abrir Modal Clausulazo (Vista de RIVAL) ---
+    window.openClausulazoModal = function(playerId, ownerUid, ownerName, clausulaAmount) {
+      if (!currentUserProfile) return;
+      _czmCurrentData = { playerId, ownerUid, ownerName, clausulaAmount };
+      document.getElementById("modal-clausulazo").classList.remove("hidden");
+      const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
+      document.getElementById("czm-player-name").textContent = player?.nombre || playerId;
+      document.getElementById("czm-owner-name").textContent = ownerName;
+      document.getElementById("czm-clausula-amount").textContent = `${(clausulaAmount / 1_000_000).toFixed(2)}M$`;
+      document.getElementById("czm-my-budget").textContent = `${((currentUserProfile.presupuesto_actual || 0) / 1_000_000).toFixed(1)}M$`;
+      document.getElementById("czm-btn-ejecutar").onclick = async () => {
+        await executeClausulazo(playerId, ownerUid, clausulaAmount);
+      };
+      lucide.createIcons();
+    };
+
+    window.closeClausulazoModal = function() {
+      document.getElementById("modal-clausulazo").classList.add("hidden");
+      _czmCurrentData = null;
+    };
+
+    // --- Ejecutar Clausulazo ---
+    async function executeClausulazo(playerId, ownerUid, clausulaAmount) {
+      if (!currentUser || !currentUserProfile || !currentUserTeam) return;
+      if (clausulaAmount > currentUserProfile.presupuesto_actual) {
+        showNotification("No tienes suficiente presupuesto para pagar la cláusula.", "error"); return;
+      }
+      // Verificar si está blindado
+      const ownerTeamRef = doc(db, "user_teams", `${ownerUid}_${currentActiveLeagueData.id}`);
+      const ownerTeamSnap = await getDoc(ownerTeamRef);
+      if (ownerTeamSnap.exists()) {
+        const ownerTeamData = ownerTeamSnap.data();
+        if (ownerTeamData.blindados && ownerTeamData.blindados[playerId]) {
+          showNotification("🛡️ ¡Blindaje activado! Este jugador está protegido con un Token de Fidelidad. No se puede ejecutar el clausulazo.", "error");
+          closeClausulazoModal(); return;
+        }
+      }
+
+      const btn = document.getElementById("czm-btn-ejecutar");
+      btn.disabled = true; btn.textContent = "Procesando...";
+      try {
+        const leagueCode = currentActiveLeagueData.id;
+        const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
+        const clausulazoId = `czl_${Date.now()}_${currentUser.uid}`;
+
+        // Registrar clausulazo pendiente en Firestore (el dueño tendrá tiempo de reaccionar)
+        const leagueRef = doc(db, "leagues", leagueCode);
+        const pendingClausulazo = {
+          id: clausulazoId, playerId, ownerUid,
+          buyerUid: currentUser.uid,
+          buyerName: currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario,
+          clausulaAmount, playerName: player?.nombre || playerId,
+          timestamp: Date.now(), status: "pending"
+        };
+
+        const leagueSnap = await getDoc(leagueRef);
+        const leagueData = leagueSnap.data();
+        const pendingList = leagueData.pending_clausulazos || [];
+        pendingList.push(pendingClausulazo);
+
+        // Descontar presupuesto temporalmente
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, { presupuesto_actual: currentUserProfile.presupuesto_actual - clausulaAmount });
+        currentUserProfile.presupuesto_actual -= clausulaAmount;
+
+        // Guardar en liga
+        const incidencias = leagueData.incidencias || [];
+        incidencias.unshift(`⚡ [CLAUSULAZO] ${currentUserProfile.nombre_equipo} ha activado el clausulazo de ${player?.nombre} (${(clausulaAmount/1e6).toFixed(2)}M$). El dueño tiene tiempo para activar su Token de Fidelidad.`);
+        await updateDoc(leagueRef, { pending_clausulazos: pendingList, incidencias });
+
+        showNotification(`⚡ ¡Clausulazo enviado! El dueño tiene 24h para usar un Token de Fidelidad.`, "success");
+        closeClausulazoModal();
+        updateHeaderAndDashboardStats();
+
+        // Auto-ejecución si el dueño no cancela en 30 segundos (en producción debería ser 24h, demo: 30s)
+        setTimeout(async () => {
+          try {
+            const freshLeagueSnap = await getDoc(leagueRef);
+            const freshData = freshLeagueSnap.data();
+            const stillPending = (freshData.pending_clausulazos || []).find(c => c.id === clausulazoId && c.status === "pending");
+            if (stillPending) { await finalizeClausulazo(clausulazoId, leagueCode); }
+          } catch (e) { console.error("Auto-finalize error:", e); }
+        }, 30_000);
+      } catch (err) {
+        console.error("Error executing clausulazo:", err);
+        showNotification("Error al ejecutar el clausulazo.", "error");
+        btn.disabled = false; btn.textContent = "Confirmar Clausulazo";
+      }
+    }
+
+    // --- Finalizar Clausulazo (transferencia definitiva) ---
+    async function finalizeClausulazo(clausulazoId, leagueCode) {
+      const leagueRef = doc(db, "leagues", leagueCode);
+      const leagueSnap = await getDoc(leagueRef);
+      const leagueData = leagueSnap.data();
+      const czl = (leagueData.pending_clausulazos || []).find(c => c.id === clausulazoId && c.status === "pending");
+      if (!czl) return;
+
+      const { playerId, ownerUid, buyerUid, clausulaAmount, playerName } = czl;
+      const ownerTeamRef = doc(db, "user_teams", `${ownerUid}_${leagueCode}`);
+      const buyerTeamRef = doc(db, "user_teams", `${buyerUid}_${leagueCode}`);
+      const ownerRef = doc(db, "users", ownerUid);
+      const buyerRef = doc(db, "users", buyerUid);
+
+      const [ownerTeamSnap, buyerTeamSnap, ownerSnap, buyerSnap] = await Promise.all([
+        getDoc(ownerTeamRef), getDoc(buyerTeamRef), getDoc(ownerRef), getDoc(buyerRef)
+      ]);
+      if (!ownerTeamSnap.exists() || !buyerTeamSnap.exists()) return;
+
+      const ownerTeam = ownerTeamSnap.data();
+      const buyerTeam = buyerTeamSnap.data();
+      const ownerProfile = ownerSnap.data();
+
+      const player = PLAYERS_POOL.find(p => p.id === playerId);
+      const posPlural = player?.posicion === "portero" ? "portero" :
+        player?.posicion === "defensa" ? "defensas" :
+        player?.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
+
+      const newOwnerIds = (ownerTeam.jugadores_ids || []).filter(id => id !== playerId);
+      const newBuyerIds = [...(buyerTeam.jugadores_ids || []), playerId];
+
+      const ownerTit = { ...ownerTeam.alineacion?.titulares };
+      const ownerSup = { ...ownerTeam.alineacion?.suplentes };
+      if (ownerTit[posPlural]) ownerTit[posPlural] = ownerTit[posPlural].filter(id => id !== playerId);
+      if (ownerSup[posPlural]) ownerSup[posPlural] = ownerSup[posPlural].filter(id => id !== playerId);
+
+      await updateDoc(ownerRef, { presupuesto_actual: (ownerProfile.presupuesto_actual || 0) + clausulaAmount });
+      await updateDoc(ownerTeamRef, {
+        jugadores_ids: newOwnerIds,
+        alineacion: { titulares: ownerTit, suplentes: ownerSup },
+        players: buildPlayersArrayFromAlineacion(ownerTit, ownerSup, newOwnerIds)
+      });
+      await updateDoc(buyerTeamRef, {
+        jugadores_ids: newBuyerIds,
+        players: buildPlayersArrayFromAlineacion(buyerTeam.alineacion?.titulares || {}, buyerTeam.alineacion?.suplentes || {}, newBuyerIds)
+      });
+
+      const updatedPending = (leagueData.pending_clausulazos || []).map(c =>
+        c.id === clausulazoId ? { ...c, status: "completed" } : c
+      );
+      const incidencias = leagueData.incidencias || [];
+      incidencias.unshift(`✅ [CLAUSULAZO] Traspaso definitivo de ${playerName} ejecutado por cláusula (${(clausulaAmount/1e6).toFixed(2)}M$).`);
+      await updateDoc(leagueRef, { pending_clausulazos: updatedPending, incidencias });
+    }
+
+    // --- Usar Token de Fidelidad para CANCELAR un clausulazo entrante ---
+    window.cancelClausulazoWithToken = async function(clausulazoId) {
+      if (!currentUser || !currentUserProfile) return;
+      const tokens = currentUserProfile.tokens_fidelidad || 0;
+      if (tokens <= 0) { showNotification("No tienes Tokens de Fidelidad.", "error"); return; }
+
+      try {
+        const leagueCode = currentActiveLeagueData.id;
+        const leagueRef = doc(db, "leagues", leagueCode);
+        const leagueSnap = await getDoc(leagueRef);
+        const leagueData = leagueSnap.data();
+        const czl = (leagueData.pending_clausulazos || []).find(c => c.id === clausulazoId && c.status === "pending");
+        if (!czl) { showNotification("El clausulazo ya no está activo.", "error"); return; }
+
+        // Devolver dinero al comprador
+        const buyerRef = doc(db, "users", czl.buyerUid);
+        const buyerSnap = await getDoc(buyerRef);
+        if (buyerSnap.exists()) {
+          await updateDoc(buyerRef, { presupuesto_actual: (buyerSnap.data().presupuesto_actual || 0) + czl.clausulaAmount });
+        }
+
+        // Consumir token y marcar clausulazo cancelado
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, { tokens_fidelidad: tokens - 1 });
+        currentUserProfile.tokens_fidelidad = tokens - 1;
+
+        const updatedPending = (leagueData.pending_clausulazos || []).map(c =>
+          c.id === clausulazoId ? { ...c, status: "cancelled" } : c
+        );
+        const incidencias = leagueData.incidencias || [];
+        incidencias.unshift(`🎖️ [Token Fidelidad] ${czl.playerName}: clausulazo CANCELADO por el dueño. El dinero fue devuelto.`);
+        await updateDoc(leagueRef, { pending_clausulazos: updatedPending, incidencias });
+
+        showNotification("🎖️ ¡Token de Fidelidad usado! El clausulazo ha sido cancelado y el dinero devuelto.", "success");
+        updateHeaderAndDashboardStats();
+      } catch (err) {
+        console.error("Error cancelling clausulazo:", err);
+        showNotification("Error al cancelar el clausulazo.", "error");
+      }
+    };
+
+    // =====================================================================
+
+
     function updateHeaderAndDashboardStats() {
       if (!currentUserProfile) return;
 
@@ -4071,6 +4698,11 @@
           widgetLeagueName.innerHTML = `${lData.nombre} <span class="ml-2 text-[9px] px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/20 text-gold font-extrabold uppercase inline-block animate-pulse">${lData.jornada_activa || "Jornada 1"}</span>`;
           widgetLeagueCode.textContent = lData.id;
 
+          // Renderizar alertas de clausulazos activos en buzón
+          if (window.renderActiveClausulazos) {
+            window.renderActiveClausulazos();
+          }
+
           // Re-renderizar el mercado en vivo
           if (activeDashboardTab === "market") {
             renderMarketTable();
@@ -4476,39 +5108,27 @@
     let adminSelectedUserId = "";
 
     async function initAdminConsole() {
-      const selectLeague = document.getElementById("admin-select-league");
+      // Liga única: siempre FONDA FANEGAS - auto-seleccionar
+      adminSelectedLeagueId = "FF-FONDA";
 
       // Cargar apuestas financieras pendientes para el administrador
       renderAdminPendingBets();
 
-      // Escucha en tiempo real de todas las ligas para la consola
-      if (unsubscribeAllLeagues) unsubscribeAllLeagues();
-      unsubscribeAllLeagues = onSnapshot(collection(db, "leagues"), (snapshot) => {
-        // Guardar valor actual antes de reconstruir
-        const currentVal = selectLeague.value;
-        selectLeague.innerHTML = `<option value="">Selecciona liga...</option>`;
-
-        const leagues = [];
-        snapshot.forEach(docSnap => {
-          const l = docSnap.data();
-          // Usar docSnap.id (clave del documento) como identificador principal
-          const leagueId = docSnap.id || l.id || l.codigo;
-          if (!leagueId) return;
-          leagues.push({ id: leagueId, nombre: l.nombre || leagueId });
-          const opt = document.createElement("option");
-          opt.value = leagueId;
-          opt.textContent = `${l.nombre || leagueId} (${leagueId})`;
-          selectLeague.appendChild(opt);
-        });
-
-        if (leagues.length > 0 && !currentVal) {
-          // Auto-seleccionar la primera liga disponible
-          selectLeague.value = leagues[0].id;
-          selectLeague.dispatchEvent(new Event("change"));
-        } else if (currentVal) {
-          selectLeague.value = currentVal;
+      // Cargar la liga FONDA FANEGAS directamente
+      try {
+        const leagueDoc = await getDoc(doc(db, "leagues", "FF-FONDA"));
+        if (leagueDoc.exists()) {
+          const data = leagueDoc.data();
+          currentActiveLeagueData = { ...data, id: "FF-FONDA" };
+          const selectJornada = document.getElementById("admin-select-jornada");
+          if (selectJornada) selectJornada.value = data.jornada_activa || "Jornada 1";
         }
-      });
+      } catch (err) {
+        console.warn("No se pudo cargar FONDA FANEGAS:", err);
+      }
+
+      // Disparar el evento change para cargar mánagers y habilitar controles
+      document.getElementById("admin-select-league").dispatchEvent(new Event("change"));
 
       // Rellenar selector de jugadores para otorgar
       const selectPlayerMod = document.getElementById("admin-player-mod");
@@ -4541,7 +5161,8 @@
 
         document.getElementById("btn-admin-broadcast").disabled = true;
         document.getElementById("admin-broadcast-msg").disabled = true;
-        document.getElementById("btn-admin-delete-league").disabled = true;
+        const btnDelAccount2 = document.getElementById("btn-admin-delete-account");
+        if (btnDelAccount2) btnDelAccount2.disabled = true;
         document.getElementById("btn-admin-resolve-auctions").disabled = true;
 
         const lockTimeInput = document.getElementById("admin-lock-lineups-time");
@@ -4569,7 +5190,8 @@
 
       document.getElementById("btn-admin-broadcast").disabled = false;
       document.getElementById("admin-broadcast-msg").disabled = false;
-      document.getElementById("btn-admin-delete-league").disabled = false;
+      const btnDelAccount = document.getElementById("btn-admin-delete-account");
+      if (btnDelAccount) btnDelAccount.disabled = true; // solo se activa cuando hay un user seleccionado
       document.getElementById("btn-admin-resolve-auctions").disabled = false;
 
       try {
@@ -4677,6 +5299,8 @@
       document.getElementById("admin-points-mod").disabled = disabled;
       document.getElementById("admin-points-reason").disabled = disabled;
       document.getElementById("btn-admin-kick-user").disabled = disabled;
+      const btnDelAcc = document.getElementById("btn-admin-delete-account");
+      if (btnDelAcc) btnDelAcc.disabled = disabled;
     }
 
     // Admin: Sumar Cartera de Fondos
@@ -5313,6 +5937,8 @@
           const divCard = document.createElement("div");
           divCard.className = `market-card-premium p-4.5 rounded-2xl border flex flex-col justify-between gap-3 transition ${hasBid ? 'bid-glow-active border-purple-500/30' : 'border-white/5'
             }`;
+          const avatarHTML = window.getPlayerCardAvatarHTML(player.id, player, "w-12 h-12", false);
+
           divCard.innerHTML = `
             <div class="flex justify-between items-center text-xs">
               ${posBadge}
@@ -5321,11 +5947,14 @@
               </span>
             </div>
 
-            <div class="space-y-1 my-1 text-left">
-              <h5 class="text-sm md:text-base font-black text-slate-100 tracking-wide">${player.nombre}</h5>
-              <div class="flex items-baseline justify-between">
-                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Valor base (VM)</span>
-                <span class="text-base font-black text-emerald-400">${playerPriceM}M$</span>
+            <div class="flex items-center gap-3 my-1.5 text-left">
+              ${avatarHTML}
+              <div class="space-y-0.5 flex-grow">
+                <h5 class="text-xs md:text-sm font-black text-slate-100 tracking-wide leading-tight">${player.nombre}</h5>
+                <div class="flex items-baseline justify-between">
+                  <span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Valor base</span>
+                  <span class="text-xs font-black text-emerald-400">${playerPriceM}M$</span>
+                </div>
               </div>
             </div>
 
@@ -5391,10 +6020,17 @@
           const myOffer = (item.bids || []).find(b => b.uid === currentUser.uid);
           const myOfferText = myOffer ? `${(myOffer.price / 1000000).toFixed(1)}M$` : "Ninguna";
 
+          const avatarHTML = window.getPlayerCardAvatarHTML(player.id, player, "w-10 h-10", false);
+
           const tr = document.createElement("tr");
           tr.className = "hover:bg-white/[0.01] transition border-b border-white/5";
           tr.innerHTML = `
-            <td class="py-3 px-4 font-bold text-slate-200">${player.nombre}</td>
+            <td class="py-3 px-4 font-bold text-slate-200">
+              <div class="flex items-center gap-3">
+                ${avatarHTML}
+                <span class="font-extrabold text-slate-100">${player.nombre}</span>
+              </div>
+            </td>
             <td class="py-3 px-4 text-center">${posBadge} <span class="text-xs block">${player.flag}</span></td>
             <td class="py-3 px-4 font-medium text-slate-300">${isSelfPlayer ? '<span class="text-gold">Tú</span>' : item.owner_name}</td>
             <td class="py-3 px-4 text-right font-black text-amber-400">${minPriceM}M$</td>
@@ -5404,12 +6040,15 @@
               ? `<button class="btn-cancel-sale bg-red-950/40 hover:bg-rose-600 border border-rose-500/30 hover:border-transparent text-rose-400 hover:text-slate-950 font-bold px-2 py-1 rounded text-[10px] cursor-pointer transition flex items-center gap-0.5 mx-auto" data-id="${player.id}">
                       Retirar <i data-lucide="x" class="w-3 h-3"></i>
                      </button>`
-              : `<div class="flex items-center gap-1 justify-center">
-                      <input type="number" step="0.1" min="${minPriceM}" class="input-offer w-16 px-1.5 py-1 text-xs rounded border border-white/10 bg-slate-950/40 text-center font-bold" placeholder="M$" value="${myOffer ? (myOffer.price / 1000000).toFixed(1) : ''}">
-                      <button class="btn-submit-offer bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-slate-950 font-black px-2 py-1 rounded text-[10px] cursor-pointer transition flex items-center gap-0.5" data-id="${player.id}">
-                        Ofertar <i data-lucide="tag" class="w-2.5 h-2.5"></i>
-                      </button>
-                    </div>`
+              : `<div class="flex flex-col items-center gap-1.5">
+                       <div class="flex items-center gap-1">
+                         <input type="number" step="0.1" min="${minPriceM}" class="input-offer w-16 px-1.5 py-1 text-xs rounded border border-white/10 bg-slate-950/40 text-center font-bold" placeholder="M$" value="${myOffer ? (myOffer.price / 1000000).toFixed(1) : ''}">
+                         <button class="btn-submit-offer bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-slate-950 font-black px-2 py-1 rounded text-[10px] cursor-pointer transition flex items-center gap-0.5" data-id="${player.id}">
+                           Ofertar <i data-lucide="tag" class="w-2.5 h-2.5"></i>
+                         </button>
+                       </div>
+                       ${item.clausula ? `<button class="btn-clausulazo bg-rose-950/40 hover:bg-rose-600 border border-rose-500/20 hover:border-transparent text-rose-400 hover:text-white font-black px-2 py-1 rounded text-[9px] cursor-pointer transition flex items-center gap-1 whitespace-nowrap" data-id="${player.id}" data-owner="${item.owner_uid}" data-owner-name="${item.owner_name}" data-clausula="${item.clausula}">⚡ Clausulazo (${(item.clausula/1e6).toFixed(1)}M$)</button>` : ''}
+                     </div>`
             }
             </td>
           `;
@@ -5525,6 +6164,19 @@
         });
       });
 
+      // ⚡ Clausulazo (Rival ejecuta la cláusula de rescisión)
+      secondaryTbody.querySelectorAll(".btn-clausulazo").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const playerId = btn.getAttribute("data-id");
+          const ownerUid = btn.getAttribute("data-owner");
+          const ownerName = btn.getAttribute("data-owner-name");
+          const clausulaAmount = parseInt(btn.getAttribute("data-clausula")) || 0;
+          if (window.openClausulazoModal) {
+            window.openClausulazoModal(playerId, ownerUid, ownerName, clausulaAmount);
+          }
+        });
+      });
+
       lucide.createIcons();
     }
 
@@ -5616,6 +6268,46 @@
       return list;
     }
 
+    // --- OBTENER URL DE LA FOTO DEL JUGADOR ---
+    window.getPlayerPhotoUrl = function(playerId) {
+      const p = PLAYERS_POOL.find(x => x.id === playerId);
+      if (!p) return null;
+      if (p.pais === "España") {
+        return `jugadores_config/img-players/España/${p.id}.webp`;
+      } else if (p.id === "fw_messi") {
+        return `jugadores_config/img-players/fw_messi.webp`;
+      }
+      return null;
+    };
+
+    // --- GENERAR AVATAR/FOTO PREMIUM PARA LA PLANTILLA ---
+    window.getPlayerCardAvatarHTML = function(id, player, sizeClass = "w-16 h-16", isCaptain = false) {
+      const photoUrl = window.getPlayerPhotoUrl(id);
+      const posMap = { 
+        portero: "from-teal-600 to-teal-950 text-teal-200 border-teal-500/40", 
+        defensa: "from-blue-600 to-blue-950 text-blue-200 border-blue-500/40", 
+        mediocampista: "from-purple-600 to-purple-950 text-purple-200 border-purple-500/40", 
+        delantero: "from-rose-600 to-rose-950 text-rose-200 border-rose-500/40" 
+      };
+      const posTheme = posMap[player.posicion] || "from-slate-700 to-slate-950 text-slate-200 border-slate-600/40";
+      
+      if (photoUrl) {
+        return `
+          <div class="${sizeClass} rounded-full border-2 ${isCaptain ? 'border-gold shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-[pulseGold_2s_infinite]' : 'border-slate-700/60'} bg-slate-950 overflow-hidden relative shadow-lg flex items-center justify-center transition duration-200 mx-auto select-none pointer-events-none">
+            <img src="${photoUrl}" alt="${player.nombre}" class="w-full h-full object-cover object-top">
+          </div>
+        `;
+      } else {
+        const initials = player.nombre.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
+        return `
+          <div class="${sizeClass} rounded-full border-2 ${isCaptain ? 'border-gold shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-[pulseGold_2s_infinite]' : 'border-slate-700/60'} bg-gradient-to-b ${posTheme} overflow-hidden relative shadow-lg flex flex-col items-center justify-center transition duration-200 mx-auto select-none pointer-events-none">
+            <i data-lucide="shirt" class="w-1/2 h-1/2 opacity-15 absolute"></i>
+            <span class="font-black text-xs tracking-wider z-10">${initials}</span>
+          </div>
+        `;
+      }
+    };
+
     // --- RENDERIZADO DEL CAMPO ---
     function renderSquadAndPitch() {
       console.log("⚽ [Fonda Engine] Iniciando renderSquadAndPitch()...");
@@ -5646,6 +6338,39 @@
                 sPlayer.posicion === "mediocampista" ? "MC" : "DEL";
             selectedPlayerNameEl.textContent = `${sPlayer.nombre} (${posBad})`;
             selectionActionsEl.classList.remove("hidden");
+
+            // Determinar si es titular para mostrar el botón "Hacer Capitán"
+            const rawTitulares = currentUserTeam.alineacion?.titulares || {};
+            const titularIds = [
+              ...(rawTitulares.portero || []),
+              ...(rawTitulares.defensas || []),
+              ...(rawTitulares.mediocampistas || []),
+              ...(rawTitulares.delanteros || [])
+            ];
+            if (currentUserTeam.players && Array.isArray(currentUserTeam.players)) {
+              currentUserTeam.players.forEach(p => {
+                const isTit = p.isTitular === true || p.titular === true || p.estado === "titular";
+                if (isTit && p.id && !titularIds.includes(p.id)) {
+                  titularIds.push(p.id);
+                }
+              });
+            }
+
+            const isTitular = titularIds.includes(swapActiveSourceId);
+            const btnMakeCaptain = document.getElementById("btn-squad-make-captain");
+            if (btnMakeCaptain) {
+              if (isTitular) {
+                btnMakeCaptain.classList.remove("hidden");
+                btnMakeCaptain.onclick = async () => {
+                  const playerIdToCap = swapActiveSourceId;
+                  swapActiveSourceId = null;
+                  await setCaptain(playerIdToCap);
+                  renderSquadAndPitch();
+                };
+              } else {
+                btnMakeCaptain.classList.add("hidden");
+              }
+            }
           } else {
             selectionActionsEl.classList.add("hidden");
           }
@@ -5805,22 +6530,24 @@
 
           const isSwapping = swapActiveSourceId === id;
 
+          const avatarHTML = window.getPlayerCardAvatarHTML(id, player, "w-14 h-14", false);
+
           cardDiv.innerHTML = `
             <div class="player-pitch-card cursor-pointer ${isSwapping ? 'active-swap-target' : ''}" data-id="${id}" draggable="true">
-              <div class="w-11 h-11 rounded-full bg-slate-900 border border-emerald-500/40 hover:border-emerald-400 shadow-md flex items-center justify-center text-slate-300 relative transition">
-                <i data-lucide="shirt" class="w-6 h-6 text-emerald-500/70"></i>
-                <span class="absolute bottom-0 right-[-3px] text-[8px] font-black bg-emerald-950/90 text-emerald-400 border border-emerald-800/30 px-1 rounded uppercase">${posBad}</span>
-                <span class="absolute top-[-5px] right-[-5px] text-[9px] font-black bg-emerald-500 text-slate-950 px-1 rounded-full shadow">${livePts}</span>
+              <div class="relative inline-block">
+                ${avatarHTML}
+                <span class="absolute bottom-0 right-[-3px] text-[8px] font-black bg-emerald-950/90 text-emerald-400 border border-emerald-800/30 px-1 rounded uppercase z-10">${posBad}</span>
+                <span class="absolute top-[-5px] right-[-5px] text-[9px] font-black bg-emerald-500 text-slate-950 px-1 rounded-full shadow z-10">${livePts}</span>
               </div>
-              <div class="player-pitch-badge">
-                <p class="text-[9px] font-black text-slate-100 truncate">${player.nombre}</p>
+              <div class="player-pitch-badge mt-1">
+                <p class="text-[9px] font-black text-slate-100 truncate max-w-[80px]">${player.nombre}</p>
                 <p class="text-[8px] text-emerald-400 font-extrabold">${(player.precio / 1000000).toFixed(1)}M$</p>
               </div>
             </div>
           `;
 
           const benchCard = cardDiv.querySelector(".player-pitch-card");
-          benchCard.addEventListener("click", () => handleSquadCardClick(id));
+          benchCard.addEventListener("click", () => window.openPlayerProfileModal ? window.openPlayerProfileModal(id) : handleSquadCardClick(id));
           setupDragAndDropForCard(benchCard, id, player.posicion);
         } else {
           cardDiv.innerHTML = `
@@ -5889,22 +6616,24 @@
 
           const isSwapping = swapActiveSourceId === id;
 
+          const avatarHTML = window.getPlayerCardAvatarHTML(id, player, "w-14 h-14", false);
+
           cardDiv.innerHTML = `
             <div class="player-pitch-card cursor-pointer ${isSwapping ? 'active-swap-target' : ''}" data-id="${id}" draggable="true">
-              <div class="w-11 h-11 rounded-full bg-slate-900 border border-purple-500/40 hover:border-purple-400 shadow-md flex items-center justify-center text-slate-300 relative transition">
-                <i data-lucide="shirt" class="w-6 h-6 text-purple-400/70"></i>
-                <span class="absolute bottom-0 right-[-3px] text-[8px] font-black bg-purple-950/90 text-purple-400 border border-purple-800/30 px-1 rounded uppercase">${posBad}</span>
-                <span class="absolute top-[-5px] right-[-5px] text-[9px] font-black bg-slate-800 text-slate-400 border border-slate-700 px-1 rounded-full shadow">${livePts}</span>
+              <div class="relative inline-block">
+                ${avatarHTML}
+                <span class="absolute bottom-0 right-[-3px] text-[8px] font-black bg-purple-950/90 text-purple-400 border border-purple-800/30 px-1 rounded uppercase z-10">${posBad}</span>
+                <span class="absolute top-[-5px] right-[-5px] text-[9px] font-black bg-slate-800 text-slate-400 border border-slate-700 px-1 rounded-full shadow z-10">${livePts}</span>
               </div>
-              <div class="player-pitch-badge">
-                <p class="text-[9px] font-black text-slate-100 truncate">${player.nombre}</p>
+              <div class="player-pitch-badge mt-1">
+                <p class="text-[9px] font-black text-slate-100 truncate max-w-[80px]">${player.nombre}</p>
                 <p class="text-[8px] text-emerald-400 font-extrabold">${(player.precio / 1000000).toFixed(1)}M$</p>
               </div>
             </div>
           `;
 
           const benchCard = cardDiv.querySelector(".player-pitch-card");
-          benchCard.addEventListener("click", () => handleSquadCardClick(id));
+          benchCard.addEventListener("click", () => window.openPlayerProfileModal ? window.openPlayerProfileModal(id) : handleSquadCardClick(id));
           setupDragAndDropForCard(benchCard, id, player.posicion);
 
           reservasTbody.appendChild(cardDiv);
@@ -6001,39 +6730,44 @@
           const isCaptain = capitanId === id;
           const isSwapping = swapActiveSourceId === id;
 
+          const avatarHTML = window.getPlayerCardAvatarHTML(id, player, "w-16 h-16", isCaptain);
+
           playerDiv.innerHTML = `
             <div class="player-pitch-card ${isSwapping ? 'active-swap-target' : ''}" data-id="${id}" draggable="true">
-              <!-- Jersey e Iconos -->
-              <div class="w-12 h-12 rounded-full bg-fonda-900 border ${isCaptain ? 'border-gold shadow-gold/20' : 'border-slate-700'} hover:border-gold shadow-md flex items-center justify-center text-slate-200 relative transition">
-                <i data-lucide="shirt" class="w-7 h-7 ${isCaptain ? 'text-gold' : 'text-slate-400'}"></i>
+              <!-- Avatar Premium con Foto/Iniciales -->
+              <div class="relative inline-block">
+                ${avatarHTML}
                 
+                <!-- Corona de Capitán (badge estático) -->
+                ${isCaptain ? `
+                  <div class="absolute -top-1.5 -left-1.5 bg-slate-900 border border-gold/60 rounded-full p-1 shadow-md shadow-gold/25 z-10 animate-bounce">
+                    <i data-lucide="crown" class="w-3.5 h-3.5 text-gold"></i>
+                  </div>
+                ` : ''}
+
                 <!-- Puntos en vivo -->
-                <span class="absolute top-[-5px] right-[-5px] text-[9px] font-black bg-gold text-slate-950 px-1 rounded-full shadow-md">
+                <span class="absolute -top-1.5 -right-1.5 text-[9px] font-black bg-gold text-slate-950 px-1 rounded-full shadow-md z-10 border border-gold-500/20">
                   ${isCaptain ? `${livePts * 2}` : `${livePts}`}
                 </span>
-
-                <!-- Botón Corona Capitán -->
-                <button class="btn-capitan absolute top-[-5px] left-[-5px] p-0.5 rounded bg-slate-900/90 border border-gold/40 cursor-pointer shadow" data-id="${id}" title="Hacer Capitán">
-                  <i data-lucide="crown" class="w-3.5 h-3.5 ${isCaptain ? 'text-gold animate-bounce' : 'text-slate-500 hover:text-gold'}"></i>
-                </button>
               </div>
               
               <!-- Badge Identificativo -->
-              <div class="player-pitch-badge">
-                <p class="text-[9px] font-black text-slate-200 truncate">${player.nombre}</p>
-                <p class="text-[8px] text-emerald-400 font-extrabold">${player.flag} ${(player.precio / 1000000).toFixed(1)}M$</p>
+              <div class="player-pitch-badge mt-1.5">
+                <p class="text-[9px] font-black text-slate-200 truncate max-w-[85px]">${player.nombre}</p>
+                <p class="text-[8px] text-emerald-400 font-extrabold flex items-center justify-center gap-0.5">
+                  <span>${player.flag}</span>
+                  <span>${(player.precio / 1000000).toFixed(1)}M$</span>
+                </p>
               </div>
             </div>
           `;
 
           const pCard = playerDiv.querySelector(".player-pitch-card");
 
-          pCard.addEventListener("click", (e) => {
-            if (e.target.closest(".btn-capitan")) return;
-            openSwapSelector(posicion, id);
+          pCard.addEventListener("click", () => {
+            if (window.openPlayerProfileModal) window.openPlayerProfileModal(id);
+            else openSwapSelector(posicion, id);
           });
-
-          playerDiv.querySelector(".btn-capitan").addEventListener("click", () => setCaptain(id));
 
           pCard.addEventListener("dragstart", (e) => {
             pCard.classList.add("player-dragging");
@@ -9096,113 +9830,76 @@
       });
     }
 
-    // 8. Eliminar Liga Completa con Cascada (Admin Only)
-    const btnAdminDeleteLeague = document.getElementById("btn-admin-delete-league");
-    if (btnAdminDeleteLeague) {
-      btnAdminDeleteLeague.addEventListener("click", async () => {
-        if (!adminSelectedLeagueId) {
-          showNotification("Primero debes seleccionar qué liga quieres borrar.", "error");
+    // 8. Eliminar Cuenta de Manager Permanentemente (Admin Only)
+    const btnAdminDeleteAccount = document.getElementById("btn-admin-delete-account");
+    if (btnAdminDeleteAccount) {
+      btnAdminDeleteAccount.addEventListener("click", async () => {
+        if (!adminSelectedUserId) {
+          showCustomAlert("Zona de Peligro", "Primero selecciona un mánager en el selector de la sección 1.", "error");
           return;
         }
 
-        const confirmFirst = confirm(`⚠️ ¿Estás COMPLETAMENTE seguro de que deseas eliminar la liga "${adminSelectedLeagueId}"? \nEsta acción es irreversible y borrará todas las plantillas, presupuestos, mercado de fichajes y chat de la liga.`);
-        if (!confirmFirst) return;
+        const userRef = doc(db, "users", adminSelectedUserId);
+        const userSnap = await getDoc(userRef);
+        const userName = userSnap.exists() ? (userSnap.data().nombre_usuario || adminSelectedUserId) : adminSelectedUserId;
 
-        const confirmSecond = confirm(`🔥 CONFIRMACIÓN DE SEGURIDAD CRÍTICA: \n¿Estás realmente seguro? Se eliminará toda la participación de los mánagers en esta liga.`);
-        if (!confirmSecond) return;
+        showCustomAlert(
+          "🛑 ELIMINAR CUENTA PERMANENTEMENTE",
+          `¿Estás seguro de que deseas eliminar la cuenta de <strong>${userName}</strong> del sistema?<br><br>Se eliminarán sus datos de plantilla en FONDA FANEGAS y su cuenta de acceso. <span style='color:#f87171;font-weight:900'>Esta acción NO se puede deshacer.</span>`,
+          "error",
+          async () => {
+            btnAdminDeleteAccount.disabled = true;
+            btnAdminDeleteAccount.innerHTML = 'Eliminando... <i data-lucide="loader" class="w-3.5 h-3.5 animate-spin inline"></i>';
+            lucide.createIcons();
 
-        btnAdminDeleteLeague.disabled = true;
-        btnAdminDeleteLeague.innerHTML = 'Eliminando Liga... <i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i>';
-        lucide.createIcons();
+            try {
+              // 1. Eliminar la plantilla del usuario en la liga
+              const teamId = `${adminSelectedUserId}_FF-FONDA`;
+              await deleteDoc(doc(db, "user_teams", teamId)).catch(() => {});
 
-        try {
-          // 1. Obtener la liga para limpiar los perfiles de los participantes
-          const leagueRef = doc(db, "leagues", adminSelectedLeagueId);
-          const leagueSnap = await getDoc(leagueRef);
-
-          if (leagueSnap.exists()) {
-            const data = leagueSnap.data();
-            const participantes = data.participantes || [];
-
-            for (const pUid of participantes) {
-              try {
-                const userRef = doc(db, "users", pUid);
-                const userSnap = await getDoc(userRef);
-                if (userSnap.exists()) {
-                  const uData = userSnap.data();
-                  const userLeagues = uData.ligas || [];
-                  const nextLeagues = userLeagues.filter(lId => lId !== adminSelectedLeagueId);
-                  const nextActive = uData.liga_activa === adminSelectedLeagueId ? (nextLeagues[0] || "") : uData.liga_activa;
-
-                  // Limpiar nombre_equipo
-                  const nombresEquipo = uData.nombres_equipo || {};
-                  delete nombresEquipo[adminSelectedLeagueId];
-
-                  await updateDoc(userRef, {
-                    ligas: nextLeagues,
-                    liga_activa: nextActive,
-                    nombres_equipo: nombresEquipo
-                  });
-                }
-              } catch (err) {
-                console.error("Error al limpiar usuario en borrado de liga:", err);
+              // 2. Quitar al usuario de los participantes de la liga
+              const leagueSnap = await getDoc(doc(db, "leagues", "FF-FONDA"));
+              if (leagueSnap.exists()) {
+                const participantes = leagueSnap.data().participantes || [];
+                await updateDoc(doc(db, "leagues", "FF-FONDA"), {
+                  participantes: participantes.filter(id => id !== adminSelectedUserId)
+                });
               }
+
+              // 3. Eliminar el documento del usuario (esto también elimina su auth en el motor de nube)
+              await deleteDoc(userRef);
+
+              showNotification(`✅ Cuenta de "${userName}" eliminada permanentemente del sistema.`, "success");
+
+              // Resetear selector de usuario
+              adminSelectedUserId = "";
+              document.getElementById("admin-select-league").dispatchEvent(new Event("change"));
+            } catch (err) {
+              console.error("Error al eliminar la cuenta:", err);
+              showNotification("Error al eliminar la cuenta del mánager.", "error");
+            } finally {
+              btnAdminDeleteAccount.disabled = false;
+              btnAdminDeleteAccount.innerHTML = '<i data-lucide="user-minus" class="w-3.5 h-3.5"></i> Eliminar Cuenta Permanentemente';
+              lucide.createIcons();
             }
           }
-
-          // 2. Eliminar todas las plantillas asociadas a esta liga en user_teams
-          const teamsSnap = await getDocs(collection(db, "user_teams"));
-          let countTeamsDeleted = 0;
-          for (const teamDoc of teamsSnap.docs) {
-            if (teamDoc.id.endsWith(`_${adminSelectedLeagueId}`) || teamDoc.data().leagueCode === adminSelectedLeagueId) {
-              await deleteDoc(doc(db, "user_teams", teamDoc.id));
-              countTeamsDeleted++;
-            }
-          }
-
-          // 3. Eliminar todos los mensajes del chat de esta liga en messages
-          const messagesSnap = await getDocs(collection(db, "messages"));
-          let countMsgsDeleted = 0;
-          for (const msgDoc of messagesSnap.docs) {
-            if (msgDoc.data().leagueCode === adminSelectedLeagueId) {
-              await deleteDoc(doc(db, "messages", msgDoc.id));
-              countMsgsDeleted++;
-            }
-          }
-
-          // 4. Eliminar el documento de la liga en leagues
-          await deleteDoc(leagueRef);
-
-          showNotification(`⚡ Liga "${adminSelectedLeagueId}" eliminada con éxito. Limpiados perfiles de mánagers, ${countTeamsDeleted} plantillas y ${countMsgsDeleted} mensajes del chat.`, "success");
-
-          // Resetear selecciones
-          const targetDeletedId = adminSelectedLeagueId;
-          adminSelectedLeagueId = "";
-          document.getElementById("admin-select-league").value = "";
-          document.getElementById("admin-select-league").dispatchEvent(new Event("change"));
-
-          // Si el admin estaba conectado participando en esa liga, recargar
-          if (currentUserProfile && currentUserProfile.liga_activa === targetDeletedId) {
-            location.reload();
-          }
-        } catch (err) {
-          console.error("Error al eliminar la liga:", err);
-          showNotification("Error de base de datos al eliminar la liga.", "error");
-        } finally {
-          btnAdminDeleteLeague.disabled = false;
-          btnAdminDeleteLeague.innerHTML = 'Eliminar Liga Completa <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>';
-          lucide.createIcons();
-        }
+        );
       });
     }
 
     // ==================== MÓDULO PACKS & ÁLBUM PANINI ====================
 
     const PACK_CONFIG = {
-      bronze: { price: 3, probs: { comun: 80, medio: 18, estrella: 2 } },
-      plata: { price: 7, probs: { comun: 60, medio: 30, estrella: 10 } },
-      gold: { price: 10, probs: { comun: 40, medio: 40, estrella: 20 } }
+      bronze: { price: 3, probs: { comun: 80, medio: 18, estrella: 2 }, tokenDrop: 0.1 },
+      plata:  { price: 7, probs: { comun: 60, medio: 30, estrella: 10 }, tokenDrop: 0.5 },
+      gold:   { price: 10, probs: { comun: 40, medio: 40, estrella: 20 }, tokenDrop: 2.0 }
     };
+
+    // Roll Token de Fidelidad drop for a single card slot
+    function rollTokenDrop(packType) {
+      const chance = PACK_CONFIG[packType]?.tokenDrop || 0;
+      return Math.random() * 100 < chance;
+    }
 
     let currentPackType = null;
     let activeDeckFilter = "all";
@@ -9248,8 +9945,8 @@
             <span class="px-1.5 py-0.5 rounded font-black text-[8px] uppercase bg-${posCol}-500/10 text-${posCol}-400">${posLabel}</span>
             <span class="text-xs">${player.flag || "⚽"}</span>
           </div>
-          <div class="flex-1 flex items-center justify-center z-10">
-            <div class="w-11 h-11 rounded-full bg-white/[0.04] border border-white/5 flex items-center justify-center font-black text-xs text-slate-400 tracking-wider">${initials}</div>
+          <div class="flex-grow flex items-center justify-center z-10 my-2">
+            ${window.getPlayerCardAvatarHTML(player.id, player, "w-16 h-16", false)}
           </div>
           <div class="space-y-0.5 z-10 text-center border-t border-white/5 pt-1.5">
             <p class="text-[9px] font-black text-white truncate uppercase">${player.nombre}</p>
@@ -9329,11 +10026,20 @@
       try {
         const newFC = currentFC - price;
         const userRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userRef, {
-          user_inventory: arrayUnion(...ids),
-          fonda_coins: newFC
-        });
+
+        // --- Token de Fidelidad Drop (por cada carta del sobre) ---
+        let tokensGanados = 0;
+        for (let i = 0; i < ids.length; i++) {
+          if (rollTokenDrop(type)) tokensGanados++;
+        }
+
+        const updatePayload = { user_inventory: arrayUnion(...ids), fonda_coins: newFC };
+        if (tokensGanados > 0) {
+          updatePayload.tokens_fidelidad = (currentUserProfile.tokens_fidelidad || 0) + tokensGanados;
+        }
+        await updateDoc(userRef, updatePayload);
         currentUserProfile.fonda_coins = newFC;
+        if (tokensGanados > 0) currentUserProfile.tokens_fidelidad = (currentUserProfile.tokens_fidelidad || 0) + tokensGanados;
 
         if (!currentUserProfile.user_inventory) currentUserProfile.user_inventory = [];
         ids.forEach(id => { if (!currentUserProfile.user_inventory.includes(id)) currentUserProfile.user_inventory.push(id); });
@@ -9350,9 +10056,22 @@
             grid.appendChild(wrap);
             setTimeout(() => { wrap.classList.remove("scale-0", "opacity-0"); wrap.classList.add("scale-100", "opacity-100"); }, (idx + 1) * 280);
           });
+          // Token reveal card
+          if (tokensGanados > 0) {
+            const tokenWrap = document.createElement("div");
+            tokenWrap.className = "transform scale-0 opacity-0 transition-all duration-700 ease-out col-span-full flex justify-center mt-2";
+            tokenWrap.innerHTML = `<div class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 shadow-lg shadow-emerald-500/10 animate-pulse">
+              <span class="text-3xl">🎖️</span>
+              <div><p class="font-black text-emerald-300 text-sm">¡Token de Fidelidad obtenido!</p>
+              <p class="text-[10px] text-slate-400">+${tokensGanados} token${tokensGanados>1?'s':''} añadido${tokensGanados>1?'s':''} a tu colección.</p></div></div>`;
+            grid.appendChild(tokenWrap);
+            setTimeout(() => { tokenWrap.classList.remove("scale-0","opacity-0"); tokenWrap.classList.add("scale-100","opacity-100"); }, (players.length+1)*280);
+          }
           setTimeout(() => { lucide.createIcons(); updatePacksStats(); }, players.length * 280 + 100);
         }
-        showNotification(`🎴 ¡Sobre ${type} abierto! -${price.toLocaleString()} FC. +${ids.length} cromos al mazo.`, "success");
+        let notifMsg = `🎴 ¡Sobre ${type} abierto! -${price.toLocaleString()} FC. +${ids.length} cromos al mazo.`;
+        if (tokensGanados > 0) notifMsg += ` 🎖️ +${tokensGanados} Token de Fidelidad`;
+        showNotification(notifMsg, "success");
         updateHeaderAndDashboardStats();
       } catch (err) {
         console.error("Error abriendo sobre:", err);
@@ -9372,20 +10091,29 @@
       }
 
       const allIds = [];
-      for (let i = 0; i < count; i++) { const { ids } = drawPack(type, 3); ids.forEach(id => allIds.push(id)); }
+      let tokensGanadosMulti = 0;
+      for (let i = 0; i < count; i++) {
+        const { ids } = drawPack(type, 3);
+        ids.forEach(id => allIds.push(id));
+        for (let j = 0; j < ids.length; j++) { if (rollTokenDrop(type)) tokensGanadosMulti++; }
+      }
       try {
         const newFC = currentFC - price;
         const userRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userRef, {
-          user_inventory: arrayUnion(...allIds),
-          fonda_coins: newFC
-        });
+        const multiPayload = { user_inventory: arrayUnion(...allIds), fonda_coins: newFC };
+        if (tokensGanadosMulti > 0) {
+          multiPayload.tokens_fidelidad = (currentUserProfile.tokens_fidelidad || 0) + tokensGanadosMulti;
+        }
+        await updateDoc(userRef, multiPayload);
         currentUserProfile.fonda_coins = newFC;
+        if (tokensGanadosMulti > 0) currentUserProfile.tokens_fidelidad = (currentUserProfile.tokens_fidelidad || 0) + tokensGanadosMulti;
 
         if (!currentUserProfile.user_inventory) currentUserProfile.user_inventory = [];
         allIds.forEach(id => { if (!currentUserProfile.user_inventory.includes(id)) currentUserProfile.user_inventory.push(id); });
         updatePacksStats();
-        showNotification(`⚡ ¡${count} sobres ${type} abiertos! -${price.toLocaleString()} FC. +${totalCards} cromos al mazo.`, "success");
+        let multiMsg = `⚡ ¡${count} sobres ${type} abiertos! -${price.toLocaleString()} FC. +${totalCards} cromos.`;
+        if (tokensGanadosMulti > 0) multiMsg += ` 🎖️ +${tokensGanadosMulti} Token${tokensGanadosMulti>1?'s':''} de Fidelidad`;
+        showNotification(multiMsg, "success");
         updateHeaderAndDashboardStats();
       } catch (err) {
         console.error("Error en apertura múltiple:", err);
@@ -9722,16 +10450,77 @@
       }
 
       listEl.innerHTML = unclaimed.map(r => {
+        if (r.type === "clausulazo_alert") {
+          return `
+            <div class="glass-panel p-5 rounded-2xl border border-red-500/30 bg-red-950/10 flex flex-col justify-between gap-4 hover:border-white/10 transition duration-300 relative overflow-hidden text-left">
+              <div class="absolute -right-12 -top-12 w-24 h-24 bg-red-500/5 rounded-full blur-2xl pointer-events-none"></div>
+              <div class="space-y-2">
+                <div class="flex justify-between items-start gap-2">
+                  <h5 class="font-black text-sm text-red-400 flex items-center gap-1.5 leading-snug">
+                    <i data-lucide="shield-alert" class="w-4.5 h-4.5 shrink-0 text-red-500 animate-bounce"></i>
+                    ${r.title}
+                  </h5>
+                  <span class="text-[9px] bg-red-950 border border-red-500/20 font-black px-2 py-0.5 rounded text-red-400 whitespace-nowrap">
+                    💸 ${(r.amount / 1000000).toFixed(1)}M$
+                  </span>
+                </div>
+                <p class="text-slate-300 text-[11px] leading-relaxed font-medium">${r.description}</p>
+              </div>
+              <div class="flex flex-col gap-2 pt-2 border-t border-white/5">
+                <div class="flex items-center justify-between text-[8px] text-slate-500 font-extrabold uppercase">
+                  <span>${r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Reciente"}</span>
+                  <span class="text-emerald-400">Tokens: ${currentUserProfile.tokens_fidelidad || 0}</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                  <button onclick="counterClausulazo('${r.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] uppercase py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-1 shadow-md shadow-emerald-500/10">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Usar Seguro
+                  </button>
+                  <button onclick="resolveClausulazoTransfer('${r.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-[10px] uppercase py-2 rounded-xl transition cursor-pointer flex items-center justify-center gap-1 border border-slate-700">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Aceptar Venta
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        if (r.type === "clausulazo_refund" || r.type === "clausulazo_success") {
+          const isRefund = r.type === "clausulazo_refund";
+          const borderClass = isRefund ? "border-amber-500/30 bg-amber-950/10" : "border-emerald-500/30 bg-emerald-950/10";
+          const textClass = isRefund ? "text-amber-400" : "text-emerald-400";
+          const icon = isRefund ? "shield-alert" : "badge-check";
+          
+          return `
+            <div class="glass-panel p-5 rounded-2xl border ${borderClass} flex flex-col justify-between gap-4 hover:border-white/10 transition duration-300 text-left">
+              <div class="space-y-2">
+                <h5 class="font-black text-sm ${textClass} flex items-center gap-1.5 leading-snug">
+                  <i data-lucide="${icon}" class="w-4.5 h-4.5 shrink-0"></i>
+                  ${r.title}
+                </h5>
+                <p class="text-slate-300 text-[11px] leading-relaxed font-medium">${r.description}</p>
+              </div>
+              <div class="flex justify-between items-center pt-2 border-t border-white/5">
+                <span class="text-[8px] text-slate-500 font-extrabold uppercase">
+                  ${r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Reciente"}
+                </span>
+                <button onclick="claimReward('${r.id}', 0)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-[10px] uppercase px-3 py-1.5 rounded-xl transition cursor-pointer">
+                  Entendido
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
         const isWinner = r.amount === 15;
         const borderClass = isWinner ? "border-amber-500/30 bg-amber-500/[0.02]" : "border-emerald-500/20 bg-emerald-500/[0.01]";
         const titleClass = isWinner ? "text-amber-400" : "text-emerald-400";
         const iconName = isWinner ? "trophy" : "mail";
-        const btnClass = isWinner 
+        const btnClass = isWinner
           ? "bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs px-4 py-2 rounded-xl transition cursor-pointer hover:scale-[1.03] active:scale-95 duration-150 flex items-center gap-1 shadow-md shadow-amber-500/10"
           : "bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs px-4 py-2 rounded-xl transition cursor-pointer hover:scale-[1.03] active:scale-95 duration-150 flex items-center gap-1 shadow-md shadow-emerald-500/10";
 
         return `
-          <div class="glass-panel p-5 rounded-2xl border ${borderClass} flex flex-col justify-between gap-4 hover:border-white/10 transition duration-300">
+          <div class="glass-panel p-5 rounded-2xl border ${borderClass} flex flex-col justify-between gap-4 hover:border-white/10 transition duration-300 text-left">
             <div class="space-y-2">
               <div class="flex justify-between items-start gap-2">
                 <h5 class="font-black text-sm ${titleClass} flex items-center gap-1.5 leading-snug">
@@ -9756,6 +10545,82 @@
         `;
       }).join("");
       lucide.createIcons();
+      if (window.renderActiveClausulazos) window.renderActiveClausulazos();
+    };
+
+    // --- RENDERIZAR CLAUSULAZOS ACTIVOS (Alertas con cuenta regresiva) ---
+    let clausulazoInterval = null;
+    window.renderActiveClausulazos = function() {
+      const panel = document.getElementById("clausulazos-alert-panel");
+      const list = document.getElementById("clausulazos-list");
+      const badge = document.getElementById("clausulazo-count-badge");
+      if (!panel || !list) return;
+
+      if (!currentUser || !currentActiveLeagueData) {
+        panel.classList.add("hidden");
+        return;
+      }
+
+      const pending = (currentActiveLeagueData.pending_clausulazos || []).filter(
+        c => c.ownerUid === currentUser.uid && c.status === "pending"
+      );
+
+      if (pending.length === 0) {
+        panel.classList.add("hidden");
+        if (clausulazoInterval) {
+          clearInterval(clausulazoInterval);
+          clausulazoInterval = null;
+        }
+        return;
+      }
+
+      panel.classList.remove("hidden");
+      if (badge) badge.textContent = `${pending.length} Activos`;
+
+      const updateListHtml = () => {
+        const now = Date.now();
+        list.innerHTML = pending.map(c => {
+          const player = PLAYERS_POOL.find(p => p.id === c.playerId);
+          const playerName = player ? player.nombre : "Jugador";
+          const elapsed = Math.floor((now - c.createdAt) / 1000);
+          const remaining = Math.max(0, 30 - elapsed);
+
+          return `
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-rose-950/20 border border-rose-500/20 hover:border-rose-500/40 transition">
+              <div class="space-y-1">
+                <p class="font-extrabold text-white text-xs flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                  ⚡ ${playerName}
+                </p>
+                <p class="text-[10px] text-slate-300">
+                  Clausulazo por <span class="text-amber-400 font-bold">${(c.clausulaAmount/1e6).toFixed(1)}M$</span> activado por <span class="text-rose-400 font-extrabold">${c.buyerName}</span>.
+                </p>
+                <p class="text-[9px] text-slate-400">
+                  Tiempo restante para rescate: <span class="text-rose-400 font-black animate-pulse">${remaining}s</span>
+                </p>
+              </div>
+              <button onclick="cancelClausulazoWithToken('${c.id}')" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] uppercase transition cursor-pointer flex items-center gap-1 shadow-lg shadow-emerald-500/10 active:scale-95 shrink-0">
+                🎖️ Usar Token (${currentUserProfile.tokens_fidelidad || 0})
+              </button>
+            </div>
+          `;
+        }).join("");
+        lucide.createIcons();
+      };
+
+      updateListHtml();
+
+      if (!clausulazoInterval) {
+        clausulazoInterval = setInterval(() => {
+          updateListHtml();
+          const now = Date.now();
+          const allExpired = pending.every(c => Math.floor((now - c.createdAt) / 1000) >= 30);
+          if (allExpired && clausulazoInterval) {
+            clearInterval(clausulazoInterval);
+            clausulazoInterval = null;
+          }
+        }, 1000);
+      }
     };
 
     window.claimReward = async function (rewardId, amount) {

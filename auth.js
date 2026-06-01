@@ -72,6 +72,7 @@ async function registerManager(username, password, nombreEquipo, isSystemInit = 
       uid: user.uid,
       nombre_usuario: username,
       nombre_equipo: nombreEquipo || `${username} FC`,
+      nombres_equipo: {},    // Mapa { codigoLiga: nombreEquipoEnEsaLiga }
       fecha_registro: new Date().toISOString(),
       presupuesto_actual: 100000000, // 100M$ inicial
       presupuesto_club: 100000000, // 100M$ inicial
@@ -183,8 +184,16 @@ function initAuthListener(onUserLogin, onUserLogout) {
 
       try {
         const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
+        if (userDoc.exists() && userDoc.data() && userDoc.data().nombre_usuario) {
           const data = userDoc.data();
+          
+          // Auto-sanar campo 'uid' si falta en el documento
+          if (!data.uid) {
+            data.uid = user.uid;
+            await setDoc(doc(db, "users", user.uid), { uid: user.uid }, { merge: true })
+              .catch(e => console.error("Error auto-sanando uid:", e));
+          }
+
           // Si el email es de admin pero el rol no está puesto, forzarlo
           if (isAdminEmail && data.rol !== "admin") {
             data.rol = "admin";
@@ -210,55 +219,68 @@ function initAuthListener(onUserLogin, onUserLogout) {
 
           onUserLogin(user, data);
         } else {
-          // AUTO-REPARACIÓN/CREACIÓN DE PERFIL EN FIRESTORE (En caso de registro truncado o creación manual en Auth)
+          // AUTO-REPARACIÓN: solo rellena los campos que faltan, sin borrar datos existentes
           const repairsUsername = user.email?.split("@")[0] || "Usuario";
-          const newProfile = {
-            uid: user.uid,
-            nombre_usuario: repairsUsername,
-            nombre_equipo: `${repairsUsername} FC`,
-            fecha_registro: new Date().toISOString(),
-            presupuesto_actual: 100000000,
-            presupuesto_club: 100000000,
-            fonda_coins: 10,
-            ultimo_login: new Date().toDateString(),
-            puntos_totales: 0,
-            puntos_jornada_actual: 0,
-            ranking_global: 1,
-            rol: isAdminEmail ? "admin" : "manager",
-            ligas: [],
-            liga_activa: ""
-          };
+          // Leer el documento existente para preservar ligas, nombres_equipo, etc.
+          const existingData = userDoc.exists() ? (userDoc.data() || {}) : {};
+
+          const repairFields = {};
+          if (!existingData.uid)               repairFields.uid               = user.uid;
+          if (!existingData.nombre_usuario)    repairFields.nombre_usuario    = repairsUsername;
+          if (!existingData.nombre_equipo)     repairFields.nombre_equipo     = `${repairsUsername} FC`;
+          if (!existingData.fecha_registro)    repairFields.fecha_registro    = new Date().toISOString();
+          if (!existingData.presupuesto_actual) repairFields.presupuesto_actual = 100000000;
+          if (!existingData.presupuesto_club)  repairFields.presupuesto_club  = 100000000;
+          if (existingData.fonda_coins === undefined) repairFields.fonda_coins = 10;
+          if (!existingData.ultimo_login)      repairFields.ultimo_login      = new Date().toDateString();
+          if (existingData.puntos_totales === undefined) repairFields.puntos_totales = 0;
+          if (existingData.puntos_jornada_actual === undefined) repairFields.puntos_jornada_actual = 0;
+          if (existingData.ranking_global === undefined) repairFields.ranking_global = 1;
+          if (!existingData.rol)               repairFields.rol               = isAdminEmail ? "admin" : "manager";
+          // NUNCA sobrescribir ligas ni liga_activa para no borrar membresías existentes
+          if (!Array.isArray(existingData.ligas)) repairFields.ligas          = [];
+          if (existingData.liga_activa === undefined) repairFields.liga_activa = "";
+          // Preservar nombres_equipo; inicializar solo si no es un objeto válido
+          if (!existingData.nombres_equipo || typeof existingData.nombres_equipo !== "object" || Array.isArray(existingData.nombres_equipo)) {
+            repairFields.nombres_equipo = {};
+          }
+
+          const mergedProfile = { ...existingData, ...repairFields };
 
           try {
-            await setDoc(doc(db, "users", user.uid), newProfile);
+            // merge:true garantiza que solo se actualicen los campos que faltan
+            if (Object.keys(repairFields).length > 0) {
+              await setDoc(doc(db, "users", user.uid), repairFields, { merge: true });
+              console.log(`🔧 [Self-Healing] Campos reparados en perfil de ${repairsUsername}:`, Object.keys(repairFields));
+            }
 
-            // Asegurar que tenga también documento inicializado en user_teams
+            // Asegurar user_teams con merge:true para no borrar plantillas existentes
             const userTeamRef = doc(db, "user_teams", user.uid);
-            const initialTeam = {
-              uid: user.uid,
-              jugadores_ids: [],
-              alineacion: {
-                titulares: { portero: [], defensas: [], mediocampistas: [], delanteros: [] },
-                suplentes: { portero: [], defensas: [], mediocampistas: [], delanteros: [] }
-              },
-              capitan_id: "",
-              cambios_realizados_jornada: 0,
-              chips: {
-                wildcard: { disponible: true, usado_en_jornada: null },
-                jugador_12: { disponible: true, usado_en_jornada: null, jugador_extra_id: null },
-                capitan_maximo: { disponible: true, usado_en_jornada: null },
-                comodin_misterioso: { disponible: true, usado_en_jornada: null },
-                super_banquillo: { disponible: true, usado_en_jornada: null }
-              }
-            };
-            await setDoc(userTeamRef, initialTeam);
+            const teamSnap = await getDoc(userTeamRef);
+            if (!teamSnap.exists()) {
+              await setDoc(userTeamRef, {
+                uid: user.uid,
+                jugadores_ids: [],
+                alineacion: {
+                  titulares: { portero: [], defensas: [], mediocampistas: [], delanteros: [] },
+                  suplentes: { portero: [], defensas: [], mediocampistas: [], delanteros: [] }
+                },
+                capitan_id: "",
+                cambios_realizados_jornada: 0,
+                chips: {
+                  wildcard: { disponible: true, usado_en_jornada: null },
+                  jugador_12: { disponible: true, usado_en_jornada: null, jugador_extra_id: null },
+                  capitan_maximo: { disponible: true, usado_en_jornada: null },
+                  comodin_misterioso: { disponible: true, usado_en_jornada: null },
+                  super_banquillo: { disponible: true, usado_en_jornada: null }
+                }
+              }, { merge: true });
+            }
 
-            console.log(`🔧 [Self-Healing] Se ha reparado/creado automáticamente el perfil de Firestore para el usuario: ${repairsUsername}`);
-            onUserLogin(user, newProfile);
+            onUserLogin(user, mergedProfile);
           } catch (repairErr) {
             console.error("Error al reparar perfil en Firestore:", repairErr);
-            // Fallback en memoria si la escritura falla
-            onUserLogin(user, newProfile);
+            onUserLogin(user, mergedProfile);
           }
         }
       } catch (err) {

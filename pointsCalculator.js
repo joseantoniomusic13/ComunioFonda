@@ -48,22 +48,22 @@ window.calcularPuntosJugador = function(stats = {}, posicion = "delantero", fase
   const rating = stats.valoracion ?? null;
   puntos += ratingToPoints(rating);
 
-  // ─── 2. GOLES (dependen de la posición) ────────────────────────────────────
-  // Portero +6, Defensa +5, Mediocampista +4, Delantero +3
-  const goles = stats.goles || 0;
-  if (goles > 0) {
-    const golesPorPos = {
-      portero:       6,
-      defensa:       5,
-      mediocampista: 4,
-      delantero:     3
-    };
-    puntos += goles * (golesPorPos[posicion] ?? 3);
-  }
+  // ─── 2. GOLES (dependen de la posición. Porteros no tienen goles de campo) ──
+  if (posicion !== "portero") {
+    const goles = stats.goles || 0;
+    if (goles > 0) {
+      const golesPorPos = {
+        defensa:       5,
+        mediocampista: 4,
+        delantero:     3
+      };
+      puntos += goles * (golesPorPos[posicion] ?? 3);
+    }
 
-  // ─── 3. ASISTENCIAS (+1 pt por asistencia, cualquier posición) ─────────────
-  const asistencias = stats.asistencias || 0;
-  puntos += asistencias * 1;
+    // ─── 3. ASISTENCIAS (+1 pt por asistencia, cualquier posición excepto portero) ──
+    const asistencias = stats.asistencias || 0;
+    puntos += asistencias * 1;
+  }
 
   // ─── 4. EXPULSIONES ────────────────────────────────────────────────────────
   // Roja directa: -4 pts | Doble amarilla (roja por doble): -2 pts
@@ -75,9 +75,11 @@ window.calcularPuntosJugador = function(stats = {}, posicion = "delantero", fase
   }
 
   // ─── 5. PENALTIS ────────────────────────────────────────────────────────────
-  // Penalti anotado: +3 pts (cualquier posición)
-  const penaltisMarcados = stats.penaltis_marcados || 0;
-  puntos += penaltisMarcados * 3;
+  // Penalti anotado: +3 pts (cualquier posición excepto portero)
+  if (posicion !== "portero") {
+    const penaltisMarcados = stats.penaltis_marcados || 0;
+    puntos += penaltisMarcados * 3;
+  }
 
   // Penalti parado por portero: +3 pts
   if (posicion === "portero") {
@@ -86,12 +88,11 @@ window.calcularPuntosJugador = function(stats = {}, posicion = "delantero", fase
   }
 
   // ─── 6. PORTERÍA A CERO ────────────────────────────────────────────────────
-  // Solo portero que juegue el partido completo (90 minutos exactos o salida 90): +1 pt
+  // Portero con portería a cero: +4 pts
   if (posicion === "portero") {
-    const mins = stats.minutos_jugados || 0;
-    const encajados = stats.goles_encajados || 0;
-    if (mins >= 90 && encajados === 0) {
-      puntos += 1;
+    const pCero = stats.porteria_a_cero === true || stats.porteria_a_cero === 1 || stats.porteria_a_cero === "1" || stats.porteria_a_cero === "yes";
+    if (pCero) {
+      puntos += 4;
     }
   }
 
