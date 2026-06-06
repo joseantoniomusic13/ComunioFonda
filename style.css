@@ -1,13 +1,13 @@
 /* Estilos de Diseño Premium - Fonda Fanegas Comunio Mundial 2026 */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --font-title: 'Outfit', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
 
   /* Paleta de Colores Exclusiva: Fonda Fanegas */
-  --bg-dark: #070706;
-  --bg-stadium-glow: radial-gradient(circle at 50% 30%, #153123 0%, #070706 70%);
+  --bg-dark: #0d1f14;
+  --bg-stadium-glow: radial-gradient(circle at 50% 30%, #153822 0%, #0d1f14 80%);
   --bg-card: rgba(18, 17, 15, 0.75);
   --border-card: rgba(226, 183, 71, 0.12);
   --border-card-hover: rgba(226, 183, 71, 0.25);
@@ -21,6 +21,12 @@
   /* Blanco Marfil */
   --text-secondary: #a19e99;
   /* Gris Ceniza */
+
+  /* Colores Neón para Posiciones de Jugadores (Cromos) */
+  --pos-gk-color: #fbbf24;
+  --pos-df-color: #10b981;
+  --pos-mf-color: #3b82f6;
+  --pos-fw-color: #ef4444;
 }
 
 body {
@@ -93,12 +99,17 @@ h6 {
 
 /* --- MAQUETACIÓN DEL CÉSPED TÁCTICO (PITCH VIEW) --- */
 .football-pitch {
-  background: radial-gradient(circle, #155e3e 0%, #0f402b 100%);
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
+  /* Foco central brillante → oscuridad dramática en bordes (estadio nocturno) */
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 48%, #2d7a4f 0%, #1a4d30 30%, #0b2818 65%, #040e08 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    inset 0 0 80px rgba(0, 0, 0, 0.85),
+    inset 0 0 30px rgba(0, 0, 0, 0.5),
+    0 12px 45px rgba(0, 0, 0, 0.6);
 }
 
 /* Líneas Reglamentarias del Campo */
@@ -154,43 +165,274 @@ h6 {
 .pitch-row {
   display: flex;
   justify-content: space-around;
-  align-items: center;
+  align-items: flex-end;        /* alinear por la base de la tarjeta */
   width: 100%;
-  min-height: 85px;
+  min-height: 130px;
   z-index: 10;
   position: relative;
+  padding-bottom: 6px;          /* espacio bajo la fila */
 }
 
-/* Tarjeta del Jugador en el Campo */
+/* ── CROMO DEL JUGADOR ─────────────────────────────────── */
 .player-pitch-card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  width: 90px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  align-items: stretch;
+  width: 80px;
+  border-radius: 10px;
+  background: linear-gradient(175deg, rgba(20, 34, 25, 0.88) 0%, rgba(8, 15, 11, 0.96) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid var(--pos-glow-color, rgba(255,255,255,0.12));
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.6),
+    0 0 10px 0 var(--pos-glow-shadow, rgba(255,255,255,0.08)),
+    inset 0 1px 0 rgba(255,255,255,0.06);
   cursor: pointer;
+  overflow: hidden;            /* CRÍTICO: hidden corta los bordes blancos de las fotos */
+  transition: transform 0.22s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.22s ease;
 }
 
 .player-pitch-card:hover {
-  transform: scale(1.08);
+  transform: translateY(-6px) scale(1.06);
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.65),
+    0 0 18px 2px var(--pos-glow-shadow, rgba(255,255,255,0.2)),
+    inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
+/* Colores neón por posición */
+.player-pitch-card.pos-portero      { --pos-glow-color: rgba(251,191,36,0.75); --pos-glow-shadow: rgba(251,191,36,0.35); --pos-bg-tint: rgba(251,191,36,0.06); }
+.player-pitch-card.pos-defensa      { --pos-glow-color: rgba(16,185,129,0.75); --pos-glow-shadow: rgba(16,185,129,0.35); --pos-bg-tint: rgba(16,185,129,0.06); }
+.player-pitch-card.pos-mediocampista{ --pos-glow-color: rgba(96,165,250,0.75); --pos-glow-shadow: rgba(59,130,246,0.35); --pos-bg-tint: rgba(59,130,246,0.06); }
+.player-pitch-card.pos-delantero    { --pos-glow-color: rgba(248,113,113,0.8); --pos-glow-shadow: rgba(239,68,68,0.35);  --pos-bg-tint: rgba(239,68,68,0.06);  }
+
+/* Intercambio activo */
 .player-pitch-card.active-swap-target {
   animation: pulseGold 1.5s infinite;
-  border-radius: 12px;
-  background: rgba(226, 183, 71, 0.15);
+  border-color: var(--accent-gold);
 }
 
-.player-pitch-badge {
-  background: rgba(13, 20, 38, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  padding: 2px 4px;
-  margin-top: 4px;
+/* ── ZONA FOTO (ocupa el cuerpo de la tarjeta) ────────── */
+.card-photo-zone {
+  position: relative;
   width: 100%;
-  max-width: 95px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  flex: 1;
+  min-height: 68px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  /* Tinte de posición suave en la zona de foto */
+  background: var(--pos-bg-tint, transparent);
+  overflow: hidden;
+}
+
+/* Fila de badges (flag + valor) encima de la foto */
+.card-badges-row {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  right: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.card-flag {
+  font-size: 10px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+  line-height: 1;
+}
+
+.card-mvalue {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 6px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+  line-height: 1;
+}
+
+/* Imagen del jugador (dentro de .card-photo-zone) */
+.card-photo-img {
+  width: 100%;
+  height: 100%;
+  /* cover recorta los bordes blancos; el fondo oscuro del contenedor oculta el resto */
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  /* drop-shadow porque la imagen puede tener transparencia parcial */
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5));
+  transition: transform 0.2s ease;
+}
+
+.player-pitch-card:hover .card-photo-img {
+  transform: scale(1.06);
+}
+
+/* Fallback sin foto – abreviatura de posición */
+.card-photo-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding-top: 14px; /* espacio para los badges de encima */
+}
+
+/* Silueta decorativa de fondo */
+.card-photo-fallback::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 46px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 50% 50% 0 0 / 55% 55% 0 0;
+  pointer-events: none;
+}
+
+.fallback-pos-abbr {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  color: var(--pos-glow-color, rgba(255,255,255,0.6));
+  text-shadow: 0 0 10px var(--pos-glow-shadow, rgba(255,255,255,0.3));
+  line-height: 1;
+  z-index: 1;
+}
+
+.fallback-initials {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.35);
+  line-height: 1;
+  z-index: 1;
+}
+
+/* ── BADGE DE PUNTOS (absoluto, esquina superior-derecha) */
+.card-score-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  background: linear-gradient(135deg, #fcd34d, #f59e0b);
+  color: #1a0500;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 7px;
+  padding: 1px 3.5px;
+  border-radius: 3px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  z-index: 20;
+  line-height: 1.3;
+  min-width: 13px;
+  text-align: center;
+}
+
+.card-score-badge.zero-pts {
+  /* pts = 0: muy discreto, casi invisible */
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.25);
+  box-shadow: none;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Pulso solo cuando tiene puntos */
+.pulse-badge { animation: badgePulse 2.5s infinite; }
+
+@keyframes badgePulse {
+  0%   { box-shadow: 0 0 0 0   rgba(251,191,36,0.8); }
+  70%  { box-shadow: 0 0 0 5px rgba(251,191,36,0); }
+  100% { box-shadow: 0 0 0 0   rgba(251,191,36,0); }
+}
+
+/* ── NOMBRE (parte inferior de la tarjeta) ─────────────── */
+.card-info-area {
+  width: 100%;
+  padding: 3px 4px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  background: rgba(0,0,0,0.25);
+  text-align: center;
+}
+
+.card-player-name {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: #ede8df;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 72px;
+  margin: 0 auto;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.95);
+}
+
+
+
+/* Capitán – Glow dorado real + borde especial */
+.player-pitch-card.is-captain {
+  border-color: #fcd34d;
+  border-width: 2px;
+  animation: captainPulse 3s infinite ease-in-out;
+}
+
+@keyframes captainPulse {
+  0%, 100% {
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.55),
+      0 0 15px 1px rgba(253, 211, 77, 0.45),
+      0 0 4px  0px rgba(253, 211, 77, 0.3),
+      inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  50% {
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.55),
+      0 0 28px 4px rgba(255, 215, 0, 0.65),
+      0 0 8px  2px rgba(255, 215, 0, 0.4),
+      inset 0 1px 0 rgba(255,255,255,0.1),
+      inset 0 0 14px rgba(253, 211, 77, 0.12);
+  }
+}
+
+/* Corona del Capitán – badge elegante en esquina superior-izquierda (dentro de la tarjeta) */
+.card-captain-crown {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  background: linear-gradient(135deg, #2a1f00, #1a1200);
+  border: 1.5px solid #fcd34d;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.7),
+    0 0 5px rgba(253, 211, 77, 0.55);
+  z-index: 20;
+  animation: crownFloat 3s infinite ease-in-out;
+  /* La corona está dentro de card-photo-zone que tiene overflow:hidden pero z-index la sube */
+  pointer-events: none;
+}
+
+@keyframes crownFloat {
+  0%, 100% { transform: rotate(-8deg) scale(1); }
+  50%       { transform: rotate(8deg)  scale(1.05); }
 }
 
 /* Animaciones */
@@ -263,17 +505,85 @@ h6 {
   transform: scale(1.05);
 }
 
-/* Slots de Posiciones Vacías */
+/* Slots de Posiciones Vacías (Cromo Vacío) */
 .slot-empty-dashed {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px dashed rgba(226, 183, 71, 0.25);
+  width: 85px;
+  height: 115px;
+  border: 2px dashed rgba(226, 183, 71, 0.22);
+  border-radius: 12px;
+  background: rgba(15, 25, 20, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+  gap: 6px;
 }
 
 .slot-empty-dashed:hover {
   border-color: var(--accent-gold);
-  background: rgba(226, 183, 71, 0.05);
-  transform: scale(1.05);
+  background: rgba(226, 183, 71, 0.06);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 15px rgba(226, 183, 71, 0.1);
 }
+
+/* Escalado y Proporción Responsiva de los Cromos */
+@media (max-width: 480px) {
+  .player-pitch-card {
+    width: 64px;
+    padding: 0;
+  }
+  .card-photo-zone {
+    min-height: 54px;
+  }
+  .pitch-row {
+    min-height: 105px;
+    padding-bottom: 4px;
+  }
+  .fallback-pos-abbr {
+    font-size: 13px;
+  }
+  .fallback-initials {
+    font-size: 7px;
+  }
+  .card-score-badge {
+    font-size: 6.5px;
+    padding: 1px 3px;
+    top: 2px;
+    right: 2px;
+  }
+  .card-player-name {
+    font-size: 6px;
+    max-width: 58px;
+  }
+  .card-captain-crown {
+    width: 13px;
+    height: 13px;
+    top: 2px;
+    left: 2px;
+  }
+  
+  /* Slot vacío responsivo */
+  .slot-empty-dashed {
+    width: 64px;
+    height: 96px;
+    gap: 4px;
+  }
+  .slot-empty-dashed div {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  .slot-empty-dashed svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  .slot-empty-dashed span {
+    font-size: 7px !important;
+  }
+}
+
+
 
 /* Rediseño de Tarjetas del Mercado (Grid Premium) */
 .market-card-premium {
@@ -340,4 +650,808 @@ select option,
 .glass-input option {
   background-color: #0d111d !important;
   color: #faf9f6 !important;
+}
+
+/* ===== ANIMACIONES Y EFECTOS DE APERTURA DE SOBRES PREMIUM ===== */
+@keyframes packShake {
+  0% { transform: rotate(0deg) scale(1); }
+  10% { transform: rotate(-3deg) scale(1.05); }
+  20% { transform: rotate(3deg) scale(1.05); }
+  30% { transform: rotate(-4deg) scale(1.1); }
+  40% { transform: rotate(4deg) scale(1.1); }
+  50% { transform: rotate(-3deg) scale(1.15); }
+  60% { transform: rotate(3deg) scale(1.15); }
+  70% { transform: rotate(-4deg) scale(1.2); }
+  80% { transform: rotate(4deg) scale(1.2); }
+  90% { transform: rotate(-1deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1.2); }
+}
+
+@keyframes packExplode {
+  0% { transform: scale(1.2); opacity: 1; filter: brightness(1); }
+  50% { transform: scale(1.5); opacity: 0.8; filter: brightness(3); }
+  100% { transform: scale(2); opacity: 0; filter: brightness(10) blur(10px); }
+}
+
+@keyframes glowBurst {
+  0% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 0.8; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(2); }
+}
+
+.animate-pack-shake {
+  animation: packShake 1.2s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+.animate-pack-explode {
+  animation: packExplode 0.6s ease-out forwards;
+}
+
+.animate-glow-burst {
+  animation: glowBurst 1.8s ease-out forwards;
+}
+
+/* Gradiente Púrpura Premium para Apuestas */
+.bg-purple-gradient {
+  background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #818cf8 100%) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FONDA BET — SISTEMA DARK FANTASY COMPLETO
+   Casa de Apuestas Financieras
+════════════════════════════════════════════════════════════════ */
+
+/* ── FONDO DEL PANEL ─────────────────────────────────────────── */
+#panel-bets {
+  position: relative;
+}
+
+#panel-bets::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 40%, rgba(88,28,135,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 70%, rgba(20,60,30,0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── CABECERA OBSIDIANA CON GRIFONES ─────────────────────────── */
+.fbet-header {
+  position: relative;
+  background:
+    linear-gradient(160deg, rgba(30,8,55,0.95) 0%, rgba(15,5,30,0.98) 50%, rgba(10,20,8,0.98) 100%);
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 20px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(139,92,246,0.15),
+    0 8px 40px rgba(0,0,0,0.8),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 0 60px rgba(88,28,135,0.15);
+}
+
+/* Textura de piedra sobre el header */
+.fbet-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(255,255,255,0.008) 30px, rgba(255,255,255,0.008) 32px);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Friso superior de filigrana metálica */
+.fbet-header-frieze {
+  height: 4px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(139,92,246,0.4) 10%,
+    rgba(251,191,36,0.7) 30%,
+    rgba(255,215,0,0.9) 50%,
+    rgba(251,191,36,0.7) 70%,
+    rgba(139,92,246,0.4) 90%,
+    transparent 100%);
+  border-radius: 20px 20px 0 0;
+}
+
+.fbet-header-body {
+  padding: 20px 24px 16px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Losa de obsidiana amatista donde va el título */
+.fbet-title-slab {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(88,28,135,0.5) 0%, rgba(49,10,101,0.7) 100%);
+  border: 1px solid rgba(167,139,250,0.35);
+  border-radius: 10px;
+  padding: 8px 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 4px 20px rgba(88,28,135,0.4),
+    0 0 30px rgba(139,92,246,0.2);
+}
+
+.fbet-title-slab h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fff 0%, #ffd700 40%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(251,191,36,0.3));
+  margin: 0;
+}
+
+/* Grifo decorativo (icono en dorado) */
+.fbet-griffin {
+  width: 28px;
+  height: 28px;
+  color: #fbbf24;
+  filter: drop-shadow(0 0 6px rgba(251,191,36,0.6));
+  animation: griffinFloat 4s ease-in-out infinite;
+}
+
+@keyframes griffinFloat {
+  0%,100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-3px) rotate(3deg); }
+}
+
+/* Placas de bronce para las cuotas */
+.fbet-odds-plinth {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.fbet-odd-plaque {
+  position: relative;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  cursor: default;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fbet-odd-plaque:hover {
+  transform: translateY(-2px);
+}
+
+.fbet-odd-plaque::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    135deg, transparent, transparent 4px,
+    rgba(255,255,255,0.03) 4px, rgba(255,255,255,0.03) 5px
+  );
+}
+
+.fbet-odd-plaque.winner {
+  background: linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,78,54,0.3) 100%);
+  border: 1px solid rgba(16,185,129,0.4);
+  color: #6ee7b7;
+  box-shadow: 0 2px 10px rgba(16,185,129,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.fbet-odd-plaque.scorer {
+  background: linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(29,78,216,0.3) 100%);
+  border: 1px solid rgba(59,130,246,0.4);
+  color: #93c5fd;
+  box-shadow: 0 2px 10px rgba(59,130,246,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.fbet-odd-plaque.exact {
+  background: linear-gradient(135deg, rgba(251,191,36,0.15) 0%, rgba(180,83,9,0.3) 100%);
+  border: 1px solid rgba(251,191,36,0.4);
+  color: #fcd34d;
+  box-shadow: 0 2px 10px rgba(251,191,36,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* ── PANEL FORMULARIO — MADERA PETRIFICADA ───────────────────── */
+.fbet-form-panel {
+  position: relative;
+  background:
+    linear-gradient(160deg, rgba(30,20,10,0.97) 0%, rgba(15,10,5,0.99) 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(120,80,20,0.4);
+  overflow: hidden;
+  box-shadow:
+    0 8px 40px rgba(0,0,0,0.85),
+    inset 0 1px 0 rgba(255,215,0,0.08),
+    0 0 0 1px rgba(100,60,10,0.2);
+}
+
+/* Textura de vetas de madera */
+.fbet-form-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      88deg,
+      transparent 0px, transparent 8px,
+      rgba(255,255,255,0.012) 8px, rgba(255,255,255,0.012) 10px,
+      transparent 10px, transparent 22px,
+      rgba(255,255,255,0.006) 22px, rgba(255,255,255,0.006) 24px
+    );
+  pointer-events: none;
+}
+
+/* Bandas de metal oscuro */
+.fbet-metal-band {
+  height: 3px;
+  background: linear-gradient(90deg,
+    #1a1200 0%, #3d2a00 15%, #7c5c10 30%, #c9970a 50%, #7c5c10 70%, #3d2a00 85%, #1a1200 100%);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.8), 0 0 8px rgba(200,150,10,0.3);
+}
+
+/* Clasps de esquina dorados */
+.fbet-corner-clasp {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #fcd34d 0%, #b45309 100%);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.7), 0 0 8px rgba(251,191,36,0.4);
+  z-index: 10;
+}
+.fbet-corner-clasp.tl { top: 6px; left: 6px; }
+.fbet-corner-clasp.tr { top: 6px; right: 6px; }
+.fbet-corner-clasp.bl { bottom: 6px; left: 6px; }
+.fbet-corner-clasp.br { bottom: 6px; right: 6px; }
+
+.fbet-form-body {
+  padding: 20px 22px 22px;
+  position: relative;
+  z-index: 1;
+  space-y: 14px;
+}
+
+.fbet-form-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #fcd34d, #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 4px rgba(251,191,36,0.4));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.fbet-label {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(200,160,60,0.8);
+  margin-bottom: 5px;
+}
+
+/* Campo de formulario — marco de obsidiana */
+.fbet-input-wrap {
+  position: relative;
+  background: rgba(5,3,1,0.85);
+  border: 1px solid rgba(100,70,10,0.5);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fbet-input-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent, transparent 12px,
+    rgba(200,150,30,0.018) 12px, rgba(200,150,30,0.018) 13px
+  );
+  pointer-events: none;
+}
+
+.fbet-input-wrap:focus-within {
+  border-color: rgba(167,139,250,0.6);
+  box-shadow: 0 0 0 2px rgba(139,92,246,0.15), 0 0 15px rgba(139,92,246,0.2);
+}
+
+/* Hilo de luz púrpura en el borde inferior del campo */
+.fbet-input-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(139,92,246,0.5), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.fbet-input-wrap:focus-within::after {
+  opacity: 1;
+}
+
+.fbet-input-wrap select,
+.fbet-input-wrap input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f5f0e8;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 10px 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.fbet-input-wrap select option,
+.fbet-input-wrap select {
+  background-color: #0d0805 !important;
+  color: #f5f0e8 !important;
+}
+
+.fbet-fc-suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 9px;
+  font-weight: 900;
+  color: rgba(251,191,36,0.6);
+  letter-spacing: 0.04em;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.fbet-budget-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(160,130,80,0.7);
+}
+
+.fbet-budget-row span span {
+  color: #c084fc;
+  font-weight: 900;
+}
+
+/* Botón de apostar — plinto de piedra */
+.fbet-submit-btn {
+  position: relative;
+  width: 100%;
+  margin-top: 18px;
+  background: linear-gradient(180deg, rgba(88,28,135,0.8) 0%, rgba(49,10,101,0.95) 100%);
+  border: 1px solid rgba(167,139,250,0.4);
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f5f0ff;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow:
+    0 4px 20px rgba(88,28,135,0.5),
+    0 0 0 1px rgba(139,92,246,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+/* Textura de piedra labrada en el botón */
+.fbet-submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(255,255,255,0.012) 3px, rgba(255,255,255,0.012) 4px
+  );
+  border-radius: inherit;
+}
+
+/* Brillo superior del botón (efecto bisel) */
+.fbet-submit-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+  border-radius: 12px 12px 0 0;
+  pointer-events: none;
+}
+
+.fbet-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 30px rgba(88,28,135,0.6),
+    0 0 20px rgba(139,92,246,0.3),
+    0 0 0 1px rgba(167,139,250,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.fbet-submit-btn:active {
+  transform: translateY(1px);
+}
+
+/* Manos esculpidas en la base del botón */
+.fbet-hands-deco {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 18px;
+  pointer-events: none;
+}
+
+/* ── HISTORIAL — PÁGINAS DE MANUSCRITO ILUMINADO ─────────────── */
+.fbet-history-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(200,160,60,0.9);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  filter: drop-shadow(0 1px 4px rgba(251,191,36,0.3));
+  margin-bottom: 12px;
+}
+
+/* Tarjeta de apuesta — página de manuscrito iluminado */
+.fbet-bet-card {
+  position: relative;
+  background:
+    linear-gradient(160deg, rgba(35,22,5,0.97) 0%, rgba(25,15,3,0.99) 60%, rgba(15,5,1,0.99) 100%);
+  border: 1px solid rgba(160,110,30,0.4);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow:
+    0 4px 20px rgba(0,0,0,0.7),
+    inset 0 1px 0 rgba(255,215,0,0.06);
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+.fbet-bet-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 30px rgba(0,0,0,0.8),
+    0 0 15px rgba(160,110,30,0.15),
+    inset 0 1px 0 rgba(255,215,0,0.08);
+}
+
+/* Textura de pergamino envejecido */
+.fbet-bet-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      92deg,
+      transparent 0px, transparent 15px,
+      rgba(180,130,30,0.025) 15px, rgba(180,130,30,0.025) 16px
+    ),
+    repeating-linear-gradient(
+      2deg,
+      transparent 0px, transparent 20px,
+      rgba(255,255,255,0.012) 20px, rgba(255,255,255,0.012) 21px
+    );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Borde dorado iluminado (esquinas de la página) */
+.fbet-bet-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(200,150,30,0.15);
+  pointer-events: none;
+}
+
+/* Franja superior de color por tipo de apuesta */
+.fbet-card-stripe {
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+}
+.fbet-card-stripe.winner  { background: linear-gradient(90deg, transparent, rgba(16,185,129,0.8), transparent); }
+.fbet-card-stripe.scorer  { background: linear-gradient(90deg, transparent, rgba(59,130,246,0.8), transparent); }
+.fbet-card-stripe.exact   { background: linear-gradient(90deg, transparent, rgba(251,191,36,0.8), transparent); }
+
+.fbet-card-body {
+  padding: 14px 16px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Cabecera de la tarjeta: tipo + estado */
+.fbet-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.fbet-type-badge {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 8.5px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(200,160,60,0.7);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Medalla/icono de tipo */
+.fbet-medal {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.fbet-medal.gold   { background: linear-gradient(135deg,#fcd34d,#b45309); color:#1a0500; box-shadow:0 1px 6px rgba(251,191,36,0.5); }
+.fbet-medal.silver { background: linear-gradient(135deg,#d1d5db,#6b7280); color:#111; box-shadow:0 1px 6px rgba(200,200,200,0.3); }
+.fbet-medal.bronze { background: linear-gradient(135deg,#d97706,#92400e); color:#fff; box-shadow:0 1px 6px rgba(180,83,9,0.4); }
+
+/* Badges de estado */
+.fbet-status-cobrada {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(6,78,59,0.8) 0%, rgba(4,120,87,0.5) 100%);
+  border: 1px solid rgba(16,185,129,0.5);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 7.5px;
+  font-weight: 900;
+  color: #6ee7b7;
+  box-shadow: 0 0 8px rgba(16,185,129,0.25), inset 0 1px 0 rgba(255,255,255,0.05);
+  letter-spacing: 0.02em;
+  animation: cobraGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes cobraGlow {
+  0%,100% { box-shadow: 0 0 6px rgba(16,185,129,0.2); }
+  50%      { box-shadow: 0 0 14px rgba(16,185,129,0.5), 0 0 4px rgba(52,211,153,0.3); }
+}
+
+.fbet-status-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(120,53,15,0.3);
+  border: 1px solid rgba(251,191,36,0.35);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 7.5px;
+  font-weight: 900;
+  color: #fcd34d;
+  letter-spacing: 0.02em;
+  animation: pendingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pendingPulse {
+  0%,100% { opacity: 0.8; }
+  50%      { opacity: 1; }
+}
+
+.fbet-status-won {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(88,28,135,0.6), rgba(124,58,237,0.4));
+  border: 1px solid rgba(167,139,250,0.5);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 7.5px;
+  font-weight: 900;
+  color: #ddd6fe;
+  letter-spacing: 0.02em;
+  animation: wonGlow 2s ease-in-out infinite;
+}
+
+@keyframes wonGlow {
+  0%,100% { box-shadow: 0 0 6px rgba(139,92,246,0.25); }
+  50%      { box-shadow: 0 0 18px rgba(139,92,246,0.5); }
+}
+
+.fbet-status-lost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(127,29,29,0.25);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 7.5px;
+  font-weight: 900;
+  color: #fca5a5;
+  letter-spacing: 0.02em;
+}
+
+/* Nombre del partido */
+.fbet-match-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: #f5f0e8;
+  margin-bottom: 6px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+
+/* Fila de datos (selección / depósito) */
+.fbet-data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(180,150,90,0.8);
+  margin-bottom: 4px;
+}
+
+.fbet-selection-val {
+  color: #fbbf24;
+  font-weight: 900;
+  font-size: 10px;
+}
+
+.fbet-deposit-val {
+  color: #d1d5db;
+  font-weight: 900;
+}
+
+/* Premio potencial */
+.fbet-prize {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  color: #a78bfa;
+  margin-top: 2px;
+  text-shadow: 0 0 8px rgba(139,92,246,0.4);
+}
+
+/* Línea divisora de pergamino */
+.fbet-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(180,130,30,0.3), transparent);
+  margin: 8px 0;
+}
+
+/* Fecha de apuesta */
+.fbet-date-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  color: rgba(130,100,50,0.7);
+}
+
+/* Botón de reclamar premio */
+.fbet-claim-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px 16px;
+  background: linear-gradient(135deg, rgba(88,28,135,0.7) 0%, rgba(67,20,100,0.9) 100%);
+  border: 1px solid rgba(167,139,250,0.4);
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #ede9fe;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(88,28,135,0.4);
+}
+
+.fbet-claim-btn:hover {
+  background: linear-gradient(135deg, rgba(109,40,217,0.8) 0%, rgba(88,28,135,0.95) 100%);
+  box-shadow: 0 4px 18px rgba(88,28,135,0.6), 0 0 15px rgba(139,92,246,0.3);
+  transform: translateY(-1px);
+}
+
+/* Piezas de esquina doradas en las tarjetas del historial */
+.fbet-card-corner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.fbet-card-corner::before,
+.fbet-card-corner::after {
+  content: '';
+  position: absolute;
+  background: linear-gradient(135deg, #fcd34d, #b45309);
+  border-radius: 1px;
+}
+
+.fbet-card-corner.tl { top: 5px; left: 5px; }
+.fbet-card-corner.tl::before { width: 10px; height: 2px; top: 0; left: 0; }
+.fbet-card-corner.tl::after  { width: 2px; height: 10px; top: 0; left: 0; }
+
+.fbet-card-corner.tr { top: 5px; right: 5px; }
+.fbet-card-corner.tr::before { width: 10px; height: 2px; top: 0; right: 0; }
+.fbet-card-corner.tr::after  { width: 2px; height: 10px; top: 0; right: 0; }
+
+.fbet-card-corner.bl { bottom: 5px; left: 5px; }
+.fbet-card-corner.bl::before { width: 10px; height: 2px; bottom: 0; left: 0; }
+.fbet-card-corner.bl::after  { width: 2px; height: 10px; bottom: 0; left: 0; }
+
+.fbet-card-corner.br { bottom: 5px; right: 5px; }
+.fbet-card-corner.br::before { width: 10px; height: 2px; bottom: 0; right: 0; }
+.fbet-card-corner.br::after  { width: 2px; height: 10px; bottom: 0; right: 0; }
+
+/* ── SECCIÓN VACÍA — PERGAMINO EN BLANCO ─────────────────────── */
+.fbet-empty {
+  padding: 32px 20px;
+  text-align: center;
+  background: rgba(15,8,2,0.6);
+  border: 1px dashed rgba(160,110,30,0.25);
+  border-radius: 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(160,120,50,0.5);
+  letter-spacing: 0.04em;
 }

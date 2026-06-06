@@ -1,0 +1,192 @@
+/* =========================================================================
+   PACK OPENING CINEMÁTICO - COMUNIO MUNDIAL 2026
+   ========================================================================= */
+
+:root {
+  --pack-gold: #fbbf24;
+  --pack-gold-glow: rgba(251, 191, 36, 0.4);
+  --pack-purple: #c084fc;
+  --pack-purple-glow: rgba(192, 132, 252, 0.35);
+  --pack-glass-bg: rgba(10, 8, 15, 0.85);
+}
+
+/* --- CONTENEDOR DEL SOBRE FLOTANTE --- */
+.pack-envelope-card {
+  width: 200px;
+  height: 290px;
+  background: linear-gradient(135deg, #1e1b29 0%, #0c0914 50%, #172b1d 100%);
+  border: 3px solid var(--pack-gold);
+  border-radius: 20px;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.8),
+    0 0 35px 2px var(--pack-gold-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-style: preserve-3d;
+  animation: packFloat 4s infinite ease-in-out;
+}
+
+.pack-envelope-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, var(--pack-gold-glow) 0%, transparent 60%);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.pack-envelope-card:hover {
+  transform: translateY(-8px) scale(1.04) rotateY(10deg);
+  box-shadow: 
+    0 25px 45px rgba(0, 0, 0, 0.9),
+    0 0 45px 5px var(--pack-gold-glow);
+  border-color: #fff;
+}
+
+.pack-envelope-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 5;
+  text-align: center;
+  padding: 1.5rem;
+}
+
+/* --- ANIMACIÓN FLOTANTE DEL SOBRE --- */
+@keyframes packFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(1.5deg); }
+}
+
+/* --- ANIMACIÓN DE SACUDIDA AL ABRIR --- */
+.pack-envelope-shaking {
+  animation: packShake 0.8s cubic-bezier(.36,.07,.19,.97) both !important;
+}
+
+@keyframes packShake {
+  0% { transform: scale(1) rotate(0); }
+  10%, 90% { transform: translate3d(-2px, 0, 0) rotate(-1.5deg) scale(1.05); }
+  20%, 80% { transform: translate3d(3px, 0, 0) rotate(1.5deg) scale(1.05); }
+  30%, 50%, 70% { transform: translate3d(-5px, 0, 0) rotate(-2deg) scale(1.08); }
+  40%, 60% { transform: translate3d(5px, 0, 0) rotate(2deg) scale(1.08); }
+}
+
+/* --- EXPOSIÓN FLASH --- */
+.pack-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pack-flash.active {
+  animation: flashBurst 0.6s ease-out forwards;
+}
+
+@keyframes flashBurst {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* --- DISEÑO DE CARTA FLIP TRIDIMENSIONAL --- */
+.squad-card-container {
+  perspective: 1000px;
+  width: 100%;
+  aspect-ratio: 2.3 / 3.4;
+  min-height: 175px;
+}
+
+.squad-card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: pointer;
+}
+
+.squad-card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.squad-card-back, .squad-card-front {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* CARA TRASERA (BOCA ABAJO) */
+.squad-card-back {
+  background: linear-gradient(135deg, #100d1c 0%, #050409 100%);
+  border: 1.5px solid rgba(251, 191, 36, 0.25);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.squad-card-back::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* CARA FRONTAL (REVELADA) */
+.squad-card-front {
+  transform: rotateY(180deg);
+  background: linear-gradient(175deg, rgba(20, 34, 25, 0.94) 0%, rgba(8, 15, 11, 0.98) 100%);
+  border: 1.5px solid var(--pos-glow-color, rgba(255,255,255,0.12));
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.75),
+    0 0 10px 0 var(--pos-glow-shadow, rgba(255,255,255,0.08));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px;
+}
+
+/* --- DESTELLO PARA CARTAS REVELADAS --- */
+.squad-card-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+  background-size: 250% 250%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.squad-card-inner.is-flipped .squad-card-shine {
+  animation: shineSwipe 2s ease-out forwards;
+}
+
+@keyframes shineSwipe {
+  0% { background-position: -100% -100%; }
+  100% { background-position: 200% 200%; }
+}
+
+/* Colores de Posición */
+.gk-glow { --pos-glow-color: rgba(251,191,36,0.75); --pos-glow-shadow: rgba(251,191,36,0.3); }
+.df-glow { --pos-glow-color: rgba(16,185,129,0.75); --pos-glow-shadow: rgba(16,185,129,0.3); }
+.mf-glow { --pos-glow-color: rgba(59,130,246,0.75); --pos-glow-shadow: rgba(59,130,246,0.3); }
+.fw-glow { --pos-glow-color: rgba(248,113,113,0.8);  --pos-glow-shadow: rgba(239,68,68,0.3); }

@@ -88,7 +88,8 @@
     leagues: {},
     players: {},
     partidos: {},
-    auth_users: {}
+    auth_users: {},
+    join_requests: {}
   };
 
   // =========================================================================
@@ -297,7 +298,7 @@
     }
 
     // 1. Catálogos globales
-    if (collName === "leagues" || collName === "users" || collName === "players" || collName === "partidos" || collName === "matches" || collName === "club_bets") {
+    if (collName === "leagues" || collName === "users" || collName === "players" || collName === "partidos" || collName === "matches" || collName === "club_bets" || collName === "join_requests") {
       return id ? `${collName}/${id}` : collName;
     }
 
@@ -377,6 +378,9 @@
     }
     
     doc(id) {
+      if (!id) {
+        id = "doc_" + Math.random().toString(36).substring(2, 11);
+      }
       return new CustomDocRef(this.collectionName, id);
     }
     
@@ -413,14 +417,18 @@
   // Exponer creadores de referencias
   const doc = (db, ...paths) => {
     if (paths.length === 0 || paths[0] === undefined) return null;
-    const id = paths.pop();
-    const collectionName = paths.join("/");
+    let fullPath = paths.join("/");
+    fullPath = fullPath.replace(/^\/|\/$/g, "");
+    const parts = fullPath.split("/");
+    const id = parts.pop();
+    const collectionName = parts.join("/");
     return new CustomDocRef(collectionName, id);
   };
 
   const collection = (db, ...paths) => {
-    const collectionName = paths.join("/");
-    return new CustomCollectionRef(collectionName);
+    let fullPath = paths.join("/");
+    fullPath = fullPath.replace(/^\/|\/$/g, "");
+    return new CustomCollectionRef(fullPath);
   };
 
   // =========================================================================
@@ -436,6 +444,12 @@
     } else {
       const snap = await firebaseDb.ref(path).get();
       data = snap.val();
+    }
+
+    if (docRef.collectionName === "players" && data) {
+      if (data.pais === "Netherlands") {
+        data.pais = "Países Bajos";
+      }
     }
 
     return {
@@ -553,13 +567,25 @@
     if (isMock) {
       const rawVal = getMockDBValue(path);
       if (rawVal && typeof rawVal === "object") {
-        items = Object.keys(rawVal).map(id => ({ id, data: rawVal[id] }));
+        items = Object.keys(rawVal).map(id => {
+          const val = rawVal[id];
+          if (ref.collectionName === "players" && val && val.pais === "Netherlands") {
+            val.pais = "Países Bajos";
+          }
+          return { id, data: val };
+        });
       }
     } else {
       const snap = await firebaseDb.ref(path).get();
       const rawVal = snap.val();
       if (rawVal && typeof rawVal === "object") {
-        items = Object.keys(rawVal).map(id => ({ id, data: rawVal[id] }));
+        items = Object.keys(rawVal).map(id => {
+          const val = rawVal[id];
+          if (ref.collectionName === "players" && val && val.pais === "Netherlands") {
+            val.pais = "Países Bajos";
+          }
+          return { id, data: val };
+        });
       }
     }
 
@@ -605,26 +631,57 @@
       exists: () => true
     }));
 
+    const prevIds = ref._prevDocIds || [];
+    const currentIds = items.map(item => item.id);
+    const changes = [];
+
+    docSnapshots.forEach(snap => {
+      if (!prevIds.includes(snap.id)) {
+        changes.push({
+          type: "added",
+          doc: snap
+        });
+      }
+    });
+
+    ref._prevDocIds = currentIds;
+
     return {
       empty: items.length === 0,
       size: items.length,
       docs: docSnapshots,
       forEach: (callback) => {
         docSnapshots.forEach(snap => callback(snap));
-      }
+      },
+      docChanges: () => changes
     };
   };
 
   const dbOnSnapshot = (ref, callback) => {
     if (isMock) {
+      let lastSerializedData = null;
       const listener = {
         callback: async () => {
-          if (ref._type === "doc") {
-            const snap = await dbGetDoc(ref);
-            callback(snap);
-          } else {
-            const snap = await dbGetDocs(ref);
-            callback(snap);
+          try {
+            if (ref._type === "doc") {
+              const snap = await dbGetDoc(ref);
+              const data = snap.data();
+              const serialized = JSON.stringify(data);
+              if (serialized !== lastSerializedData) {
+                lastSerializedData = serialized;
+                callback(snap);
+              }
+            } else {
+              const snap = await dbGetDocs(ref);
+              const docsData = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+              const serialized = JSON.stringify(docsData);
+              if (serialized !== lastSerializedData) {
+                lastSerializedData = serialized;
+                callback(snap);
+              }
+            }
+          } catch (e) {
+            console.error("Error in mock snapshot listener callback:", e);
           }
         }
       };
@@ -641,6 +698,9 @@
       const handler = async (snap) => {
         if (ref._type === "doc") {
           const val = snap.val();
+          if (ref.collectionName === "players" && val && val.pais === "Netherlands") {
+            val.pais = "Países Bajos";
+          }
           callback({
             exists: () => val !== null && val !== undefined,
             id: ref.id,
@@ -899,4 +959,21 @@
       }
     };
   };
+
+  // Asegurar que firebase.firestore esté definido para compatibilidad con llamadas directas
+  if (typeof window.firebase !== "undefined") {
+    if (!window.firebase.firestore) {
+      window.firebase.firestore = function() {
+        return {
+          batch: () => window.writeBatch(),
+          doc: (...paths) => window.doc(null, ...paths),
+          collection: (...paths) => window.collection(null, ...paths)
+        };
+      };
+      window.firebase.firestore.FieldValue = {
+        serverTimestamp: () => window.serverTimestamp(),
+        arrayUnion: (...args) => window.arrayUnion(...args)
+      };
+    }
+  }
 })();

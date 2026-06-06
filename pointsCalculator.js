@@ -65,7 +65,13 @@ window.calcularPuntosJugador = function(stats = {}, posicion = "delantero", fase
     puntos += asistencias * 1;
   }
 
-  // ─── 4. EXPULSIONES ────────────────────────────────────────────────────────
+  // ─── 4. EXPULSIONES Y AMARILLAS ────────────────────────────────────────────
+  // Amarilla sencilla: -1 pt
+  const amarillas = stats.tarjetas_amarillas || 0;
+  if (amarillas === 1) {
+    puntos += -1;
+  }
+
   // Roja directa: -4 pts | Doble amarilla (roja por doble): -2 pts
   if (stats.tarjetas_rojas_directas > 0)   puntos += stats.tarjetas_rojas_directas  * -4;
   if (stats.tarjetas_rojas_doble_amarilla > 0) puntos += stats.tarjetas_rojas_doble_amarilla * -2;
