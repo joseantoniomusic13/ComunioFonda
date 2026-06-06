@@ -14467,11 +14467,9 @@
           if (hitosCompletados.includes(hitoKey)) return; // Already completed
 
           const newHitos = [...hitosCompletados, hitoKey];
-          const newFC = (userProfile.fonda_coins || 0) + reward;
 
           await updateDoc(userRef, {
-            hitos_completados: arrayUnion(hitoKey),
-            fonda_coins: newFC
+            hitos_completados: arrayUnion(hitoKey)
           });
 
           // Write a reward notification to the mailbox
@@ -14489,9 +14487,8 @@
           // If it's the current user, update the global profile object and header
           if (currentUser && currentUser.uid === userId) {
             currentUserProfile.hitos_completados = newHitos;
-            currentUserProfile.fonda_coins = newFC;
             updateHeaderAndDashboardStats();
-            showNotification(`🏆 ¡HITO COMPLETADO! ${title}: +${reward} FC`, "success");
+            showNotification(`🏆 ¡HITO COMPLETADO! ${title}: ¡Recompensa de +${reward} FC enviada al buzón!`, "success");
             if (activeDashboardTab === "missions") {
               renderMissionsPanel();
             }
