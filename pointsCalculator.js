@@ -9,14 +9,14 @@
  */
 window.ratingToPoints = function(rating) {
   if (rating === null || rating === undefined || rating < 0) return 0;
-  if (rating <= 4.0)  return -6;
-  if (rating <= 4.5)  return -5;
-  if (rating <= 5.0)  return -4;
-  if (rating <= 5.4)  return -3;
-  if (rating <= 5.7)  return -2;
-  if (rating <= 5.9)  return -1;
-  if (rating <= 6.1)  return  0;
-  if (rating <= 6.3)  return  1;
+  if (rating <= 1.0)  return -6;
+  if (rating <= 2.0)  return -5;
+  if (rating <= 2.5)  return -4;
+  if (rating <= 3.5)  return -3;
+  if (rating <= 4.0)  return -2;
+  if (rating <= 4.9)  return -1;
+  if (rating <= 5.0)  return  0;
+  if (rating <= 5.9)  return  1;
   if (rating <= 6.5)  return  2;
   if (rating <= 6.7)  return  3;
   if (rating <= 6.9)  return  4;
