@@ -1471,6 +1471,10 @@
                 class="w-full py-2 rounded-xl font-bold bg-gold text-slate-950 hover:bg-yellow-400 cursor-pointer transition text-xs flex items-center justify-center gap-1">
                 <i data-lucide="tag" class="w-3.5 h-3.5"></i> Listar en el Mercado
               </button>
+              <button id="btn-sell-to-machine"
+                class="w-full py-2 rounded-xl font-bold bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/20 text-rose-300 hover:text-white cursor-pointer transition text-xs flex items-center justify-center gap-1">
+                <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Vender a la Máquina (-40%)
+              </button>
             </div>
           </div>
 
@@ -2286,8 +2290,10 @@
                   class="w-5 h-5 text-emerald-400"></i> Proponer Intercambio</h4>
               <div class="space-y-3">
                 <div>
-                  <label class="text-[10px] text-slate-400 font-black uppercase block mb-1">Ofreces (de tu
-                    mazo):</label>
+                  <label class="text-[10px] text-slate-400 font-black uppercase block mb-1">Ofreces (de tu mazo):</label>
+                  <input type="text" id="trade-offer-search" placeholder="🔍 Buscar en tu mazo..." 
+                    class="glass-input w-full px-3 py-1.5 mb-1.5 rounded-xl text-[11px] bg-fonda-950/60 text-white border-white/10 placeholder-slate-500" 
+                    oninput="filterTradeOfferSelect(this.value)">
                   <select id="trade-offer-select"
                     class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10">
                     <option value="">— Selecciona un cromo que ofreces —</option>
@@ -2295,6 +2301,9 @@
                 </div>
                 <div>
                   <label class="text-[10px] text-slate-400 font-black uppercase block mb-1">Buscas:</label>
+                  <input type="text" id="trade-want-search" placeholder="🔍 Buscar en el mercado..." 
+                    class="glass-input w-full px-3 py-1.5 mb-1.5 rounded-xl text-[11px] bg-fonda-950/60 text-white border-white/10 placeholder-slate-500" 
+                    oninput="filterTradeWantSelect(this.value)">
                   <select id="trade-want-select"
                     class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10">
                     <option value="">— Selecciona el cromo que buscas —</option>
@@ -2742,10 +2751,10 @@
           class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[10px] font-black uppercase tracking-widest animate-pulse">
           <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i> Pack Inicial Desbloqueado
         </span>
-        <h2 class="text-3xl md:text-5xl font-black text-white leading-tight">⚔️ ¡Tu Once Inicial de la Fonda!</h2>
+        <h2 class="text-3xl md:text-5xl font-black text-white leading-tight">⚔️ ¡Tu Plantilla Inicial de la Fonda!</h2>
         <p class="text-slate-400 text-xs md:text-sm max-w-lg mx-auto">
-          Hemos sorteado tus 11 cracks iniciales bajo un presupuesto máximo de <span
-            class="text-gold font-bold">30.0M$</span>. ¡Descúbrelos haciendo clic o revélalos todos a la vez!
+          Hemos sorteado tus 14 futbolistas iniciales (11 titulares y 3 reservas) con un valor de entre <span
+            class="text-gold font-bold">145M$ y 150M$</span>. ¡Descúbrelos haciendo clic o revélalos todos a la vez!
         </p>
       </div>
 
@@ -2760,14 +2769,14 @@
         <div
           class="inline-flex flex-wrap items-center justify-center gap-6 bg-slate-900/60 border border-white/5 py-3 px-6 rounded-2xl">
           <div class="text-left">
-            <span class="text-[9px] uppercase tracking-wider font-extrabold text-slate-500 block">Valor del Once</span>
+            <span class="text-[9px] uppercase tracking-wider font-extrabold text-slate-500 block">Valor de la Plantilla</span>
             <span id="squad-reveal-value" class="text-lg font-black text-gold">0.0M$</span>
           </div>
           <div class="w-px h-8 bg-white/10"></div>
           <div class="text-left">
             <span class="text-[9px] uppercase tracking-wider font-extrabold text-slate-500 block">Presupuesto
               Restante</span>
-            <span class="text-lg font-black text-emerald-400">70.0M$</span>
+            <span class="text-lg font-black text-emerald-400">100.0M$</span>
           </div>
         </div>
 
@@ -2947,6 +2956,10 @@
             class="hidden w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gold/10 hover:bg-gold/20 border border-gold/20 text-gold font-bold text-xs transition cursor-pointer">
             <i data-lucide="crown" class="w-3.5 h-3.5"></i> Hacer Capitán (x2 puntos)
           </button>
+          <button id="ppm-btn-venta-cpu"
+            class="hidden w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/20 text-rose-300 font-bold text-xs transition cursor-pointer">
+            <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Vender a la Máquina (-40% valor)
+          </button>
         </div>
 
         <!-- Consumibles Especiales -->
@@ -3104,6 +3117,87 @@
     </div>
   </div>
 
+
+  <!-- ===== MODAL: CONFIRMAR VENTA A LA MÁQUINA (CPU) ===== -->
+  <div id="modal-sell-to-machine"
+    class="hidden fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+    onclick="if(event.target===this) closeSellToMachineModal()">
+    <div
+      class="glass-panel w-full max-w-sm rounded-3xl border border-rose-500/30 bg-fonda-950/98 shadow-2xl overflow-hidden">
+      <!-- Cabecera -->
+      <div class="relative p-6 pb-4">
+        <div class="absolute inset-0 opacity-10 pointer-events-none"
+          style="background: linear-gradient(135deg, #dc2626, #7f1d1d);"></div>
+        <div class="relative flex items-center gap-3">
+          <div class="p-3 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex-shrink-0">
+            <i data-lucide="cpu" class="w-6 h-6 text-rose-400"></i>
+          </div>
+          <div class="flex-grow min-w-0">
+            <h3 class="text-base font-black text-white tracking-wide">Vender a la Máquina</h3>
+            <p class="text-[10px] text-slate-400 font-bold">Transacción instantánea · No reversible</p>
+          </div>
+          <button onclick="closeSellToMachineModal()"
+            class="flex-shrink-0 text-slate-500 hover:text-white transition cursor-pointer p-1">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenido -->
+      <div class="px-6 pb-6 space-y-3">
+        <!-- Info jugador -->
+        <div class="p-3 rounded-2xl bg-white/[0.03] border border-white/8 flex items-center gap-3">
+          <div id="stm-player-avatar" class="flex-shrink-0 w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xl font-black text-white"></div>
+          <div class="flex-grow min-w-0">
+            <p id="stm-player-name" class="font-black text-white text-sm truncate"></p>
+            <p id="stm-player-meta" class="text-[10px] text-slate-400 font-bold"></p>
+          </div>
+        </div>
+
+        <!-- Desglose de precios -->
+        <div class="rounded-2xl border border-white/8 overflow-hidden divide-y divide-white/5">
+          <div class="flex items-center justify-between px-4 py-3">
+            <span class="text-xs text-slate-400 font-bold flex items-center gap-1.5">
+              <i data-lucide="tag" class="w-3.5 h-3.5"></i> Valor de Catálogo
+            </span>
+            <span id="stm-valor-real" class="text-sm font-black text-slate-200"></span>
+          </div>
+          <div class="flex items-center justify-between px-4 py-3 bg-rose-950/20">
+            <span class="text-xs text-rose-400 font-bold flex items-center gap-1.5">
+              <i data-lucide="trending-down" class="w-3.5 h-3.5"></i> Penalización Máquina (-40%)
+            </span>
+            <span id="stm-penalizacion" class="text-sm font-black text-rose-400"></span>
+          </div>
+          <div class="flex items-center justify-between px-4 py-3 bg-emerald-950/20">
+            <span class="text-xs text-emerald-400 font-black flex items-center gap-1.5">
+              <i data-lucide="wallet" class="w-3.5 h-3.5"></i> Recibirás
+            </span>
+            <span id="stm-recibiras" class="text-base font-black text-emerald-400"></span>
+          </div>
+        </div>
+
+        <!-- Advertencia -->
+        <div class="flex items-start gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
+          <i data-lucide="triangle-alert" class="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5"></i>
+          <p class="text-[10px] text-slate-400 leading-relaxed">
+            Esta acción es <strong class="text-amber-300">inmediata e irreversible</strong>. El jugador será retirado de tu plantilla al instante.
+          </p>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex gap-2 pt-1">
+          <button onclick="closeSellToMachineModal()"
+            class="flex-1 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold text-xs transition cursor-pointer">
+            Cancelar
+          </button>
+          <button id="stm-btn-confirmar"
+            class="flex-1 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
+            <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Confirmar Venta
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== MODAL: COBRAR APUESTA GANADA (SPLIT COBRO) ===== -->
     <div id="modal-claim-bet-split"
@@ -3694,7 +3788,7 @@
                       </div>
                       <div class="space-y-1 text-center">
                         <h4 class="text-sm font-black text-white uppercase tracking-wider">Solicitud de Acceso Pendiente</h4>
-                        <p class="text-[10px] text-slate-400 leading-relaxed">Tu solicitud para ingresar a la liga <strong>Fonda Fanegas</strong> y generar tu plantilla inicial de 11 cracks está en espera de aprobación por parte del administrador oficial.</p>
+                        <p class="text-[10px] text-slate-400 leading-relaxed">Tu solicitud para ingresar a la liga <strong>Fonda Fanegas</strong> y generar tu plantilla inicial de 14 cracks (11 titulares y 3 reservas) está en espera de aprobación por parte del administrador oficial.</p>
                       </div>
                       <div class="py-2 px-3 rounded-xl bg-slate-900/60 inline-flex items-center gap-1.5 border border-white/5 mx-auto">
                         <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
@@ -3795,11 +3889,8 @@
             window.checkDailyLoginBonus(user, profile);
           }
 
-          // Solo sembrar jugadores si NO es admin (el admin no necesita plantilla)
-          const isAdmin = profile.rol === "admin" || user.email === "admin@comuniomundial.com";
-          if (!isAdmin) {
-            seedPlayersIfEmpty().catch(err => console.warn("⚠️ seedPlayersIfEmpty error:", err.message));
-          }
+          // Sembrar y sincronizar jugadores en Firestore (precios actualizados de PLAYERS_POOL)
+          seedPlayersIfEmpty().catch(err => console.warn("⚠️ seedPlayersIfEmpty error:", err.message));
 
           // 1. Escucha del documento del mánager en users/{uid}
           if (unsubscribeUser) unsubscribeUser();
@@ -3942,61 +4033,75 @@
         }
       );
 
-      // Sembrar Jugadores en Firestore
+      // Sembrar Jugadores en Firestore y actualizar precios si cambiaron en PLAYERS_POOL
       async function seedPlayersIfEmpty() {
         try {
           const querySnapshot = await getDocs(collection(db, "players"));
-          const existingIds = [];
+          const existingPlayers = {};
           querySnapshot.forEach(snap => {
-            existingIds.push(snap.id);
+            existingPlayers[snap.id] = snap.data();
           });
 
-          const playersToSeed = PLAYERS_POOL.filter(p => !existingIds.includes(p.id));
+          const playersToSeed = PLAYERS_POOL.filter(p => !existingPlayers[p.id]);
+          const playersToUpdatePrice = PLAYERS_POOL.filter(p => {
+            const ep = existingPlayers[p.id];
+            return ep && ep.precio !== p.precio;
+          });
 
-          if (playersToSeed.length > 0) {
-            console.log(`Sembrando ${playersToSeed.length} futbolistas nuevos en Firestore...`);
+          if (playersToSeed.length > 0 || playersToUpdatePrice.length > 0) {
             const batch = writeBatch(db);
 
-            playersToSeed.forEach(p => {
-              const playerRef = doc(db, "players", p.id);
-              batch.set(playerRef, {
-                nombre: p.nombre,
-                posicion: p.posicion,
-                precio: p.precio,
-                pais: p.pais,
-                flag: p.flag,
-                puntos: 0,
-                stats: {
-                  minutos_jugados: 0,
-                  goles: 0,
-                  goles_tiro_libre: 0,
-                  asistencias: 0,
-                  tarjetas_amarillas: 0,
-                  tarjetas_rojas: 0,
-                  goles_encajados: 0,
-                  goles_en_propia: 0,
-                  penaltis_marcados: 0,
-                  penaltis_fallados: 0,
-                  penaltis_parados: 0,
-                  entradas_exito: 0,
-                  ocasiones_creadas: 0,
-                  tiros_a_puerta: 0,
-                  porcentaje_seleccionado: 2.5
-                }
+            if (playersToSeed.length > 0) {
+              console.log(`Sembrando ${playersToSeed.length} futbolistas nuevos en Firestore...`);
+              playersToSeed.forEach(p => {
+                const playerRef = doc(db, "players", p.id);
+                batch.set(playerRef, {
+                  nombre: p.nombre,
+                  posicion: p.posicion,
+                  precio: p.precio,
+                  pais: p.pais,
+                  flag: p.flag,
+                  puntos: 0,
+                  stats: {
+                    minutos_jugados: 0,
+                    goles: 0,
+                    goles_tiro_libre: 0,
+                    asistencias: 0,
+                    tarjetas_amarillas: 0,
+                    tarjetas_rojas: 0,
+                    goles_encajados: 0,
+                    goles_en_propia: 0,
+                    penaltis_marcados: 0,
+                    penaltis_fallados: 0,
+                    penaltis_parados: 0,
+                    entradas_exito: 0,
+                    ocasiones_creadas: 0,
+                    tiros_a_puerta: 0,
+                    porcentaje_seleccionado: 2.5
+                  }
+                });
               });
-            });
+            }
+
+            if (playersToUpdatePrice.length > 0) {
+              console.log(`Actualizando precios de ${playersToUpdatePrice.length} futbolistas existentes en Firestore para que coincidan con PLAYERS_POOL...`);
+              playersToUpdatePrice.forEach(p => {
+                const playerRef = doc(db, "players", p.id);
+                batch.update(playerRef, { precio: p.precio });
+              });
+            }
 
             await batch.commit();
-            console.log("¡Siembra de nuevos jugadores completada con éxito!");
+            console.log("¡Sincronización de jugadores y precios con Firestore completada con éxito!");
           }
         } catch (err) {
-          console.error("Error al sembrar base de jugadores:", err);
+          console.error("Error al sembrar o sincronizar base de jugadores:", err);
         }
       }
 
       // --- NUEVO MOTOR DE SUBASTAS Y GESTIÓN DE PLANTILLA INICIAL ---
 
-      // Generar plantilla inicial de 11 jugadores (4-4-2) con coste máximo total de 30 Millones
+      // Generar plantilla inicial de 14 jugadores (11 titulares y 3 reservas) con coste total de entre 100 y 110 Millones
       async function generateInitialSquadForUser(userId, leagueCode = null) {
         const ligaId = leagueCode || (currentUserProfile ? currentUserProfile.liga_activa : null);
         const teamDocId = ligaId ? `${userId}_${ligaId}` : userId; // Compatibilidad legacy
@@ -4011,60 +4116,66 @@
 
         let selectedPlayers = [];
         let totalCost = 0;
+        const minCost = 145000000; // 145 Millones
+        const maxCost = 150000000; // 150 Millones
+
+        // 1. Selección inicial aleatoria: 1 GK, 5 DF, 5 MC, 3 DEL (Total 14 jugadores)
+        const gk = gkList[Math.floor(Math.random() * gkList.length)];
+        const dfs = [...dfList].sort(() => 0.5 - Math.random()).slice(0, 5);
+        const mfs = [...mfList].sort(() => 0.5 - Math.random()).slice(0, 5);
+        const fws = [...fwList].sort(() => 0.5 - Math.random()).slice(0, 3);
+        selectedPlayers = [gk, ...dfs, ...mfs, ...fws];
+        totalCost = selectedPlayers.reduce((sum, p) => sum + p.precio, 0);
+
+        // 2. Algoritmo de ajuste local para garantizar coste en el rango [100M, 110M]
         let attempts = 0;
-        const maxCost = 30000000; // 30 Millones
-
-        while (attempts < 500) {
+        while ((totalCost < minCost || totalCost > maxCost) && attempts < 500) {
           attempts++;
-          selectedPlayers = [];
-          totalCost = 0;
+          const idxToReplace = Math.floor(Math.random() * selectedPlayers.length);
+          const playerToReplace = selectedPlayers[idxToReplace];
+          const pos = playerToReplace.posicion;
 
-          // 1 GK
-          const gk = gkList[Math.floor(Math.random() * gkList.length)];
-          selectedPlayers.push(gk);
+          let candidates = [];
+          if (totalCost < minCost) {
+            // Necesitamos un jugador más caro en esa posición
+            candidates = PLAYERS_POOL.filter(p => 
+              p.posicion === pos && 
+              p.precio > playerToReplace.precio && 
+              !selectedPlayers.some(sp => sp.id === p.id)
+            );
+          } else {
+            // Necesitamos un jugador más barato en esa posición
+            candidates = PLAYERS_POOL.filter(p => 
+              p.posicion === pos && 
+              p.precio < playerToReplace.precio && 
+              !selectedPlayers.some(sp => sp.id === p.id)
+            );
+          }
 
-          // 4 DF
-          const dfs = [...dfList].sort(() => 0.5 - Math.random()).slice(0, 4);
-          selectedPlayers.push(...dfs);
-
-          // 4 MC
-          const mfs = [...mfList].sort(() => 0.5 - Math.random()).slice(0, 4);
-          selectedPlayers.push(...mfs);
-
-          // 2 DEL
-          const fws = [...fwList].sort(() => 0.5 - Math.random()).slice(0, 2);
-          selectedPlayers.push(...fws);
-
-          totalCost = selectedPlayers.reduce((sum, p) => sum + p.precio, 0);
-
-          if (totalCost <= maxCost) {
-            console.log(`✅ [Fonda Engine] Plantilla inicial generada exitosamente en el intento ${attempts}. Coste total: ${(totalCost / 1000000).toFixed(1)}M$`);
-            break;
+          if (candidates.length > 0) {
+            const replacement = candidates[Math.floor(Math.random() * candidates.length)];
+            selectedPlayers[idxToReplace] = replacement;
+            totalCost = selectedPlayers.reduce((sum, p) => sum + p.precio, 0);
           }
         }
 
-        if (totalCost > maxCost) {
-          console.warn("⚠️ [Fonda Engine] No se logró generar una plantilla menor a 30M$ tras 500 intentos. Se fuerzan jugadores económicos.");
-          const cheapestGk = [...gkList].sort((a, b) => a.precio - b.precio)[0];
-          const cheapestDfs = [...dfList].sort((a, b) => a.precio - b.precio).slice(0, 4);
-          const cheapestMfs = [...mfList].sort((a, b) => a.precio - b.precio).slice(0, 4);
-          const cheapestFws = [...fwList].sort((a, b) => a.precio - b.precio).slice(0, 2);
-          selectedPlayers = [cheapestGk, ...cheapestDfs, ...cheapestMfs, ...cheapestFws];
-          totalCost = selectedPlayers.reduce((sum, p) => sum + p.precio, 0);
-        }
+        console.log(`✅ [Fonda Engine] Plantilla inicial de 14 jugadores generada. Intentos de ajuste: ${attempts}. Coste total: ${(totalCost / 1000000).toFixed(1)}M$`);
 
+        // Distribución de titulares y suplentes
+        // Titulares (4-4-2): 1 POR (idx 0), 4 DFC (idx 1..4), 4 MC (idx 6..9), 2 DEL (idx 11..12)
+        // Suplentes: 1 DFC (idx 5), 1 MC (idx 10), 1 DEL (idx 13)
         const titulares = {
           portero: [selectedPlayers[0].id],
           defensas: selectedPlayers.slice(1, 5).map(p => p.id),
-          mediocampistas: selectedPlayers.slice(5, 9).map(p => p.id),
-          delanteros: selectedPlayers.slice(9, 11).map(p => p.id)
+          mediocampistas: selectedPlayers.slice(6, 10).map(p => p.id),
+          delanteros: selectedPlayers.slice(11, 13).map(p => p.id)
         };
 
         const suplentes = {
           portero: [],
-          defensas: [],
-          mediocampistas: [],
-          delanteros: []
+          defensas: [selectedPlayers[5].id],
+          mediocampistas: [selectedPlayers[10].id],
+          delanteros: [selectedPlayers[13].id]
         };
 
         const jugadoresIds = selectedPlayers.map(p => p.id);
@@ -4207,8 +4318,8 @@
               }
 
               await updateDoc(winnerRef, { presupuesto_actual: nuevoB });
-              // Cláusula inicial automática = 150% del precio de subasta
-              const clausulaInicial = Math.round(offerPrice * 1.5);
+              // Cláusula inicial automática = 100% del precio de subasta
+              const clausulaInicial = offerPrice;
               const prevClausulas = winnerTeam.clausulas || {};
               await updateDoc(winnerTeamRef, {
                 jugadores_ids: nuevosJugadoresIds,
@@ -4217,9 +4328,9 @@
                 clausulas: { ...prevClausulas, [item.id]: clausulaInicial }
               });
 
-              // Hito: Galáctico (Megacrack >= 7M$)
-              if (finalPrice >= 7000000 && window.completeHitoForUser) {
-                window.completeHitoForUser(winnerUid, "galactico", 50, "Galáctico", `Fichar a un megacrack como ${player.nombre} con valor de catálogo >= 7M$`);
+              // Hito: Galáctico (Megacrack >= 30M$)
+              if (finalPrice >= 30000000 && window.completeHitoForUser) {
+                window.completeHitoForUser(winnerUid, "galactico", 50, "Galáctico", `Fichar a un megacrack como ${player.nombre} con valor de catálogo >= 30M$`);
               }
 
               newIncidencias.unshift(`🔔 [Subasta] ¡${winnerProfile.nombre_equipo} adquiere a ${player.nombre} en subasta por ${(offerPrice / 1000000).toFixed(2)}M$! (${bids.length} pujas recibidas).`);
@@ -4462,8 +4573,8 @@
           });
 
           await updateDoc(buyerRef, { presupuesto_actual: nuevoPresupuestoComprador });
-          // Cláusula inicial automática = 150% del precio de transferencia
-          const clausulaInicialComprador = Math.round(offerPrice * 1.5);
+          // Cláusula inicial automática = 100% del precio de transferencia
+          const clausulaInicialComprador = offerPrice;
           const prevClausulasComprador = buyerTeam.clausulas || {};
           await updateDoc(buyerTeamRef, {
             jugadores_ids: nuevosJugadoresIdsComprador,
@@ -4486,8 +4597,8 @@
           if (hasProfit && window.advanceMissionForUser) {
             window.advanceMissionForUser(currentUser.uid, "weekly_tiburon", 1);
           }
-          if (player && player.precio >= 7000000 && window.completeHitoForUser) {
-            window.completeHitoForUser(buyerUid, "galactico", 50, "Galáctico", `Fichar a un megacrack como ${player.nombre} con valor de catálogo >= 7M$`);
+          if (player && player.precio >= 30000000 && window.completeHitoForUser) {
+            window.completeHitoForUser(buyerUid, "galactico", 50, "Galáctico", `Fichar a un megacrack como ${player.nombre} con valor de catálogo >= 30M$`);
           }
 
           // Log en chat de liga
@@ -4760,8 +4871,8 @@
         // --- Fondo según rareza ---
         const bgEl = document.getElementById("ppm-bg-gradient");
         const precio = player.precio || 0;
-        if (precio >= 7000000) bgEl.style.background = "linear-gradient(135deg, #f59e0b, #b45309)";
-        else if (precio >= 3000000) bgEl.style.background = "linear-gradient(135deg, #3b82f6, #1e40af)";
+        if (precio >= 30000000) bgEl.style.background = "linear-gradient(135deg, #f59e0b, #b45309)";
+        else if (precio >= 10000000) bgEl.style.background = "linear-gradient(135deg, #3b82f6, #1e40af)";
         else bgEl.style.background = "linear-gradient(135deg, #475569, #1e293b)";
 
         // --- Stats: puntos por jornada ---
@@ -4826,7 +4937,7 @@
         // --- Cláusula ---
         const teamData = currentUserTeam;
         const clausulas = teamData.clausulas || {};
-        const clausulaActual = clausulas[playerId] || Math.round(precio * 1.5);
+        const clausulaActual = clausulas[playerId] || precio;
         const isBlindado = teamData.blindados && teamData.blindados[playerId];
 
         document.getElementById("ppm-clausula-valor").textContent = `${(clausulaActual / 1000000).toFixed(2)}M$`;
@@ -4984,6 +5095,19 @@
             }
           }
 
+          // --- Wiring Venta a la Máquina ---
+          const btnVentaCpu = document.getElementById("ppm-btn-venta-cpu");
+          if (btnVentaCpu) {
+            if (lockStatus.isLocked) {
+              btnVentaCpu.classList.add("hidden");
+            } else {
+              btnVentaCpu.classList.remove("hidden");
+              btnVentaCpu.onclick = async () => {
+                await sellPlayerToMachine(playerId);
+              };
+            }
+          }
+
           // --- Wiring Consumibles ---
           const seguroCount = currentUserProfile.seguro_24h_count || 0;
           const motivacionCount = currentUserProfile.motivacion_plus_count || 0;
@@ -5129,7 +5253,7 @@
 
         const clausulas = currentUserTeam.clausulas || {};
         const precio = player?.precio || 10_000_000;
-        const clausulaActual = clausulas[playerId] || Math.round(precio * 1.5);
+        const clausulaActual = clausulas[playerId] || precio;
         const nuevaClausula = clausulaActual + boost;
 
         try {
@@ -5212,7 +5336,7 @@
         if (secondaryMarket.some(x => x.id === playerId)) {
           showNotification("Este jugador ya está en el mercado.", "error"); return;
         }
-        const clausulaActual = (currentUserTeam.clausulas || {})[playerId] || Math.round((player?.precio || 10_000_000) * 1.5);
+        const clausulaActual = (currentUserTeam.clausulas || {})[playerId] || (player?.precio || 10_000_000);
         try {
           const newListing = {
             id: playerId, owner_uid: currentUser.uid,
@@ -5228,6 +5352,141 @@
         } catch (err) {
           console.error("Error listing player:", err);
           showNotification("Error al publicar el jugador.", "error");
+        }
+      }
+
+      // --- Vender a la Máquina con un 40% de descuento ---
+      async function sellPlayerToMachine(playerId) {
+        if (!currentUser || !currentActiveLeagueData || !currentUserProfile || !currentUserTeam) return;
+
+        const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
+        if (!player) return;
+
+        // 1. Verificar si el jugador está bloqueado
+        const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+        const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
+        if (lockStatus.isLocked) {
+          showNotification(`🔒 Venta bloqueada: ${player.nombre} está bloqueado por kickoff de su partido.`, "error");
+          return;
+        }
+
+        // 2. Calcular valores (40% de descuento -> 60% del valor real)
+        const valorReal = player.precio || 0;
+        const precioCPU = Math.round(valorReal * 0.60);
+
+        // Mostrar modal de confirmación personalizado
+        const confirmed = await showSellToMachineModal(player, valorReal, precioCPU);
+        if (!confirmed) return;
+
+        try {
+          const leagueCode = currentActiveLeagueData.id;
+          const leagueRef = doc(db, "leagues", leagueCode);
+          const userRef = doc(db, "users", currentUser.uid);
+          const teamDocId = getTeamDocId();
+          const teamRef = doc(db, "user_teams", teamDocId);
+
+          // 3. Remover el jugador del inventario/plantilla del usuario
+          const ownedIds = currentUserTeam.jugadores_ids || [];
+          const nuevosJugadoresIds = ownedIds.filter(id => id !== playerId);
+
+          const titulares = { ...currentUserTeam.alineacion.titulares };
+          const suplentes = { ...currentUserTeam.alineacion.suplentes };
+
+          const posPlural = player.posicion === "portero" ? "portero" :
+            player.posicion === "defensa" ? "defensas" :
+              player.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
+
+          titulares[posPlural] = (titulares[posPlural] || []).filter(id => id !== playerId);
+          suplentes[posPlural] = (suplentes[posPlural] || []).filter(id => id !== playerId);
+
+          let capitanId = currentUserTeam.capitan_id;
+          if (capitanId === playerId) capitanId = "";
+
+          // Actualizar las cláusulas de rescisión eliminando la del jugador vendido
+          const prevClausulas = currentUserTeam.clausulas || {};
+          const nuevasClausulas = { ...prevClausulas };
+          delete nuevasClausulas[playerId];
+
+          // Actualizar blindados
+          const prevBlindados = currentUserTeam.blindados || {};
+          const nuevosBlindados = { ...prevBlindados };
+          delete nuevosBlindados[playerId];
+
+          // Actualizar seguros de 24h
+          const prevSeguro24h = currentUserTeam.seguro_24h || {};
+          const nuevoSeguro24h = { ...prevSeguro24h };
+          delete nuevoSeguro24h[playerId];
+
+          // Actualizar motivaciones plus
+          const prevMotivacionPlus = currentUserTeam.motivacion_plus || {};
+          const nuevaMotivacionPlus = { ...prevMotivacionPlus };
+          delete nuevaMotivacionPlus[playerId];
+
+          // 4. Actualizar presupuestos
+          const currentBActual = currentUserProfile.presupuesto_actual || 0;
+          const currentBClub = currentUserProfile.presupuesto_club || 0;
+          const nuevoBActual = currentBActual + precioCPU;
+          const nuevoBClub = currentBClub + precioCPU;
+
+          // 5. Remover el jugador del mercado secundario si estaba publicado
+          const secondaryMarket = currentActiveLeagueData.secondary_market || [];
+          const updatedSecondary = secondaryMarket.filter(x => x.id !== playerId);
+
+          // 6. Log en incidencias
+          const updatedIncidencias = [...(currentActiveLeagueData.incidencias || [])];
+          updatedIncidencias.unshift(`🤖 [Máquina] ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} vendió a ${player.nombre} a la máquina por ${(precioCPU / 1000000).toFixed(2)}M$ (-40% de penalización).`);
+
+          // Ejecutar actualizaciones en Firestore
+          await updateDoc(userRef, {
+            presupuesto_actual: nuevoBActual,
+            presupuesto_club: nuevoBClub
+          });
+
+          await updateDoc(teamRef, {
+            jugadores_ids: nuevosJugadoresIds,
+            alineacion: { titulares, suplentes },
+            capitan_id: capitanId,
+            clausulas: nuevasClausulas,
+            blindados: nuevosBlindados,
+            seguro_24h: nuevoSeguro24h,
+            motivacion_plus: nuevaMotivacionPlus,
+            players: buildPlayersArrayFromAlineacion(titulares, suplentes, nuevosJugadoresIds)
+          });
+
+          await updateDoc(leagueRef, {
+            secondary_market: updatedSecondary,
+            incidencias: updatedIncidencias
+          });
+
+          // Actualizar datos en memoria locales
+          currentUserProfile.presupuesto_actual = nuevoBActual;
+          currentUserProfile.presupuesto_club = nuevoBClub;
+          currentUserTeam.jugadores_ids = nuevosJugadoresIds;
+          currentUserTeam.alineacion = { titulares, suplentes };
+          currentUserTeam.capitan_id = capitanId;
+          currentUserTeam.clausulas = nuevasClausulas;
+          currentUserTeam.blindados = nuevosBlindados;
+          currentUserTeam.seguro_24h = nuevoSeguro24h;
+          currentUserTeam.motivacion_plus = nuevaMotivacionPlus;
+
+          // Enviar mensaje en el chat
+          if (window.sendSystemLeagueChatMessage) {
+            window.sendSystemLeagueChatMessage(leagueCode, `🤖 [MÁQUINA] ¡${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha vendido a ${player.nombre} a la máquina por ${(precioCPU / 1e6).toFixed(2)}M$!`);
+          }
+
+          showNotification(`♻️ Has vendido a ${player.nombre} a la máquina por ${(precioCPU / 1e6).toFixed(2)}M$`, "success");
+
+          // Cerrar modal si estaba abierto
+          closePlayerProfileModal();
+
+          // Refrescar vistas
+          if (window.renderMarketTable) window.renderMarketTable();
+          if (window.populateSellSelect) window.populateSellSelect(); // if available
+          if (window.updateHeaderAndDashboardStats) window.updateHeaderAndDashboardStats();
+          if (window.renderSquadGrid) window.renderSquadGrid();
+        } catch (err) {
+          console.error("Error selling player to machine:", err);
+          showNotification("Error al procesar la venta a la máquina.", "error");
         }
       }
 
@@ -5250,6 +5509,45 @@
       window.closeClausulazoModal = function () {
         document.getElementById("modal-clausulazo").classList.add("hidden");
         _czmCurrentData = null;
+      };
+
+      // --- Modal: Confirmar Venta a la Máquina ---
+      let _stmResolve = null;
+
+      function showSellToMachineModal(player, valorReal, precioCPU) {
+        return new Promise((resolve) => {
+          _stmResolve = resolve;
+
+          // Rellena los datos del jugador
+          const initials = (player.nombre || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+          document.getElementById("stm-player-avatar").textContent = initials;
+          document.getElementById("stm-player-name").textContent = player.nombre || "Jugador";
+          document.getElementById("stm-player-meta").textContent =
+            `${player.posicion || ""}  ·  ${player.equipo || ""}`;
+
+          const fmt = v => `${(v / 1e6).toFixed(2)}M€`;
+          document.getElementById("stm-valor-real").textContent = fmt(valorReal);
+          document.getElementById("stm-penalizacion").textContent = `-${fmt(valorReal - precioCPU)}`;
+          document.getElementById("stm-recibiras").textContent = fmt(precioCPU);
+
+          // Botón de confirmación
+          const btn = document.getElementById("stm-btn-confirmar");
+          const newBtn = btn.cloneNode(true); // eliminar listeners previos
+          btn.replaceWith(newBtn);
+          newBtn.addEventListener("click", () => {
+            closeSellToMachineModal();
+            resolve(true);
+          });
+
+          // Mostrar
+          document.getElementById("modal-sell-to-machine").classList.remove("hidden");
+          lucide.createIcons();
+        });
+      }
+
+      window.closeSellToMachineModal = function () {
+        document.getElementById("modal-sell-to-machine").classList.add("hidden");
+        if (_stmResolve) { _stmResolve(false); _stmResolve = null; }
       };
 
       // --- Ejecutar Clausulazo ---
@@ -5394,8 +5692,8 @@
         if (hasProfitCZL && window.advanceMissionForUser) {
           window.advanceMissionForUser(ownerUid, "weekly_tiburon", 1);
         }
-        if (player && player.precio >= 7000000 && window.completeHitoForUser) {
-          window.completeHitoForUser(buyerUid, "galactico", 50, "Galáctico", `Fichar a un megacrack como ${player.nombre} con valor de catálogo >= 7M$`);
+        if (player && player.precio >= 30000000 && window.completeHitoForUser) {
+          window.completeHitoForUser(buyerUid, "galactico", 50, "Galáctico", `Fichar a un megacrack como ${player.nombre} con valor de catálogo >= 30M$`);
         }
 
         const updatedPending = (leagueData.pending_clausulazos || []).map(c =>
@@ -5864,12 +6162,13 @@
                 const ptsAct = usr.puntos_jornada_actual || 0;
                 const ptsTot = usr.puntos_totales || 0;
 
+                const usrLeagueTeamName = (usr.nombres_equipo && currentActiveLeague && usr.nombres_equipo[currentActiveLeague]) ? usr.nombres_equipo[currentActiveLeague] : (usr.nombre_equipo || "Sin equipo");
                 tr.innerHTML = `
                 <td class="py-3 px-3"><span class="${rankClass}">${index + 1}</span></td>
                 <td class="py-3 px-3 text-white font-black flex items-center gap-1.5">
                   ${usr.nombre_usuario} ${isSelf ? '<span class="text-[8px] bg-gold/20 text-gold px-1 py-0.2 rounded uppercase font-black">Tú</span>' : ''}
                 </td>
-                <td class="py-3 px-3 text-slate-400">${usr.nombre_equipo || "Sin equipo"}</td>
+                <td class="py-3 px-3 text-slate-400">${usrLeagueTeamName}</td>
                 <td class="py-3 px-3 text-right text-emerald-400 font-black">${(pres / 1000000).toFixed(1)}M$</td>
                 <td class="py-3 px-3 text-right text-cyan-400 font-bold">${ptsAct} PTS</td>
                 <td class="py-3 px-3 text-right text-gold font-black">${ptsTot} PTS</td>
@@ -6463,6 +6762,7 @@
 
           const rankClass = index === 0 ? "bg-gold text-slate-950" : "bg-fonda-800 text-slate-400";
 
+          const usrTeamName = (usr.nombres_equipo && currentActiveLeague && usr.nombres_equipo[currentActiveLeague]) ? usr.nombres_equipo[currentActiveLeague] : (usr.nombre_equipo || "Sin equipo");
           usrDiv.innerHTML = `
           <div class="flex w-full items-center justify-between gap-2">
             <div class="flex items-center gap-2 truncate">
@@ -6470,7 +6770,7 @@
               <div>
                 <p class="font-bold text-[11px] truncate">${usr.nombre_usuario}</p>
                 <p class="text-[9px] text-slate-400 font-medium truncate">
-                  ${usr.nombre_equipo || "Sin equipo"} <span class="text-slate-500 font-bold ml-1">• Total: ${usr.puntos_totales || 0} pts</span>
+                  ${usrTeamName} <span class="text-slate-500 font-bold ml-1">• Total: ${usr.puntos_totales || 0} pts</span>
                 </p>
               </div>
             </div>
@@ -6485,7 +6785,7 @@
                 return;
               }
               if (window.openRivalSquadViewer) {
-                window.openRivalSquadViewer(usr.uid, usr.nombre_usuario, usr.nombre_equipo || "Sin equipo", usr.puntos_totales || 0);
+                window.openRivalSquadViewer(usr.uid, usr.nombre_usuario, usrTeamName, usr.puntos_totales || 0);
               } else {
                 // fallback
                 const isUserAdmin = currentActiveLeagueData.admin_uid === currentUser.uid;
@@ -7432,7 +7732,9 @@
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
             const userData = userSnap.data();
-            adminSquadEditorManagerName.textContent = `${userData.nombre_usuario} (${userData.nombre_equipo || "Sin equipo"})`;
+            const editorLeagueCode = adminSelectedLeagueId || currentActiveLeague;
+            const editorTeamName = (userData.nombres_equipo && editorLeagueCode && userData.nombres_equipo[editorLeagueCode]) ? userData.nombres_equipo[editorLeagueCode] : (userData.nombre_equipo || "Sin equipo");
+            adminSquadEditorManagerName.textContent = `${userData.nombre_usuario} (${editorTeamName})`;
           }
         } catch (err) {
           console.error("Error al obtener perfil de mánager para editor:", err);
@@ -7732,7 +8034,7 @@
 
             // Clausula calculation
             const isShielded = blindados[id] || false;
-            const currentClause = clausulas[id] || Math.round(player.precio * 1.5);
+            const currentClause = clausulas[id] || player.precio;
             const formattedClause = (currentClause / 1000000).toFixed(1);
 
             // Avatar and visual elements
@@ -7812,7 +8114,7 @@
 
           cat.list.forEach(player => {
             const isShielded = blindados[player.id] || false;
-            const currentClause = clausulas[player.id] || Math.round(player.precio * 1.5);
+            const currentClause = clausulas[player.id] || player.precio;
             const formattedClause = (currentClause / 1000000).toFixed(1);
 
             let statusBadges = "";
@@ -10252,6 +10554,22 @@
 
       // --- OYENTES DE EVENTOS DEL MERCADO DE FICHAJES ---
 
+      // Vender a la Máquina desde el panel del mercado
+      const btnSellToMachineMarket = document.getElementById("btn-sell-to-machine");
+      if (btnSellToMachineMarket) {
+        btnSellToMachineMarket.addEventListener("click", async () => {
+          if (!currentUser || !currentActiveLeagueData || !currentUserProfile) return;
+
+          const playerId = document.getElementById("sell-player-select").value;
+          if (!playerId) {
+            showNotification("Selecciona un jugador para vender a la máquina.", "error");
+            return;
+          }
+
+          await sellPlayerToMachine(playerId);
+        });
+      }
+
       // Poner a la venta en el Mercado de la Comunidad
       document.getElementById("btn-list-for-sale").addEventListener("click", async () => {
         if (!currentUser || !currentActiveLeagueData || !currentUserProfile) return;
@@ -11679,13 +11997,6 @@
         container.innerHTML = "";
 
         const chipDefinitions = [
-          {
-            key: "wildcard",
-            name: "Wildcard",
-            description: "Fichajes ilimitados en jornada",
-            isLocked: false,
-            state: chips.wildcard
-          },
           {
             key: "jugador_12",
             name: "12º Jugador",
@@ -13178,8 +13489,8 @@
       let activeDeckFilter = "all";
 
       function getPlayerRarity(price) {
-        if (price >= 7000000) return "estrella";
-        if (price >= 3000000) return "medio";
+        if (price >= 30000000) return "estrella";
+        if (price >= 10000000) return "medio";
         return "comun";
       }
 
@@ -13214,7 +13525,7 @@
 
         let payoutLabel = "1";
         if (rarity === "medio") payoutLabel = "2";
-        else if (rarity === "estrella") payoutLabel = "5";
+        else if (rarity === "estrella") payoutLabel = "3";
         const quicksellBtn = state === "deck" ? `<button onclick="event.stopPropagation(); quicksellSticker('${player.id}')" class="w-full mt-1.5 py-1 text-[8px] rounded-lg bg-rose-600/40 hover:bg-rose-600 text-rose-200 hover:text-white font-black uppercase transition active:scale-95 cursor-pointer">♻️ Descartar (+${payoutLabel} FC)</button>` : "";
 
         return `
@@ -14010,15 +14321,26 @@
                 const bonusFC = 30; // 30 FC
                 const finalFC = (currentUserProfile.fonda_coins || 0) + bonusFC;
 
+                const bonusMoney = 50000000;
+                const newPresupuestoClub = (currentUserProfile.presupuesto_club || 0) + bonusMoney;
+                const newPresupuestoActual = (currentUserProfile.presupuesto_actual || 0) + bonusMoney;
+                const newTokensFidelidad = (currentUserProfile.tokens_fidelidad || 0) + 1;
+
                 await updateDoc(userRef, {
                   completed_countries: arrayUnion(country),
-                  fonda_coins: finalFC
+                  fonda_coins: finalFC,
+                  presupuesto_club: newPresupuestoClub,
+                  presupuesto_actual: newPresupuestoActual,
+                  tokens_fidelidad: newTokensFidelidad
                 });
 
                 currentUserProfile.completed_countries = nextCompleted;
                 currentUserProfile.fonda_coins = finalFC;
+                currentUserProfile.presupuesto_club = newPresupuestoClub;
+                currentUserProfile.presupuesto_actual = newPresupuestoActual;
+                currentUserProfile.tokens_fidelidad = newTokensFidelidad;
 
-                showNotification(`🏆 ¡LOGRO! Has completado la selección de ${country}. ¡Bono de +${bonusFC.toLocaleString()} FC añadido!`, "success");
+                showNotification(`🏆 ¡LOGRO! Has completado la selección de ${country}. ¡Bono de +${bonusFC.toLocaleString()} FC, +50M$ y +1 Token de Fidelidad añadido!`, "success");
                 updateHeaderAndDashboardStats();
               }
             }
@@ -14077,6 +14399,8 @@
           // Check for completed countries
           const countriesToCheck = [...new Set(toPaste.map(id => PLAYERS_POOL.find(p => p.id === id)?.pais).filter(Boolean))];
           let totalBonus = 0;
+          let totalBonusMoney = 0;
+          let totalBonusTokens = 0;
           const newlyCompletedCountries = [];
 
           for (const country of countriesToCheck) {
@@ -14088,19 +14412,32 @@
               if (!completedCountries.includes(country)) {
                 newlyCompletedCountries.push(country);
                 totalBonus += 30; // 30 FC per completed country
+                totalBonusMoney += 50000000; // 50M$ per completed country
+                totalBonusTokens += 1; // 1 Loyalty Token per completed country
               }
             }
           }
 
           if (newlyCompletedCountries.length > 0) {
             const finalFC = (currentUserProfile.fonda_coins || 0) + totalBonus;
+            const newPresupuestoClub = (currentUserProfile.presupuesto_club || 0) + totalBonusMoney;
+            const newPresupuestoActual = (currentUserProfile.presupuesto_actual || 0) + totalBonusMoney;
+            const newTokensFidelidad = (currentUserProfile.tokens_fidelidad || 0) + totalBonusTokens;
+
             await updateDoc(userRef, {
               completed_countries: arrayUnion(...newlyCompletedCountries),
-              fonda_coins: finalFC
+              fonda_coins: finalFC,
+              presupuesto_club: newPresupuestoClub,
+              presupuesto_actual: newPresupuestoActual,
+              tokens_fidelidad: newTokensFidelidad
             });
             currentUserProfile.completed_countries = [...(currentUserProfile.completed_countries || []), ...newlyCompletedCountries];
             currentUserProfile.fonda_coins = finalFC;
-            showNotification(`🏆 ¡LOGRO! Has completado ${newlyCompletedCountries.join(", ")}. ¡Bono de +${totalBonus} FC!`, "success");
+            currentUserProfile.presupuesto_club = newPresupuestoClub;
+            currentUserProfile.presupuesto_actual = newPresupuestoActual;
+            currentUserProfile.tokens_fidelidad = newTokensFidelidad;
+
+            showNotification(`🏆 ¡LOGRO! Has completado ${newlyCompletedCountries.join(", ")}. ¡Bono de +${totalBonus} FC, +${(totalBonusMoney / 1000000).toFixed(0)}M$ y +${totalBonusTokens} Token${totalBonusTokens > 1 ? 's' : ''} de Fidelidad!`, "success");
             updateHeaderAndDashboardStats();
           }
 
@@ -14133,7 +14470,7 @@
         const rarity = getPlayerRarity(player.precio);
         let payout = 1; // Común: 1 FC
         if (rarity === "medio") payout = 2; // Medio: 2 FC
-        if (rarity === "estrella") payout = 5; // Estrella: 5 FC
+        if (rarity === "estrella") payout = 3; // Estrella: 3 FC
 
         try {
           const newInventory = [...inventory];
@@ -14195,25 +14532,59 @@
 
       // ---- Trade panel ----
       let tradeUnsubscribe = null;
+      window.filterTradeOfferSelect = function (filterText) {
+        if (!currentUserProfile) return;
+        const inventory = currentUserProfile.user_inventory || [];
+        const offerSel = document.getElementById("trade-offer-select");
+        if (!offerSel) return;
+        const currentVal = offerSel.value;
+        offerSel.innerHTML = `<option value="">— Selecciona un cromo que ofreces —</option>`;
+        const query = filterText.toLowerCase().trim();
+        const uniqueInventory = [...new Set(inventory)];
+        uniqueInventory.forEach(id => {
+          const p = PLAYERS_POOL.find(x => x.id === id);
+          if (p) {
+            const textToSearch = `${p.nombre} ${p.pais || ''}`.toLowerCase();
+            if (!query || textToSearch.includes(query)) {
+              offerSel.innerHTML += `<option value="${p.id}">${p.flag} ${p.nombre} (${getPlayerRarity(p.precio).toUpperCase()})</option>`;
+            }
+          }
+        });
+        if (currentVal && [...offerSel.options].some(opt => opt.value === currentVal)) {
+          offerSel.value = currentVal;
+        }
+      };
+
+      window.filterTradeWantSelect = function (filterText) {
+        const wantSel = document.getElementById("trade-want-select");
+        if (!wantSel) return;
+        const currentVal = wantSel.value;
+        wantSel.innerHTML = `<option value="">— Selecciona el cromo que buscas —</option>`;
+        const query = filterText.toLowerCase().trim();
+        [...PLAYERS_POOL].sort((a, b) => b.precio - a.precio).forEach(p => {
+          const textToSearch = `${p.nombre} ${p.pais || ''}`.toLowerCase();
+          if (!query || textToSearch.includes(query)) {
+            wantSel.innerHTML += `<option value="${p.id}">${p.flag} ${p.nombre}</option>`;
+          }
+        });
+        if (currentVal && [...wantSel.options].some(opt => opt.value === currentVal)) {
+          wantSel.value = currentVal;
+        }
+      };
+
       function initTradePanel() {
         if (!currentActiveLeague || !currentUser) return;
+        
+        // Reset search inputs
+        const offerSearch = document.getElementById("trade-offer-search");
+        const wantSearch = document.getElementById("trade-want-search");
+        if (offerSearch) offerSearch.value = "";
+        if (wantSearch) wantSearch.value = "";
+
         // Populate offer select (cards in deck)
-        const inventory = currentUserProfile?.user_inventory || [];
-        const offerSel = document.getElementById("trade-offer-select");
-        const wantSel = document.getElementById("trade-want-select");
-        if (offerSel) {
-          offerSel.innerHTML = `<option value="">— Ofreces —</option>`;
-          [...new Set(inventory)].forEach(id => {
-            const p = PLAYERS_POOL.find(x => x.id === id);
-            if (p) offerSel.innerHTML += `<option value="${p.id}">${p.flag} ${p.nombre} (${getPlayerRarity(p.precio).toUpperCase()})</option>`;
-          });
-        }
-        if (wantSel) {
-          wantSel.innerHTML = `<option value="">— Buscas —</option>`;
-          [...PLAYERS_POOL].sort((a, b) => b.precio - a.precio).forEach(p => {
-            wantSel.innerHTML += `<option value="${p.id}">${p.flag} ${p.nombre}</option>`;
-          });
-        }
+        filterTradeOfferSelect("");
+        // Populate want select
+        filterTradeWantSelect("");
         // Real-time trades listener
         if (tradeUnsubscribe) tradeUnsubscribe();
         tradeUnsubscribe = db.collection("trades").where("leagueCode", "==", currentActiveLeague).where("status", "==", "open")
@@ -15386,7 +15757,7 @@
             leagueId: "FF-FONDA",
             senderId: "system",
             senderName: "📢 SISTEMA FANEGAS",
-            text: `🎉 El mánager @${teamName} ha sido admitido oficialmente en Fonda Fanegas. ¡Su plantilla inicial de 11 cracks ha sido generada! ⚽`,
+            text: `🎉 El mánager @${teamName} ha sido admitido oficialmente en Fonda Fanegas. ¡Su plantilla inicial de 14 cracks ha sido generada! ⚽`,
             timestamp: new Date().toISOString(),
             isOfficial: true
           });
@@ -15397,14 +15768,14 @@
             leagueCode: "FF-FONDA",
             uid: "system",
             username: "📢 SISTEMA FANEGAS",
-            text: `🎉 El mánager @${teamName} ha sido admitido oficialmente en Fonda Fanegas. ¡Su plantilla inicial de 11 cracks ha sido generada! ⚽`,
+            text: `🎉 El mánager @${teamName} ha sido admitido oficialmente en Fonda Fanegas. ¡Su plantilla inicial de 14 cracks ha sido generada! ⚽`,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             isSystem: true
           });
 
           await batch.commit();
 
-          // 5. Generar 11 cracks iniciales y asignarlos al usuario
+          // 5. Generar 14 cracks iniciales y asignarlos al usuario
           await generateInitialSquadForUser(userId, "FF-FONDA");
 
           showNotification(`¡Acceso aprobado para ${teamName}!`, "success");
