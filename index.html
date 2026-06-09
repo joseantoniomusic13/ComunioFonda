@@ -8718,8 +8718,32 @@
           "Países Bajos", "Suiza"
         ];
         
+        const countriesWithJpgImages = [
+          "Costa de Marfil", "Portugal", "Argelia", "Argentina", "Egipto", 
+          "Haití", "Japón", "México", "R.D. del Congo", "Túnez", "Uruguay"
+        ];
+        
+        const countryFolderMap = {
+          "Portugal": "PORTUGAL",
+          "Argelia": "ARGELIA",
+          "Argentina": "ARGENTINA",
+          "Egipto": "EGIPTO",
+          "Haití": "HAITÍ",
+          "Japón": "JAPÓN",
+          "México": "MÉXICO",
+          "R.D. del Congo": "R.D CONGO",
+          "Túnez": "TÚNEZ",
+          "Uruguay": "URUGUAY"
+        };
+        
+        const folderName = countryFolderMap[p.pais] || p.pais;
+        
+        if (countriesWithJpgImages.includes(p.pais)) {
+          return `jugadores_config/img-players/${folderName}/${p.id}.jpg`;
+        }
+        
         if (countriesWithImages.includes(p.pais)) {
-          return `jugadores_config/img-players/${p.pais}/${p.id}.webp`;
+          return `jugadores_config/img-players/${folderName}/${p.id}.webp`;
         }
         
         // Mantener fallback por si acaso

@@ -11,7 +11,7 @@ window.PLAYERS_POOL = [
   { id: "df_nmolina", nombre: "Nahuel Molina", posicion: "defensa", precio: 15000000, pais: "Argentina", flag: "🇦🇷" },
   { id: "df_ntagliafico", nombre: "Nicolás Tagliafico", posicion: "defensa", precio: 4000000, pais: "Argentina", flag: "🇦🇷" },
   { id: "df_gmontiel", nombre: "Gonzalo Montiel", posicion: "defensa", precio: 4500000, pais: "Argentina", flag: "🇦🇷" },
-  { id: "df_lbalerdi", nombre: "Leonardo Balerdi", posicion: "defensa", precio: 2800000, pais: "Argentina", flag: "🇦🇷" },
+  { id: "df_lbalerdi", nombre: "Leonardo Balerdi", posicion: "defensa", precio: 1800000, pais: "Argentina", flag: "🇦🇷" },
   { id: "df_lmartinez", nombre: "Lisandro Martínez", posicion: "defensa", precio: 40000000, pais: "Argentina", flag: "🇦🇷" },
   { id: "df_fmedina", nombre: "Facundo Medina", posicion: "defensa", precio: 18000000, pais: "Argentina", flag: "🇦🇷" },
   { id: "mf_mcallister", nombre: "Alexis Mac Allister", posicion: "mediocampista", precio: 70000000, pais: "Argentina", flag: "🇦🇷" },
