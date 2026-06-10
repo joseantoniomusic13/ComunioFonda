@@ -5717,7 +5717,8 @@
           const newBtn = btn.cloneNode(true); // eliminar listeners previos
           btn.replaceWith(newBtn);
           newBtn.addEventListener("click", () => {
-            closeSellToMachineModal();
+            _stmResolve = null; // Clear so closeSellToMachineModal doesn't resolve false
+            document.getElementById("modal-sell-to-machine").classList.add("hidden");
             resolve(true);
           });
 
