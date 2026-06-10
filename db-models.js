@@ -70,10 +70,6 @@ export const FirestoreSchemas = {
         disponible: true,
         usado_en_jornada: null                      // Multiplica x3 automáticamente al de mayor puntuación
       },
-      comodin_misterioso: {
-        disponible: true,                           // Bloqueado hasta dieciseisavos (1/16)
-        usado_en_jornada: null
-      },
       super_banquillo: {                            // Potenciador 5: ¡Se suman los puntos de los 4 suplentes!
         disponible: true,
         usado_en_jornada: null

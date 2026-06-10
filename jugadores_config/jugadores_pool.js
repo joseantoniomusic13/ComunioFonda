@@ -645,7 +645,6 @@ window.PLAYERS_POOL = [
   { id: "fw_hassan", nombre: "Haissem Hassan", posicion: "delantero", precio: 3500000, pais: "Egipto", flag: "🇪🇬" },
   { id: "fw_salah", nombre: "Mohamed Salah", posicion: "delantero", precio: 22000000, pais: "Egipto", flag: "🇪🇬" },
   { id: "fw_marmoush", nombre: "Omar Marmoush", posicion: "delantero", precio: 50000000, pais: "Egipto", flag: "🇪🇬" },
-  { id: "fw_abdullah", nombre: "Aktai Abdullah", posicion: "delantero", precio: 1200000, pais: "Egipto", flag: "🇪🇬" },
   { id: "fw_abdelkarim", nombre: "Hamza Abdelkarim", posicion: "delantero", precio: 1500000, pais: "Egipto", flag: "🇪🇬" },
 
   // --- CABO VERDE (Equipo 24) ---
@@ -1203,7 +1202,6 @@ window.PLAYERS_POOL = [
   { id: "mf_tpartey", nombre: "Thomas Partey", posicion: "mediocampista", precio: 2000000, pais: "Ghana", flag: "🇬🇭" },
   { id: "mf_cyirenky", nombre: "Caleb Yirenkyi", posicion: "mediocampista", precio: 10000000, pais: "Ghana", flag: "🇬🇭" },
   { id: "mf_ksibo", nombre: "Kwasi Sibo", posicion: "mediocampista", precio: 1400000, pais: "Ghana", flag: "🇬🇭" },
-  { id: "mf_eagyei", nombre: "Emmanuel Agyei", posicion: "mediocampista", precio: 250000, pais: "Ghana", flag: "🇬🇭" },
   { id: "mf_aboakye", nombre: "Augustine Boakye", posicion: "mediocampista", precio: 6000000, pais: "Ghana", flag: "🇬🇭" },
   { id: "fw_ksulemana", nombre: "Kamaldeen Sulemana", posicion: "delantero", precio: 17000000, pais: "Ghana", flag: "🇬🇭" },
   { id: "fw_cbaah", nombre: "Christopher Bonsu Baah", posicion: "delantero", precio: 14000000, pais: "Ghana", flag: "🇬🇭" },

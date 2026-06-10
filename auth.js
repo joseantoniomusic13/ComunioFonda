@@ -112,7 +112,6 @@ async function registerManager(username, password, nombreEquipo, isSystemInit = 
         wildcard: { disponible: true, usado_en_jornada: null },
         jugador_12: { disponible: true, usado_en_jornada: null, jugador_extra_id: null },
         capitan_maximo: { disponible: true, usado_en_jornada: null },
-        comodin_misterioso: { disponible: true, usado_en_jornada: null },
         super_banquillo: { disponible: true, usado_en_jornada: null } // Potenciador 5
       }
     };
@@ -271,7 +270,6 @@ function initAuthListener(onUserLogin, onUserLogout) {
                   wildcard: { disponible: true, usado_en_jornada: null },
                   jugador_12: { disponible: true, usado_en_jornada: null, jugador_extra_id: null },
                   capitan_maximo: { disponible: true, usado_en_jornada: null },
-                  comodin_misterioso: { disponible: true, usado_en_jornada: null },
                   super_banquillo: { disponible: true, usado_en_jornada: null }
                 }
               }, { merge: true });
