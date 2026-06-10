@@ -4251,8 +4251,53 @@
         }
       }
 
+      // Evitar bucles o ejecuciones concurrentes en memoria local
+      let isResolvingMarketLocal = false;
+
+      async function checkAndAutoResolveMarket(leagueCode, leagueData) {
+        if (isResolvingMarketLocal) return;
+        if (!leagueData || !leagueData.market_players) return;
+
+        const lastScheduled10AM = new Date(getNextSpain10AM().getTime() - 24 * 60 * 60 * 1000);
+        const lastUpdatedStr = leagueData.market_updated_at;
+        const lastUpdated = lastUpdatedStr ? new Date(lastUpdatedStr) : new Date(0);
+
+        if (lastUpdated.getTime() < lastScheduled10AM.getTime()) {
+          isResolvingMarketLocal = true;
+          // Retraso aleatorio de seguridad para mitigar condiciones de carrera de múltiples clientes
+          const randomDelay = Math.floor(100 + Math.random() * 2400);
+          console.log(`⏰ [Auto-Market] Mercado desactualizado (Última vez: ${lastUpdatedStr || 'Nunca'}). Esperando ${randomDelay}ms antes de intentar resolver de forma automática...`);
+
+          setTimeout(async () => {
+            try {
+              // Volver a obtener el snapshot de la base de datos para validar de nuevo (por si otro cliente ya lo resolvió durante el delay)
+              const leagueRef = doc(db, "leagues", leagueCode);
+              const latestSnap = await getDoc(leagueRef);
+              if (latestSnap.exists()) {
+                const latestData = latestSnap.data();
+                const latestUpdatedStr = latestData.market_updated_at;
+                const latestUpdated = latestUpdatedStr ? new Date(latestUpdatedStr) : new Date(0);
+
+                if (latestUpdated.getTime() >= lastScheduled10AM.getTime()) {
+                  console.log("⏰ [Auto-Market] Cancelado: Otro mánager ya resolvió el mercado en este ciclo.");
+                  isResolvingMarketLocal = false;
+                  return;
+                }
+              }
+
+              console.log("⏰ [Auto-Market] Ejecutando resolución automática del mercado...");
+              await resolveAuctions(leagueCode, false);
+            } catch (err) {
+              console.error("❌ [Auto-Market] Error en resolución automática:", err);
+            } finally {
+              isResolvingMarketLocal = false;
+            }
+          }, randomDelay);
+        }
+      }
+
       // Matching Engine: Resolución del ciclo de subastas (Avanzar Día)
-      async function resolveAuctions(leagueCode) {
+      async function resolveAuctions(leagueCode, isManual = false) {
         console.log(`⚡ [Matching Engine] Iniciando resolución de subastas para la liga: ${leagueCode}...`);
         try {
           const leagueRef = doc(db, "leagues", leagueCode);
@@ -4260,6 +4305,14 @@
           if (!leagueSnap.exists()) return;
 
           const leagueData = leagueSnap.data();
+          const lastUpdatedStr = leagueData.market_updated_at;
+          const lastUpdated = lastUpdatedStr ? new Date(lastUpdatedStr) : new Date(0);
+          const lastScheduled10AM = new Date(getNextSpain10AM().getTime() - 24 * 60 * 60 * 1000);
+
+          if (!isManual && lastUpdated.getTime() >= lastScheduled10AM.getTime()) {
+            console.log(`⚡ [Matching Engine] Cancelando resolución automática: el mercado ya está actualizado para este ciclo (Último: ${lastUpdatedStr}).`);
+            return;
+          }
           const systemMarket = leagueData.market_players || [];
           const incidencias = leagueData.incidencias || [];
 
@@ -6622,6 +6675,9 @@
             previousSecondaryMarket = lData.secondary_market || [];
             currentActiveLeagueData = lData; // Guardar estado global de la liga activa
 
+            // Comprobar y resolver automáticamente el mercado si ha caducado
+            checkAndAutoResolveMarket(leagueCode, lData);
+
             widgetLeagueName.innerHTML = `${lData.nombre} <span class="ml-2 text-[9px] px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/20 text-gold font-extrabold uppercase inline-block animate-pulse">${lData.jornada_activa || "Jornada 1"}</span>`;
             widgetLeagueCode.textContent = lData.id;
 
@@ -7096,6 +7152,7 @@
             currentActiveLeagueData = { ...data, id: "FF-FONDA" };
             const selectJornada = document.getElementById("admin-select-jornada");
             if (selectJornada) selectJornada.value = data.jornada_activa || "Jornada 1";
+            checkAndAutoResolveMarket("FF-FONDA", data);
           }
         } catch (err) {
           console.warn("No se pudo cargar FONDA FANEGAS:", err);
@@ -7182,6 +7239,7 @@
             if (currentUserProfile) {
               currentUserProfile.liga_activa = adminSelectedLeagueId;
             }
+            checkAndAutoResolveMarket(adminSelectedLeagueId, data);
 
             // Establecer la jornada activa
             const jAct = data.jornada_activa || "Jornada 1";
@@ -10716,7 +10774,7 @@
           showNotification("Selecciona primero una liga en el panel de administrador.", "error");
           return;
         }
-        resolveAuctions(adminSelectedLeagueId);
+        resolveAuctions(adminSelectedLeagueId, true);
       });
 
       // Admin Vaciar Mercado de la Comunidad
