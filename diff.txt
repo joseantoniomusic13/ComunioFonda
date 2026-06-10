@@ -1,0 +1,462 @@
+﻿diff --git a/index.html b/index.html
+index 0f99443..1aca1e5 100644
+--- a/index.html
++++ b/index.html
+@@ -1539,22 +1539,43 @@
+-            <!-- Filtro de Jornada -->
+-            <div class="flex items-center gap-2">
+-              <label for="calendar-jornada-filter"
+-                class="text-xs font-bold uppercase tracking-wider text-slate-400">Filtrar:</label>
+-              <select id="calendar-jornada-filter"
+-                class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-gold/20">
+-                <option value="all">Todas las Jornadas</option>
+-                <option value="Jornada 1">Jornada 1</option>
+-                <option value="Jornada 2">Jornada 2</option>
+-                <option value="Jornada 3">Jornada 3</option>
+-                <option value="Octavos de Final">Octavos de Final</option>
+-                <option value="Cuartos de Final">Cuartos de Final</option>
+-                <option value="Semifinales">Semifinales</option>
+-                <option value="Tercer Puesto">Tercer Puesto</option>
+-                <option value="Final">Final</option>
+-              </select>
+-            </div>
+-          </div>
+-
+-          <!-- Contenedor del Calendario -->
+-          <div id="calendar-matches-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+-            <!-- Se rellenar├í din├ímicamente -->
++            <!-- Sub-pesta├▒as / Tabs -->
++            <div class="flex bg-slate-950/60 p-1 rounded-xl border border-white/5 self-stretch md:self-auto shrink-0">
++              <button id="btn-subtab-calendar" onclick="switchCalendarSubTab('calendar')" class="px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer bg-gold-gradient text-slate-950 shadow-md">
++                ­ƒôà Calendario
++              </button>
++              <button id="btn-subtab-groups" onclick="switchCalendarSubTab('groups')" class="px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white">
++                ­ƒÅå Grupos
++              </button>
++            </div>
++          </div>
++
++          <!-- Subtab Calendario -->
++          <div id="subtab-content-calendar" class="space-y-4">
++            <div class="flex justify-end">
++              <!-- Filtro de Jornada -->
++              <div class="flex items-center gap-2">
++                <label for="calendar-jornada-filter"
++                  class="text-xs font-bold uppercase tracking-wider text-slate-400">Filtrar:</label>
++                <select id="calendar-jornada-filter"
++                  class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-gold/20">
++                  <option value="all">Todas las Jornadas</option>
++                  <option value="Jornada 1">Jornada 1</option>
++                  <option value="Jornada 2">Jornada 2</option>
++                  <option value="Jornada 3">Jornada 3</option>
++                  <option value="Octavos de Final">Octavos de Final</option>
++                  <option value="Cuartos de Final">Cuartos de Final</option>
++                  <option value="Semifinales">Semifinales</option>
++                  <option value="Tercer Puesto">Tercer Puesto</option>
++                  <option value="Final">Final</option>
++                </select>
++              </div>
++            </div>
++            <!-- Contenedor del Calendario -->
++            <div id="calendar-matches-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
++              <!-- Se rellenar├í din├ímicamente -->
++            </div>
++          </div>
++
++          <!-- Subtab Grupos -->
++          <div id="subtab-content-groups" class="hidden space-y-4">
++            <div id="groups-standings-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
++              <!-- Rellenado por renderGroupStandings() -->
++            </div>
+@@ -3563 +3584,5 @@
+-          renderCalendarAndResults();
++          if (typeof switchCalendarSubTab === "function") {
++            switchCalendarSubTab(activeCalendarSubTab || "calendar");
++          } else {
++            renderCalendarAndResults();
++          }
+@@ -4012,0 +4038,10 @@
++            
++            if (activeDashboardTab === "calendar") {
++              if (activeCalendarSubTab === "calendar") {
++                renderCalendarAndResults();
++              } else if (activeCalendarSubTab === "groups") {
++                if (typeof renderGroupStandings === "function") {
++                  renderGroupStandings();
++                }
++              }
++            }
+@@ -4200,0 +4236,6 @@
++        const now = Date.now();
++        const fechasAdquisicion = {};
++        jugadoresIds.forEach(id => {
++          fechasAdquisicion[id] = now;
++        });
++
+@@ -4209,0 +4251 @@
++          fechas_adquisicion: fechasAdquisicion,
+@@ -4392,0 +4435 @@
++              const prevFechasAdquisicion = winnerTeam.fechas_adquisicion || {};
+@@ -4397 +4440,2 @@
+-                clausulas: { ...prevClausulas, [item.id]: clausulaInicial }
++                clausulas: { ...prevClausulas, [item.id]: clausulaInicial },
++                fechas_adquisicion: { ...prevFechasAdquisicion, [item.id]: Date.now() }
+@@ -4406,0 +4451,12 @@
++              
++              try {
++                await db.collection("users").doc(winnerUid).collection("mailbox").add({
++                  type: "auction_won",
++                  title: `­ƒÅå ┬íSubasta Ganada: ${player.nombre}!`,
++                  description: `Has adquirido a ${player.nombre} en subasta por ${(offerPrice / 1e6).toFixed(1)}M$.`,
++                  claimed: false,
++                  createdAt: Date.now()
++                });
++              } catch (e) {
++                console.error("Error sending auction_won mailbox alert:", e);
++              }
+@@ -4549,0 +4606,15 @@
++          
++          try {
++            const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
++            const playerName = player ? player.nombre : playerId;
++            await db.collection("users").doc(item.owner_uid).collection("mailbox").add({
++              type: "offer_received",
++              title: `­ƒô¿ Oferta recibida por ${playerName}`,
++              description: `El m├ínager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ofrece ${(offerAmount / 1e6).toFixed(1)}M$.`,
++              claimed: false,
++              createdAt: Date.now()
++            });
++          } catch (e) {
++            console.error("Error sending offer_received mailbox alert:", e);
++          }
++
+@@ -4660,0 +4732,3 @@
++          const prevFechasSeller = { ...(currentUserTeam.fechas_adquisicion || {}) };
++          delete prevFechasSeller[playerId];
++
+@@ -4666 +4740,2 @@
+-            players: buildPlayersArrayFromAlineacion(titularesVendedor, suplentesVendedor, nuevosJugadoresIdsVendedor)
++            players: buildPlayersArrayFromAlineacion(titularesVendedor, suplentesVendedor, nuevosJugadoresIdsVendedor),
++            fechas_adquisicion: prevFechasSeller
+@@ -4672,0 +4748 @@
++          const prevFechasBuyer = buyerTeam.fechas_adquisicion || {};
+@@ -4677 +4753,2 @@
+-            clausulas: { ...prevClausulasComprador, [playerId]: clausulaInicialComprador }
++            clausulas: { ...prevClausulasComprador, [playerId]: clausulaInicialComprador },
++            fechas_adquisicion: { ...prevFechasBuyer, [playerId]: Date.now() }
+@@ -4701,0 +4779,11 @@
++          try {
++            await db.collection("users").doc(buyerUid).collection("mailbox").add({
++              type: "transfer_confirmed",
++              title: `­ƒñØ ┬íTraspaso Confirmado: ${player.nombre}!`,
++              description: `El m├ínager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha aceptado tu oferta de ${(offerPrice / 1e6).toFixed(1)}M$. ${player.nombre} ya est├í en tu plantilla.`,
++              claimed: false,
++              createdAt: Date.now()
++            });
++          } catch (e) {
++            console.error("Error sending transfer_confirmed mailbox alert:", e);
++          }
+@@ -5667,0 +5756,9 @@
++          // Comprobar Inmunidad Anti-Clausulazo (7 d├¡as)
++          const adquisicion = (ownerTeamData.fechas_adquisicion || {})[playerId] || 0;
++          const immunityPeriod = 7 * 24 * 60 * 60 * 1000;
++          const elapsed = Date.now() - adquisicion;
++          if (adquisicion > 0 && elapsed < immunityPeriod) {
++            const diffDays = Math.ceil((immunityPeriod - elapsed) / (24 * 60 * 60 * 1000));
++            showNotification(`­ƒøí´©Å El jugador est├í en per├¡odo de inmunidad. Faltan ${diffDays} d├¡as para que pueda ser clausulado.`, "error");
++            closeClausulazoModal(); return;
++          }
+@@ -5707 +5804 @@
+-              description: `El m├ínager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha pagado la cl├íusula de rescisi├│n de ${player?.nombre || playerId} por ${(clausulaAmount / 1e6).toFixed(1)}M$. Tienes 30 segundos para usar un Token de Fidelidad o se consumar├í el traspaso.`,
++              description: `El m├ínager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha pagado la cl├íusula de rescisi├│n de ${player?.nombre || playerId} por ${(clausulaAmount / 1e6).toFixed(1)}M$. Tienes 1 hora para usar un Token de Fidelidad o se consumar├í el traspaso.`,
+@@ -5715 +5812 @@
+-          window.sendSystemLeagueChatMessage(leagueCode, `ÔÜí [CLAUSULAZO] ┬í${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha activado el clausulazo sobre ${player?.nombre || playerId} por ${(clausulaAmount / 1e6).toFixed(1)}M$! El due├▒o tiene 30 segundos para reaccionar.`);
++          window.sendSystemLeagueChatMessage(leagueCode, `ÔÜí [CLAUSULAZO] ┬í${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha activado el clausulazo sobre ${player?.nombre || playerId} por ${(clausulaAmount / 1e6).toFixed(1)}M$! El due├▒o tiene 1 hora para reaccionar.`);
+@@ -5717 +5814 @@
+-          showNotification(`ÔÜí ┬íClausulazo enviado! El due├▒o tiene 30s para usar un Token de Fidelidad.`, "success");
++          showNotification(`ÔÜí ┬íClausulazo enviado! El due├▒o tiene 1 hora para usar un Token de Fidelidad.`, "success");
+@@ -5721 +5818 @@
+-          // Auto-ejecuci├│n si el due├▒o no cancela en 30 segundos (en producci├│n deber├¡a ser 24h, demo: 30s)
++          // Auto-ejecuci├│n si el due├▒o no cancela en 1 hora (en producci├│n deber├¡a ser 24h, demo: 1 hora)
+@@ -5729 +5826 @@
+-          }, 30_000);
++          }, 3600000);
+@@ -5773,0 +5871,2 @@
++        const prevFechasOwner = { ...(ownerTeam.fechas_adquisicion || {}) };
++        delete prevFechasOwner[playerId];
+@@ -5777 +5876,2 @@
+-          players: buildPlayersArrayFromAlineacion(ownerTit, ownerSup, newOwnerIds)
++          players: buildPlayersArrayFromAlineacion(ownerTit, ownerSup, newOwnerIds),
++          fechas_adquisicion: prevFechasOwner
+@@ -5778,0 +5879,2 @@
++
++        const prevFechasBuyer = buyerTeam.fechas_adquisicion || {};
+@@ -5781 +5883,2 @@
+-          players: buildPlayersArrayFromAlineacion(buyerTeam.alineacion?.titulares || {}, buyerTeam.alineacion?.suplentes || {}, newBuyerIds)
++          players: buildPlayersArrayFromAlineacion(buyerTeam.alineacion?.titulares || {}, buyerTeam.alineacion?.suplentes || {}, newBuyerIds),
++          fechas_adquisicion: { ...prevFechasBuyer, [playerId]: Date.now() }
+@@ -8140,0 +8244,7 @@
++            // Check immunity
++            const acquisition = (teamData.fechas_adquisicion || {})[id] || 0;
++            const immunityPeriod = 7 * 24 * 60 * 60 * 1000;
++            const elapsed = Date.now() - acquisition;
++            const isImmune = acquisition > 0 && elapsed < immunityPeriod;
++            const remainingDays = Math.ceil((immunityPeriod - elapsed) / (24 * 60 * 60 * 1000));
++
+@@ -8149,0 +8260,2 @@
++            } else if (isImmune) {
++              actionBtn = `<span class="px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/30 text-[7px] text-blue-400 font-extrabold uppercase flex items-center gap-0.5" title="Inmune por adquisici├│n reciente">­ƒøí´©Å Inmune (${remainingDays}d)</span>`;
+@@ -8233,0 +8346,7 @@
++            // Check immunity
++            const acquisition = (teamData.fechas_adquisicion || {})[player.id] || 0;
++            const immunityPeriod = 7 * 24 * 60 * 60 * 1000;
++            const elapsed = Date.now() - acquisition;
++            const isImmune = acquisition > 0 && elapsed < immunityPeriod;
++            const remainingDays = Math.ceil((immunityPeriod - elapsed) / (24 * 60 * 60 * 1000));
++
+@@ -8236,0 +8356,2 @@
++            } else if (isImmune) {
++              actionBtn = `<span class="px-2 py-1 rounded bg-blue-500/10 border border-blue-500/25 text-[8px] text-blue-400 font-extrabold uppercase flex items-center gap-0.5">­ƒøí´©Å Inmune (${remainingDays} d├¡as restantes)</span>`;
+@@ -14962,0 +15084,39 @@
++          if (r.type === "offer_received" || r.type === "auction_won" || r.type === "transfer_confirmed") {
++            let borderClass = "";
++            let textClass = "";
++            let icon = "";
++
++            if (r.type === "offer_received") {
++              borderClass = "border-blue-500/30 bg-blue-950/10";
++              textClass = "text-blue-400";
++              icon = "mail";
++            } else if (r.type === "auction_won") {
++              borderClass = "border-amber-500/30 bg-amber-950/10";
++              textClass = "text-amber-400";
++              icon = "trophy";
++            } else { // transfer_confirmed
++              borderClass = "border-emerald-500/30 bg-emerald-950/10";
++              textClass = "text-emerald-400";
++              icon = "badge-check";
++            }
++
++            return `
++            <div class="glass-panel p-5 rounded-2xl border ${borderClass} flex flex-col justify-between gap-4 hover:border-white/10 transition duration-300 text-left">
++              <div class="space-y-2">
++                <h5 class="font-black text-sm ${textClass} flex items-center gap-1.5 leading-snug">
++                  <i data-lucide="${icon}" class="w-4.5 h-4.5 shrink-0"></i>
++                  ${r.title}
++                </h5>
++                <p class="text-slate-300 text-[11px] leading-relaxed font-medium">${r.description}</p>
++              </div>
++              <div class="flex justify-between items-center pt-2 border-t border-white/5">
++                <span class="text-[8px] text-slate-500 font-extrabold uppercase">
++                  ${r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Reciente"}
++                </span>
++                <button onclick="claimReward('${r.id}', 0)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-[10px] uppercase px-3 py-1.5 rounded-xl transition cursor-pointer">
++                  Le├¡do
++                </button>
++              </div>
++            </div>
++          `;
++          }
+@@ -15064 +15224,6 @@
+-            const remaining = Math.max(0, 30 - elapsed);
++            const remaining = Math.max(0, 3600 - elapsed);
++
++            const hours = Math.floor(remaining / 3600);
++            const minutes = Math.floor((remaining % 3600) / 60);
++            const seconds = remaining % 60;
++            const timeStr = `${hours}h ${minutes}m ${seconds}s`;
+@@ -15077 +15242 @@
+-                  Tiempo restante para rescate: <span class="text-rose-400 font-black animate-pulse">${remaining}s</span>
++                  Tiempo restante para rescate: <span class="text-rose-400 font-black animate-pulse">${timeStr}</span>
+@@ -15097 +15262 @@
+-              return Math.floor((now - startTime) / 1000) >= 30;
++              return Math.floor((now - startTime) / 1000) >= 3600;
+@@ -16144 +16309,5 @@
+-              ` : ''}
++              ` : `
++              <button onclick="window.goToBetOnMatch('${m.id}')" class="px-2 py-0.5 rounded bg-purple-500/15 hover:bg-purple-600 border border-purple-500/30 hover:border-transparent text-purple-400 hover:text-white font-black text-[9px] uppercase tracking-wider transition cursor-pointer flex items-center gap-1 shadow-sm active:scale-95">
++                ­ƒÄ░ Apostar
++              </button>
++              `}
+@@ -16163,0 +16333,181 @@
++      // --- CALENDARIO SUB-TABS Y CLASIFICACI├ôN DE GRUPOS ---
++      let activeCalendarSubTab = "calendar";
++
++      window.switchCalendarSubTab = function(subtab) {
++        activeCalendarSubTab = subtab;
++        const btnCal = document.getElementById("btn-subtab-calendar");
++        const btnGrp = document.getElementById("btn-subtab-groups");
++        const contentCal = document.getElementById("subtab-content-calendar");
++        const contentGrp = document.getElementById("subtab-content-groups");
++
++        if (!btnCal || !btnGrp || !contentCal || !contentGrp) return;
++
++        if (subtab === "calendar") {
++          btnCal.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer bg-gold-gradient text-slate-950 shadow-md";
++          btnGrp.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white";
++          contentCal.classList.remove("hidden");
++          contentGrp.classList.add("hidden");
++          renderCalendarAndResults();
++        } else {
++          btnCal.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white";
++          btnGrp.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer bg-gold-gradient text-slate-950 shadow-md";
++          contentCal.classList.add("hidden");
++          contentGrp.classList.remove("hidden");
++          renderGroupStandings();
++        }
++        lucide.createIcons();
++      };
++
++      window.renderGroupStandings = function() {
++        const grid = document.getElementById("groups-standings-grid");
++        if (!grid) return;
++        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 font-bold"><i class="w-6 h-6 animate-spin mx-auto block mb-2 text-gold"></i> Calculando clasificaciones oficiales...</div>`;
++
++        // 1. Inicializar clasificaciones vac├¡as para cada selecci├│n en los grupos
++        const standings = {};
++        if (!window.GRUPOS_MUNDIAL) return;
++        window.GRUPOS_MUNDIAL.forEach(g => {
++          standings[g.id] = {};
++          g.equipos.forEach(eq => {
++            standings[g.id][eq] = {
++              nombre: eq,
++              PJ: 0,
++              PG: 0,
++              PE: 0,
++              PP: 0,
++              GF: 0,
++              GC: 0,
++              GD: 0,
++              Pts: 0
++            };
++          });
++        });
++
++        // 2. Procesar partidos resueltos de matchesListGlobal
++        const matches = window.matchesListGlobal || [];
++        matches.forEach(m => {
++          if (m.resuelto) {
++            const localName = m.equipo_local;
++            const visitName = m.equipo_visitante;
++            const groupLocal = window.PAIS_A_GRUPO ? window.PAIS_A_GRUPO[localName] : null;
++            const groupVisit = window.PAIS_A_GRUPO ? window.PAIS_A_GRUPO[visitName] : null;
++
++            if (groupLocal && groupLocal === groupVisit) {
++              const gId = groupLocal;
++              const scoreLocal = parseInt(m.resultado_local) || 0;
++              const scoreVisit = parseInt(m.resultado_visitante) || 0;
++
++              const statsLocal = standings[gId][localName];
++              const statsVisit = standings[gId][visitName];
++
++              if (statsLocal && statsVisit) {
++                statsLocal.PJ += 1;
++                statsVisit.PJ += 1;
++
++                statsLocal.GF += scoreLocal;
++                statsLocal.GC += scoreVisit;
++                statsVisit.GF += scoreVisit;
++                statsVisit.GC += scoreLocal;
++
++                statsLocal.GD = statsLocal.GF - statsLocal.GC;
++                statsVisit.GD = statsVisit.GF - statsVisit.GC;
++
++                if (scoreLocal > scoreVisit) {
++                  statsLocal.PG += 1;
++                  statsLocal.Pts += 3;
++                  statsVisit.PP += 1;
++                } else if (scoreLocal < scoreVisit) {
++                  statsVisit.PG += 1;
++                  statsVisit.Pts += 3;
++                  statsLocal.PP += 1;
++                } else {
++                  statsLocal.PE += 1;
++                  statsLocal.Pts += 1;
++                  statsVisit.PE += 1;
++                  statsVisit.Pts += 1;
++                }
++              }
++            }
++          }
++        });
++
++        // 3. Ordenar y pintar
++        grid.innerHTML = "";
++        window.GRUPOS_MUNDIAL.forEach(g => {
++          const teams = Object.values(standings[g.id]);
++          teams.sort((a, b) => {
++            if (b.Pts !== a.Pts) return b.Pts - a.Pts;
++            if (b.GD !== a.GD) return b.GD - a.GD;
++            if (b.GF !== a.GF) return b.GF - a.GF;
++            return a.nombre.localeCompare(b.nombre);
++          });
++
++          const card = document.createElement("div");
++          card.className = "glass-panel p-4 rounded-2xl border border-white/5 space-y-3 bg-slate-950/20 text-left";
++
++          let tableRows = teams.map((t, index) => {
++            const flag = getCountryFlag(t.nombre);
++            const rowClass = index < 2 ? "bg-emerald-500/5 font-semibold" : "";
++            const rankColor = index === 0 ? "text-gold font-black" : index === 1 ? "text-slate-300 font-bold" : "text-slate-500";
++
++            return `
++              <tr class="border-b border-white/5 last:border-0 ${rowClass}">
++                <td class="py-2 px-1 text-center ${rankColor} text-xs">${index + 1}</td>
++                <td class="py-2 px-2 text-xs text-white flex items-center gap-1.5 truncate max-w-[120px]">
++                  <span>${flag}</span>
++                  <span class="truncate" title="${t.nombre}">${t.nombre}</span>
++                </td>
++                <td class="py-2 px-1 text-center text-[11px] text-slate-300">${t.PJ}</td>
++                <td class="py-2 px-1 text-center text-[11px] text-slate-300">${t.PG}</td>
++                <td class="py-2 px-1 text-center text-[11px] text-slate-300">${t.PE}</td>
++                <td class="py-2 px-1 text-center text-[11px] text-slate-300">${t.PP}</td>
++                <td class="py-2 px-1 text-center text-[11px] text-slate-400">${t.GF}:${t.GC}</td>
++                <td class="py-2 px-1 text-center text-xs font-black text-gold">${t.Pts}</td>
++              </tr>
++            `;
++          }).join("");
++
++          card.innerHTML = `
++            <div class="flex justify-between items-center border-b border-white/5 pb-2">
++              <h4 class="text-xs font-black text-gold uppercase tracking-wider flex items-center gap-1">
++                <i data-lucide="award" class="w-3.5 h-3.5"></i> ${g.nombre}
++              </h4>
++            </div>
++            <div class="overflow-x-auto">
++              <table class="w-full text-left border-collapse text-[11px]">
++                <thead>
++                  <tr class="border-b border-white/5 text-[9px] uppercase font-extrabold tracking-wider text-slate-500">
++                    <th class="py-1.5 px-1 text-center">#</th>
++                    <th class="py-1.5 px-2">Selecci├│n</th>
++                    <th class="py-1.5 px-1 text-center" title="Partidos Jugados">PJ</th>
++                    <th class="py-1.5 px-1 text-center" title="Victorias">G</th>
++                    <th class="py-1.5 px-1 text-center" title="Empates">E</th>
++                    <th class="py-1.5 px-1 text-center" title="Derrotas">P</th>
++                    <th class="py-1.5 px-1 text-center" title="Goles Favor : Goles Contra">Goles</th>
++                    <th class="py-1.5 px-1 text-center text-gold" title="Puntos">Pts</th>
++                  </tr>
++                </thead>
++                <tbody class="divide-y divide-white/5 text-slate-300">
++                  ${tableRows}
++                </tbody>
++              </table>
++            </div>
++          `;
++          grid.appendChild(card);
++        });
++        lucide.createIcons();
++      };
++
++      window.goToBetOnMatch = function(matchId) {
++        if (typeof switchDashboardTab === "function") {
++          switchDashboardTab("bets");
++          setTimeout(() => {
++            const dropdown = document.getElementById("bet-select-match");
++            if (dropdown) {
++              dropdown.value = matchId;
++              dropdown.dispatchEvent(new Event('change'));
++            }
++          }, 150);
++        }
++      };
++

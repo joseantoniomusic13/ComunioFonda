@@ -1536,28 +1536,49 @@
                 al ser oficiales.
               </p>
             </div>
-            <!-- Filtro de Jornada -->
-            <div class="flex items-center gap-2">
-              <label for="calendar-jornada-filter"
-                class="text-xs font-bold uppercase tracking-wider text-slate-400">Filtrar:</label>
-              <select id="calendar-jornada-filter"
-                class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-gold/20">
-                <option value="all">Todas las Jornadas</option>
-                <option value="Jornada 1">Jornada 1</option>
-                <option value="Jornada 2">Jornada 2</option>
-                <option value="Jornada 3">Jornada 3</option>
-                <option value="Octavos de Final">Octavos de Final</option>
-                <option value="Cuartos de Final">Cuartos de Final</option>
-                <option value="Semifinales">Semifinales</option>
-                <option value="Tercer Puesto">Tercer Puesto</option>
-                <option value="Final">Final</option>
-              </select>
+            <!-- Sub-pestañas / Tabs -->
+            <div class="flex bg-slate-950/60 p-1 rounded-xl border border-white/5 self-stretch md:self-auto shrink-0">
+              <button id="btn-subtab-calendar" onclick="switchCalendarSubTab('calendar')" class="px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer bg-gold-gradient text-slate-950 shadow-md">
+                📅 Calendario
+              </button>
+              <button id="btn-subtab-groups" onclick="switchCalendarSubTab('groups')" class="px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white">
+                🏆 Grupos
+              </button>
             </div>
           </div>
 
-          <!-- Contenedor del Calendario -->
-          <div id="calendar-matches-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Se rellenará dinámicamente -->
+          <!-- Subtab Calendario -->
+          <div id="subtab-content-calendar" class="space-y-4">
+            <div class="flex justify-end">
+              <!-- Filtro de Jornada -->
+              <div class="flex items-center gap-2">
+                <label for="calendar-jornada-filter"
+                  class="text-xs font-bold uppercase tracking-wider text-slate-400">Filtrar:</label>
+                <select id="calendar-jornada-filter"
+                  class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-gold/20">
+                  <option value="all">Todas las Jornadas</option>
+                  <option value="Jornada 1">Jornada 1</option>
+                  <option value="Jornada 2">Jornada 2</option>
+                  <option value="Jornada 3">Jornada 3</option>
+                  <option value="Octavos de Final">Octavos de Final</option>
+                  <option value="Cuartos de Final">Cuartos de Final</option>
+                  <option value="Semifinales">Semifinales</option>
+                  <option value="Tercer Puesto">Tercer Puesto</option>
+                  <option value="Final">Final</option>
+                </select>
+              </div>
+            </div>
+            <!-- Contenedor del Calendario -->
+            <div id="calendar-matches-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Se rellenará dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Subtab Grupos -->
+          <div id="subtab-content-groups" class="hidden space-y-4">
+            <div id="groups-standings-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <!-- Rellenado por renderGroupStandings() -->
+            </div>
           </div>
         </div>
       </div>
@@ -3560,7 +3581,11 @@
         } else if (tabId === "calendar") {
           if (btnTabCalendar) btnTabCalendar.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-gold/10 border border-gold/30 text-gold flex items-center gap-2 cursor-pointer transition";
           if (panelCalendar) panelCalendar.classList.remove("hidden");
-          renderCalendarAndResults();
+          if (typeof switchCalendarSubTab === "function") {
+            switchCalendarSubTab(activeCalendarSubTab || "calendar");
+          } else {
+            renderCalendarAndResults();
+          }
         } else if (tabId === "bets") {
           btnTabBets.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center gap-2 cursor-pointer transition";
           panelBets.classList.remove("hidden");
@@ -4010,6 +4035,16 @@
             const matches = [];
             snapshot.forEach(docSnap => matches.push({ id: docSnap.id, ...docSnap.data() }));
             window.matchesListGlobal = matches;
+            
+            if (activeDashboardTab === "calendar") {
+              if (activeCalendarSubTab === "calendar") {
+                renderCalendarAndResults();
+              } else if (activeCalendarSubTab === "groups") {
+                if (typeof renderGroupStandings === "function") {
+                  renderGroupStandings();
+                }
+              }
+            }
           }, (err) => console.error("Error en escucha global de partidos:", err));
         },
         // Mánager Desconectado
@@ -4198,6 +4233,12 @@
         // El presupuesto inicial de 100M$ NO se reduce por recibir la plantilla inicial.
         // El mánager arranca siempre con el presupuesto completo.
 
+        const now = Date.now();
+        const fechasAdquisicion = {};
+        jugadoresIds.forEach(id => {
+          fechasAdquisicion[id] = now;
+        });
+
         // Actualizar perfil y equipo (utilizando setDoc para crear el documento de la plantilla inicial)
         await updateDoc(userRef, { presupuesto_actual: 100000000 });
         await setDoc(teamRef, {
@@ -4207,6 +4248,7 @@
           players: buildPlayersArrayFromAlineacion(titulares, suplentes, jugadoresIds),
           capitan_id: "",
           cambios_realizados_jornada: 0,
+          fechas_adquisicion: fechasAdquisicion,
           chips: {
             wildcard: { disponible: true, usado_en_jornada: null },
             jugador_12: { disponible: true, usado_en_jornada: null, jugador_extra_id: null },
@@ -4390,11 +4432,13 @@
               // Cláusula inicial automática = 100% del precio de subasta
               const clausulaInicial = offerPrice;
               const prevClausulas = winnerTeam.clausulas || {};
+              const prevFechasAdquisicion = winnerTeam.fechas_adquisicion || {};
               await updateDoc(winnerTeamRef, {
                 jugadores_ids: nuevosJugadoresIds,
                 alineacion: { titulares, suplentes },
                 players: buildPlayersArrayFromAlineacion(titulares, suplentes, nuevosJugadoresIds),
-                clausulas: { ...prevClausulas, [item.id]: clausulaInicial }
+                clausulas: { ...prevClausulas, [item.id]: clausulaInicial },
+                fechas_adquisicion: { ...prevFechasAdquisicion, [item.id]: Date.now() }
               });
 
               // Hito: Galáctico (Megacrack >= 30M$)
@@ -4404,6 +4448,18 @@
 
               newIncidencias.unshift(`🔔 [Subasta] ¡${winnerProfile.nombre_equipo} adquiere a ${player.nombre} en subasta por ${(offerPrice / 1000000).toFixed(2)}M$! (${bids.length} pujas recibidas).`);
               window.sendSystemLeagueChatMessage?.(leagueCode, `🔔 [SUBASTA] ¡${winnerProfile.nombre_equipo || winnerProfile.nombre_usuario} ha ganado a ${player.nombre} en subasta por ${(offerPrice / 1e6).toFixed(2)}M$ con ${bids.length} puja${bids.length !== 1 ? 's' : ''}!`);
+              
+              try {
+                await db.collection("users").doc(winnerUid).collection("mailbox").add({
+                  type: "auction_won",
+                  title: `🏆 ¡Subasta Ganada: ${player.nombre}!`,
+                  description: `Has adquirido a ${player.nombre} en subasta por ${(offerPrice / 1e6).toFixed(1)}M$.`,
+                  claimed: false,
+                  createdAt: Date.now()
+                });
+              } catch (e) {
+                console.error("Error sending auction_won mailbox alert:", e);
+              }
             }
           }
 
@@ -4547,6 +4603,21 @@
 
           await updateDoc(leagueRef, { secondary_market: updatedSecondary });
           showNotification(`¡Oferta directa enviada al vendedor! Propones ${(offerAmount / 1000000).toFixed(1)}M$.`);
+          
+          try {
+            const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
+            const playerName = player ? player.nombre : playerId;
+            await db.collection("users").doc(item.owner_uid).collection("mailbox").add({
+              type: "offer_received",
+              title: `📨 Oferta recibida por ${playerName}`,
+              description: `El mánager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ofrece ${(offerAmount / 1e6).toFixed(1)}M$.`,
+              claimed: false,
+              createdAt: Date.now()
+            });
+          } catch (e) {
+            console.error("Error sending offer_received mailbox alert:", e);
+          }
+
           if (window.advanceMission) {
             window.advanceMission("daily_inversionista", 1);
           }
@@ -4658,23 +4729,29 @@
           const sellerRef = doc(db, "users", currentUser.uid);
           const sellerTeamRef = doc(db, "user_teams", getTeamDocId());
 
+          const prevFechasSeller = { ...(currentUserTeam.fechas_adquisicion || {}) };
+          delete prevFechasSeller[playerId];
+
           await updateDoc(sellerRef, { presupuesto_actual: nuevoPresupuestoVendedor });
           await updateDoc(sellerTeamRef, {
             jugadores_ids: nuevosJugadoresIdsVendedor,
             alineacion: { titulares: titularesVendedor, suplentes: suplentesVendedor },
             capitan_id: capitanId,
-            players: buildPlayersArrayFromAlineacion(titularesVendedor, suplentesVendedor, nuevosJugadoresIdsVendedor)
+            players: buildPlayersArrayFromAlineacion(titularesVendedor, suplentesVendedor, nuevosJugadoresIdsVendedor),
+            fechas_adquisicion: prevFechasSeller
           });
 
           await updateDoc(buyerRef, { presupuesto_actual: nuevoPresupuestoComprador });
           // Cláusula inicial automática = 100% del precio de transferencia
           const clausulaInicialComprador = offerPrice;
           const prevClausulasComprador = buyerTeam.clausulas || {};
+          const prevFechasBuyer = buyerTeam.fechas_adquisicion || {};
           await updateDoc(buyerTeamRef, {
             jugadores_ids: nuevosJugadoresIdsComprador,
             alineacion: { titulares: titularesComprador, suplentes: suplentesComprador },
             players: buildPlayersArrayFromAlineacion(titularesComprador, suplentesComprador, nuevosJugadoresIdsComprador),
-            clausulas: { ...prevClausulasComprador, [playerId]: clausulaInicialComprador }
+            clausulas: { ...prevClausulasComprador, [playerId]: clausulaInicialComprador },
+            fechas_adquisicion: { ...prevFechasBuyer, [playerId]: Date.now() }
           });
 
           const updatedSecondary = (currentActiveLeagueData.secondary_market || []).filter(x => x.id !== playerId);
@@ -4699,6 +4776,17 @@
           window.sendSystemLeagueChatMessage(leagueCode, `🤝 [TRASPASO] ¡${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha vendido a ${player.nombre} a ${buyerProfile.nombre_equipo || buyerProfile.nombre_usuario} por ${(offerPrice / 1000000).toFixed(1)}M$!`);
 
           showNotification(`¡Traspaso confirmado! Has vendido a ${player.nombre} a ${buyerProfile.nombre_usuario} por ${(offerPrice / 1000000).toFixed(1)}M$.`);
+          try {
+            await db.collection("users").doc(buyerUid).collection("mailbox").add({
+              type: "transfer_confirmed",
+              title: `🤝 ¡Traspaso Confirmado: ${player.nombre}!`,
+              description: `El mánager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha aceptado tu oferta de ${(offerPrice / 1e6).toFixed(1)}M$. ${player.nombre} ya está en tu plantilla.`,
+              claimed: false,
+              createdAt: Date.now()
+            });
+          } catch (e) {
+            console.error("Error sending transfer_confirmed mailbox alert:", e);
+          }
         } catch (err) {
           console.error("Error accepting offer:", err);
           showNotification("Error en base de datos al realizar el traspaso.", "error");
@@ -5665,6 +5753,15 @@
             showNotification("🛡️ ¡Seguro de Plantilla activo! Este jugador está cubierto por un Seguro de 24h. Vuelve más tarde.", "error");
             closeClausulazoModal(); return;
           }
+          // Comprobar Inmunidad Anti-Clausulazo (7 días)
+          const adquisicion = (ownerTeamData.fechas_adquisicion || {})[playerId] || 0;
+          const immunityPeriod = 7 * 24 * 60 * 60 * 1000;
+          const elapsed = Date.now() - adquisicion;
+          if (adquisicion > 0 && elapsed < immunityPeriod) {
+            const diffDays = Math.ceil((immunityPeriod - elapsed) / (24 * 60 * 60 * 1000));
+            showNotification(`🛡️ El jugador está en período de inmunidad. Faltan ${diffDays} días para que pueda ser clausulado.`, "error");
+            closeClausulazoModal(); return;
+          }
         }
 
         const btn = document.getElementById("czm-btn-ejecutar");
@@ -5704,7 +5801,7 @@
             await db.collection("users").doc(ownerUid).collection("mailbox").doc(clausulazoId).set({
               id: clausulazoId, type: "clausulazo_alert",
               title: `🚨 ¡Clausulazo sobre ${player?.nombre || playerId}!`,
-              description: `El mánager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha pagado la cláusula de rescisión de ${player?.nombre || playerId} por ${(clausulaAmount / 1e6).toFixed(1)}M$. Tienes 30 segundos para usar un Token de Fidelidad o se consumará el traspaso.`,
+              description: `El mánager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha pagado la cláusula de rescisión de ${player?.nombre || playerId} por ${(clausulaAmount / 1e6).toFixed(1)}M$. Tienes 1 hora para usar un Token de Fidelidad o se consumará el traspaso.`,
               amount: clausulaAmount, playerId, clausulazoId, leagueCode,
               buyerName: currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario,
               claimed: false, createdAt: Date.now()
@@ -5712,13 +5809,13 @@
           } catch (e) { console.error("Error sending mailbox alert:", e); }
 
           // --- Log en el chat de liga ---
-          window.sendSystemLeagueChatMessage(leagueCode, `⚡ [CLAUSULAZO] ¡${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha activado el clausulazo sobre ${player?.nombre || playerId} por ${(clausulaAmount / 1e6).toFixed(1)}M$! El dueño tiene 30 segundos para reaccionar.`);
+          window.sendSystemLeagueChatMessage(leagueCode, `⚡ [CLAUSULAZO] ¡${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha activado el clausulazo sobre ${player?.nombre || playerId} por ${(clausulaAmount / 1e6).toFixed(1)}M$! El dueño tiene 1 hora para reaccionar.`);
 
-          showNotification(`⚡ ¡Clausulazo enviado! El dueño tiene 30s para usar un Token de Fidelidad.`, "success");
+          showNotification(`⚡ ¡Clausulazo enviado! El dueño tiene 1 hora para usar un Token de Fidelidad.`, "success");
           closeClausulazoModal();
           updateHeaderAndDashboardStats();
 
-          // Auto-ejecución si el dueño no cancela en 30 segundos (en producción debería ser 24h, demo: 30s)
+          // Auto-ejecución si el dueño no cancela en 1 hora (en producción debería ser 24h, demo: 1 hora)
           setTimeout(async () => {
             try {
               const freshLeagueSnap = await getDoc(leagueRef);
@@ -5726,7 +5823,7 @@
               const stillPending = (freshData.pending_clausulazos || []).find(c => c.id === clausulazoId && c.status === "pending");
               if (stillPending) { await finalizeClausulazo(clausulazoId, leagueCode); }
             } catch (e) { console.error("Auto-finalize error:", e); }
-          }, 30_000);
+          }, 3600000);
         } catch (err) {
           console.error("Error executing clausulazo:", err);
           showNotification("Error al ejecutar el clausulazo.", "error");
@@ -5771,14 +5868,20 @@
         if (ownerSup[posPlural]) ownerSup[posPlural] = ownerSup[posPlural].filter(id => id !== playerId);
 
         await updateDoc(ownerRef, { presupuesto_actual: (ownerProfile.presupuesto_actual || 0) + clausulaAmount });
+        const prevFechasOwner = { ...(ownerTeam.fechas_adquisicion || {}) };
+        delete prevFechasOwner[playerId];
         await updateDoc(ownerTeamRef, {
           jugadores_ids: newOwnerIds,
           alineacion: { titulares: ownerTit, suplentes: ownerSup },
-          players: buildPlayersArrayFromAlineacion(ownerTit, ownerSup, newOwnerIds)
+          players: buildPlayersArrayFromAlineacion(ownerTit, ownerSup, newOwnerIds),
+          fechas_adquisicion: prevFechasOwner
         });
+
+        const prevFechasBuyer = buyerTeam.fechas_adquisicion || {};
         await updateDoc(buyerTeamRef, {
           jugadores_ids: newBuyerIds,
-          players: buildPlayersArrayFromAlineacion(buyerTeam.alineacion?.titulares || {}, buyerTeam.alineacion?.suplentes || {}, newBuyerIds)
+          players: buildPlayersArrayFromAlineacion(buyerTeam.alineacion?.titulares || {}, buyerTeam.alineacion?.suplentes || {}, newBuyerIds),
+          fechas_adquisicion: { ...prevFechasBuyer, [playerId]: Date.now() }
         });
 
         // Avanzar misiones y logros por clausulazo
@@ -8138,6 +8241,13 @@
             const currentClause = clausulas[id] || player.precio;
             const formattedClause = (currentClause / 1000000).toFixed(1);
 
+            // Check immunity
+            const acquisition = (teamData.fechas_adquisicion || {})[id] || 0;
+            const immunityPeriod = 7 * 24 * 60 * 60 * 1000;
+            const elapsed = Date.now() - acquisition;
+            const isImmune = acquisition > 0 && elapsed < immunityPeriod;
+            const remainingDays = Math.ceil((immunityPeriod - elapsed) / (24 * 60 * 60 * 1000));
+
             // Avatar and visual elements
             const avatar = window.getPlayerCardAvatarHTML(id, player, "w-10 h-10", false);
             const isClausulazoPending = (currentActiveLeagueData?.pending_clausulazos || []).some(
@@ -8147,6 +8257,8 @@
             let actionBtn = "";
             if (isShielded) {
               actionBtn = `<span class="px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-[7px] text-gold font-extrabold uppercase flex items-center gap-0.5"><i data-lucide="shield-check" class="w-2 h-2"></i> Protegido</span>`;
+            } else if (isImmune) {
+              actionBtn = `<span class="px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/30 text-[7px] text-blue-400 font-extrabold uppercase flex items-center gap-0.5" title="Inmune por adquisición reciente">🛡️ Inmune (${remainingDays}d)</span>`;
             } else if (isClausulazoPending) {
               actionBtn = `<span class="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold text-[7px] animate-pulse">⚡ En curso</span>`;
             } else {
@@ -8231,9 +8343,18 @@
               c => c.playerId === player.id && c.status === "pending"
             );
 
+            // Check immunity
+            const acquisition = (teamData.fechas_adquisicion || {})[player.id] || 0;
+            const immunityPeriod = 7 * 24 * 60 * 60 * 1000;
+            const elapsed = Date.now() - acquisition;
+            const isImmune = acquisition > 0 && elapsed < immunityPeriod;
+            const remainingDays = Math.ceil((immunityPeriod - elapsed) / (24 * 60 * 60 * 1000));
+
             let actionBtn = "";
             if (isShielded) {
               actionBtn = `<span class="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/25 text-[8px] text-gold font-extrabold uppercase flex items-center gap-0.5"><i data-lucide="shield-check" class="w-3 h-3"></i> Protegido</span>`;
+            } else if (isImmune) {
+              actionBtn = `<span class="px-2 py-1 rounded bg-blue-500/10 border border-blue-500/25 text-[8px] text-blue-400 font-extrabold uppercase flex items-center gap-0.5">🛡️ Inmune (${remainingDays} días restantes)</span>`;
             } else if (isClausulazoPending) {
               actionBtn = `<span class="px-2 py-1 rounded bg-rose-500/20 text-rose-300 font-bold text-[8px] animate-pulse">⚡ Clausulazo Activo</span>`;
             } else {
@@ -14960,6 +15081,45 @@
             </div>
           `;
           }
+          if (r.type === "offer_received" || r.type === "auction_won" || r.type === "transfer_confirmed") {
+            let borderClass = "";
+            let textClass = "";
+            let icon = "";
+
+            if (r.type === "offer_received") {
+              borderClass = "border-blue-500/30 bg-blue-950/10";
+              textClass = "text-blue-400";
+              icon = "mail";
+            } else if (r.type === "auction_won") {
+              borderClass = "border-amber-500/30 bg-amber-950/10";
+              textClass = "text-amber-400";
+              icon = "trophy";
+            } else { // transfer_confirmed
+              borderClass = "border-emerald-500/30 bg-emerald-950/10";
+              textClass = "text-emerald-400";
+              icon = "badge-check";
+            }
+
+            return `
+            <div class="glass-panel p-5 rounded-2xl border ${borderClass} flex flex-col justify-between gap-4 hover:border-white/10 transition duration-300 text-left">
+              <div class="space-y-2">
+                <h5 class="font-black text-sm ${textClass} flex items-center gap-1.5 leading-snug">
+                  <i data-lucide="${icon}" class="w-4.5 h-4.5 shrink-0"></i>
+                  ${r.title}
+                </h5>
+                <p class="text-slate-300 text-[11px] leading-relaxed font-medium">${r.description}</p>
+              </div>
+              <div class="flex justify-between items-center pt-2 border-t border-white/5">
+                <span class="text-[8px] text-slate-500 font-extrabold uppercase">
+                  ${r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Reciente"}
+                </span>
+                <button onclick="claimReward('${r.id}', 0)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-black text-[10px] uppercase px-3 py-1.5 rounded-xl transition cursor-pointer">
+                  Leído
+                </button>
+              </div>
+            </div>
+          `;
+          }
 
           if (r.type === "clausulazo_refund" || r.type === "clausulazo_success") {
             const isRefund = r.type === "clausulazo_refund";
@@ -15061,7 +15221,12 @@
             const playerName = player ? player.nombre : "Jugador";
             const startTime = c.createdAt || c.timestamp || now;
             const elapsed = Math.floor((now - startTime) / 1000);
-            const remaining = Math.max(0, 30 - elapsed);
+            const remaining = Math.max(0, 3600 - elapsed);
+
+            const hours = Math.floor(remaining / 3600);
+            const minutes = Math.floor((remaining % 3600) / 60);
+            const seconds = remaining % 60;
+            const timeStr = `${hours}h ${minutes}m ${seconds}s`;
 
             return `
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-rose-950/20 border border-rose-500/20 hover:border-rose-500/40 transition">
@@ -15074,7 +15239,7 @@
                   Clausulazo por <span class="text-amber-400 font-bold">${(c.clausulaAmount / 1e6).toFixed(1)}M$</span> activado por <span class="text-rose-400 font-extrabold">${c.buyerName}</span>.
                 </p>
                 <p class="text-[9px] text-slate-400">
-                  Tiempo restante para rescate: <span class="text-rose-400 font-black animate-pulse">${remaining}s</span>
+                  Tiempo restante para rescate: <span class="text-rose-400 font-black animate-pulse">${timeStr}</span>
                 </p>
               </div>
               <button onclick="cancelClausulazoWithToken('${c.id}')" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-[10px] uppercase transition cursor-pointer flex items-center gap-1 shadow-lg shadow-emerald-500/10 active:scale-95 shrink-0">
@@ -15094,7 +15259,7 @@
             const now = Date.now();
             const allExpired = pending.every(c => {
               const startTime = c.createdAt || c.timestamp || now;
-              return Math.floor((now - startTime) / 1000) >= 30;
+              return Math.floor((now - startTime) / 1000) >= 3600;
             });
             if (allExpired && clausulazoInterval) {
               clearInterval(clausulazoInterval);
@@ -16141,7 +16306,11 @@
               <button onclick="window.openMatchSummaryModal('${m.id}')" class="px-2 py-0.5 rounded bg-gold/10 hover:bg-gold hover:text-slate-950 text-gold font-bold text-[9px] uppercase tracking-wider transition cursor-pointer flex items-center gap-1">
                 <i data-lucide="eye" class="w-3 h-3"></i> Resumen
               </button>
-              ` : ''}
+              ` : `
+              <button onclick="window.goToBetOnMatch('${m.id}')" class="px-2 py-0.5 rounded bg-purple-500/15 hover:bg-purple-600 border border-purple-500/30 hover:border-transparent text-purple-400 hover:text-white font-black text-[9px] uppercase tracking-wider transition cursor-pointer flex items-center gap-1 shadow-sm active:scale-95">
+                🎰 Apostar
+              </button>
+              `}
             </div>
             ${adminBtnHTML}
           `;
@@ -16160,6 +16329,187 @@
           renderCalendarAndResults();
         });
       }
+
+      // --- CALENDARIO SUB-TABS Y CLASIFICACIÓN DE GRUPOS ---
+      let activeCalendarSubTab = "calendar";
+
+      window.switchCalendarSubTab = function(subtab) {
+        activeCalendarSubTab = subtab;
+        const btnCal = document.getElementById("btn-subtab-calendar");
+        const btnGrp = document.getElementById("btn-subtab-groups");
+        const contentCal = document.getElementById("subtab-content-calendar");
+        const contentGrp = document.getElementById("subtab-content-groups");
+
+        if (!btnCal || !btnGrp || !contentCal || !contentGrp) return;
+
+        if (subtab === "calendar") {
+          btnCal.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer bg-gold-gradient text-slate-950 shadow-md";
+          btnGrp.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white";
+          contentCal.classList.remove("hidden");
+          contentGrp.classList.add("hidden");
+          renderCalendarAndResults();
+        } else {
+          btnCal.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white";
+          btnGrp.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer bg-gold-gradient text-slate-950 shadow-md";
+          contentCal.classList.add("hidden");
+          contentGrp.classList.remove("hidden");
+          renderGroupStandings();
+        }
+        lucide.createIcons();
+      };
+
+      window.renderGroupStandings = function() {
+        const grid = document.getElementById("groups-standings-grid");
+        if (!grid) return;
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 font-bold"><i class="w-6 h-6 animate-spin mx-auto block mb-2 text-gold"></i> Calculando clasificaciones oficiales...</div>`;
+
+        // 1. Inicializar clasificaciones vacías para cada selección en los grupos
+        const standings = {};
+        if (!window.GRUPOS_MUNDIAL) return;
+        window.GRUPOS_MUNDIAL.forEach(g => {
+          standings[g.id] = {};
+          g.equipos.forEach(eq => {
+            standings[g.id][eq] = {
+              nombre: eq,
+              PJ: 0,
+              PG: 0,
+              PE: 0,
+              PP: 0,
+              GF: 0,
+              GC: 0,
+              GD: 0,
+              Pts: 0
+            };
+          });
+        });
+
+        // 2. Procesar partidos resueltos de matchesListGlobal
+        const matches = window.matchesListGlobal || [];
+        matches.forEach(m => {
+          if (m.resuelto) {
+            const localName = m.equipo_local;
+            const visitName = m.equipo_visitante;
+            const groupLocal = window.PAIS_A_GRUPO ? window.PAIS_A_GRUPO[localName] : null;
+            const groupVisit = window.PAIS_A_GRUPO ? window.PAIS_A_GRUPO[visitName] : null;
+
+            if (groupLocal && groupLocal === groupVisit) {
+              const gId = groupLocal;
+              const scoreLocal = parseInt(m.resultado_local) || 0;
+              const scoreVisit = parseInt(m.resultado_visitante) || 0;
+
+              const statsLocal = standings[gId][localName];
+              const statsVisit = standings[gId][visitName];
+
+              if (statsLocal && statsVisit) {
+                statsLocal.PJ += 1;
+                statsVisit.PJ += 1;
+
+                statsLocal.GF += scoreLocal;
+                statsLocal.GC += scoreVisit;
+                statsVisit.GF += scoreVisit;
+                statsVisit.GC += scoreLocal;
+
+                statsLocal.GD = statsLocal.GF - statsLocal.GC;
+                statsVisit.GD = statsVisit.GF - statsVisit.GC;
+
+                if (scoreLocal > scoreVisit) {
+                  statsLocal.PG += 1;
+                  statsLocal.Pts += 3;
+                  statsVisit.PP += 1;
+                } else if (scoreLocal < scoreVisit) {
+                  statsVisit.PG += 1;
+                  statsVisit.Pts += 3;
+                  statsLocal.PP += 1;
+                } else {
+                  statsLocal.PE += 1;
+                  statsLocal.Pts += 1;
+                  statsVisit.PE += 1;
+                  statsVisit.Pts += 1;
+                }
+              }
+            }
+          }
+        });
+
+        // 3. Ordenar y pintar
+        grid.innerHTML = "";
+        window.GRUPOS_MUNDIAL.forEach(g => {
+          const teams = Object.values(standings[g.id]);
+          teams.sort((a, b) => {
+            if (b.Pts !== a.Pts) return b.Pts - a.Pts;
+            if (b.GD !== a.GD) return b.GD - a.GD;
+            if (b.GF !== a.GF) return b.GF - a.GF;
+            return a.nombre.localeCompare(b.nombre);
+          });
+
+          const card = document.createElement("div");
+          card.className = "glass-panel p-4 rounded-2xl border border-white/5 space-y-3 bg-slate-950/20 text-left";
+
+          let tableRows = teams.map((t, index) => {
+            const flag = getCountryFlag(t.nombre);
+            const rowClass = index < 2 ? "bg-emerald-500/5 font-semibold" : "";
+            const rankColor = index === 0 ? "text-gold font-black" : index === 1 ? "text-slate-300 font-bold" : "text-slate-500";
+
+            return `
+              <tr class="border-b border-white/5 last:border-0 ${rowClass}">
+                <td class="py-2 px-1 text-center ${rankColor} text-xs">${index + 1}</td>
+                <td class="py-2 px-2 text-xs text-white flex items-center gap-1.5 truncate max-w-[120px]">
+                  <span>${flag}</span>
+                  <span class="truncate" title="${t.nombre}">${t.nombre}</span>
+                </td>
+                <td class="py-2 px-1 text-center text-[11px] text-slate-300">${t.PJ}</td>
+                <td class="py-2 px-1 text-center text-[11px] text-slate-300">${t.PG}</td>
+                <td class="py-2 px-1 text-center text-[11px] text-slate-300">${t.PE}</td>
+                <td class="py-2 px-1 text-center text-[11px] text-slate-300">${t.PP}</td>
+                <td class="py-2 px-1 text-center text-[11px] text-slate-400">${t.GF}:${t.GC}</td>
+                <td class="py-2 px-1 text-center text-xs font-black text-gold">${t.Pts}</td>
+              </tr>
+            `;
+          }).join("");
+
+          card.innerHTML = `
+            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+              <h4 class="text-xs font-black text-gold uppercase tracking-wider flex items-center gap-1">
+                <i data-lucide="award" class="w-3.5 h-3.5"></i> ${g.nombre}
+              </h4>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-[11px]">
+                <thead>
+                  <tr class="border-b border-white/5 text-[9px] uppercase font-extrabold tracking-wider text-slate-500">
+                    <th class="py-1.5 px-1 text-center">#</th>
+                    <th class="py-1.5 px-2">Selección</th>
+                    <th class="py-1.5 px-1 text-center" title="Partidos Jugados">PJ</th>
+                    <th class="py-1.5 px-1 text-center" title="Victorias">G</th>
+                    <th class="py-1.5 px-1 text-center" title="Empates">E</th>
+                    <th class="py-1.5 px-1 text-center" title="Derrotas">P</th>
+                    <th class="py-1.5 px-1 text-center" title="Goles Favor : Goles Contra">Goles</th>
+                    <th class="py-1.5 px-1 text-center text-gold" title="Puntos">Pts</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-slate-300">
+                  ${tableRows}
+                </tbody>
+              </table>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+        lucide.createIcons();
+      };
+
+      window.goToBetOnMatch = function(matchId) {
+        if (typeof switchDashboardTab === "function") {
+          switchDashboardTab("bets");
+          setTimeout(() => {
+            const dropdown = document.getElementById("bet-select-match");
+            if (dropdown) {
+              dropdown.value = matchId;
+              dropdown.dispatchEvent(new Event('change'));
+            }
+          }, 150);
+        }
+      };
 
       // --- MODAL: RESUMEN DEL PARTIDO ---
       window.openMatchSummaryModal = async function(matchId) {
