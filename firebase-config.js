@@ -499,7 +499,9 @@
           val = { seconds: Math.floor(Date.now() / 1000) };
         }
         
-        if (val && val._type === "arrayUnion") {
+        if (val && val._type === "increment") {
+          target[key] = (target[key] || 0) + val.value;
+        } else if (val && val._type === "arrayUnion") {
           const arr = target[key] || [];
           const unionVal = Array.isArray(val.value) ? val.value : [val.value];
           unionVal.forEach(v => {
@@ -943,6 +945,7 @@
     return { _type: "arrayUnion", value: val };
   };
   window.serverTimestamp = () => ({ _type: "timestamp" });
+  window.increment = (value) => ({ _type: "increment", value });
 
   window.writeBatch = () => {
     const operations = [];
@@ -970,10 +973,13 @@
           collection: (...paths) => window.collection(null, ...paths)
         };
       };
+    }
+    if (!window.firebase.firestore.FieldValue) {
       window.firebase.firestore.FieldValue = {
         serverTimestamp: () => window.serverTimestamp(),
         arrayUnion: (...args) => window.arrayUnion(...args)
       };
     }
+    window.firebase.firestore.FieldValue.increment = (val) => window.increment(val);
   }
 })();

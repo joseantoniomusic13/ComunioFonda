@@ -1733,16 +1733,29 @@
                   <span class="fbet-odd-plaque exact">🏆 3. Resultado Exacto — Cuota ×5</span>
                 </div>
               </div>
-              
 
+              <!-- Botón Premium: Ruleta de Casino Fonda -->
+              <button onclick="switchBetsMode('casino')" class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:via-yellow-300 hover:to-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 duration-150 shrink-0 self-center border border-amber-300/35" title="Entrar al Casino de la Fonda y jugar a la Ruleta Europea">
+                <i data-lucide="compass" class="w-4.5 h-4.5 animate-spin" style="animation-duration: 12s"></i> 🎡 Jugar a la Ruleta
+              </button>
             </div>
           </div>
           <!-- Friso inferior -->
           <div class="fbet-header-frieze" style="border-radius:0 0 20px 20px"></div>
         </div>
 
+        <!-- Selector de Modo de Apuesta: Deportes vs Casino -->
+        <div class="flex border-b border-white/5 pb-2 justify-start gap-4 mb-4">
+          <button id="btn-bets-mode-sports" onclick="switchBetsMode('sports')" class="px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 shadow-lg active:scale-95 duration-150">
+            ⚽ Apuestas Deportivas
+          </button>
+          <button id="btn-bets-mode-casino" onclick="switchBetsMode('casino')" class="px-5 py-2.5 rounded-2xl bg-purple-900/40 hover:bg-purple-900 border border-purple-500/25 hover:border-purple-400 text-purple-300 hover:text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 active:scale-95 duration-150">
+            🎡 Fonda Casino (Ruleta)
+          </button>
+        </div>
+
         <!-- ── CUERPO: FORMULARIO + HISTORIAL ── -->
-        <div class="flex flex-col lg:flex-row gap-6">
+        <div id="bets-sports-container" class="flex flex-col lg:flex-row gap-6">
 
           <!-- FORMULARIO — BLOQUE DE MADERA PETRIFICADA -->
           <div class="w-full lg:w-1/2">
@@ -1829,6 +1842,154 @@
           </div>
 
         </div>
+
+        <!-- ── CUERPO CASINO: RULETA Y TAPETE ── -->
+        <div id="bets-casino-container" class="hidden flex flex-col gap-6">
+          <div class="glass-panel p-6 rounded-3xl border border-purple-500/20 bg-slate-900/40 text-left space-y-6">
+
+            <!-- CONTENEDOR SUPERIOR: CILINDRO Y PANEL DE RESULTADOS/HISTORIAL -->
+            <div class="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 max-w-4xl mx-auto w-full border-b border-purple-500/10 pb-6">
+              
+              <!-- CILINDRO -->
+              <div class="relative w-[280px] h-[280px] md:w-[320px] md:h-[320px] flex-shrink-0 flex items-center justify-center">
+                <div class="absolute top-[-3px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[18px] border-t-amber-500 z-20 drop-shadow-[0_3px_6px_rgba(0,0,0,0.8)]"></div>
+                <canvas id="casino-canvas-wheel" width="320" height="320" class="rounded-full shadow-2xl shadow-black border-4 border-slate-950/80 aspect-square w-full h-full"></canvas>
+              </div>
+
+              <!-- CONTADORES Y HISTORIAL -->
+              <div class="w-full md:max-w-md bg-slate-950/60 border border-purple-500/15 p-6 rounded-2xl text-center space-y-4 flex-grow">
+                <div>
+                  <span class="text-[9px] font-bold text-slate-450 uppercase tracking-widest block">Último Número Ganador</span>
+                  <div class="flex justify-center mt-1">
+                    <span id="casino-winner-display" class="text-2xl font-black text-slate-450 uppercase">Esperando Giro</span>
+                  </div>
+                </div>
+                <div>
+                  <span class="text-[9px] font-bold text-slate-450 uppercase tracking-widest block">Historial Reciente (Últimos 8)</span>
+                  <div id="casino-history-container" class="flex justify-center gap-1.5 mt-2 min-h-[30px] overflow-x-auto pb-1">
+                    <span class="text-xs text-slate-500 italic py-1">Sin tiradas</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- CONTENEDOR INFERIOR: TABLERO (TAPETE) Y CONTROLES COMPLETOS -->
+            <div class="w-full flex flex-col gap-4">
+              <!-- CONTROLES SUPERIORES DEL TAPETE -->
+              <div class="flex flex-col sm:flex-row items-center justify-between bg-slate-950/60 border border-purple-500/10 p-4 rounded-2xl gap-4">
+                <div>
+                  <span class="text-[9px] font-bold text-purple-300 uppercase tracking-wider">Fichas Disponibles</span>
+                  <div class="flex items-center gap-1.5 font-montserrat">
+                    <span id="casino-local-chips-display" class="text-2xl font-black text-white">0</span>
+                    <span class="text-[10px] font-black text-emerald-400 uppercase">Fichas</span>
+                  </div>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto">
+                  <button onclick="openCasinoConverterModal()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-100 flex items-center justify-center gap-1 cursor-pointer">
+                    <i data-lucide="wallet" class="w-3.5 h-3.5"></i> Cajero Conversor
+                  </button>
+                  <button onclick="clearCasinoBets()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-purple-900/10 hover:bg-purple-900/40 border border-purple-500/20 text-purple-300 hover:text-white font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-100 flex items-center justify-center gap-1 cursor-pointer">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Limpiar Apuestas
+                  </button>
+                </div>
+              </div>
+
+              <!-- Selector de ficha activa -->
+                <div class="bg-slate-950/45 p-4 rounded-2xl border border-white/5 space-y-2">
+                  <span class="text-[9.5px] font-bold text-slate-450 uppercase tracking-wider block text-left">Ficha de Apuesta Activa</span>
+                  <div class="flex justify-start gap-3">
+                    <button onclick="setCasinoActiveChip(1)" id="casino-chip-1" class="chip-selected w-10 h-10 rounded-full border-4 border-slate-900 bg-blue-600 flex items-center justify-center text-[10px] font-black text-white cursor-pointer transition active:scale-90 casino-chip">1</button>
+                    <button onclick="setCasinoActiveChip(5)" id="casino-chip-5" class="w-10 h-10 rounded-full border-4 border-slate-900 bg-red-600 flex items-center justify-center text-[10px] font-black text-white cursor-pointer transition active:scale-90 casino-chip">5</button>
+                    <button onclick="setCasinoActiveChip(25)" id="casino-chip-25" class="w-10 h-10 rounded-full border-4 border-slate-900 bg-yellow-500 flex items-center justify-center text-[10px] font-black text-slate-950 cursor-pointer transition active:scale-90 casino-chip">25</button>
+                    <button onclick="setCasinoActiveChip(100)" id="casino-chip-100" class="w-10 h-10 rounded-full border-4 border-slate-900 bg-indigo-600 flex items-center justify-center text-[10px] font-black text-white cursor-pointer transition active:scale-90 casino-chip">100</button>
+                    <button onclick="setCasinoActiveChip(500)" id="casino-chip-500" class="w-10 h-10 rounded-full border-4 border-slate-900 bg-purple-600 flex items-center justify-center text-[10px] font-black text-white cursor-pointer transition active:scale-90 casino-chip">500</button>
+                  </div>
+                </div>
+
+                <!-- Velvet Tapete -->
+                <div class="casino-velvet border-4 border-amber-500/25 p-5 rounded-[2rem] shadow-2xl relative overflow-x-auto select-none">
+                  <div class="min-w-[800px] grid grid-cols-14 gap-0.5 font-bold text-white text-sm font-montserrat text-center">
+                    
+                    <div onclick="addCasinoBetSpot('num_0')" id="casino-spot-num_0" class="col-span-1 row-span-3 h-full bg-emerald-600 border border-emerald-500 hover:bg-emerald-500 flex items-center justify-center font-black text-base transition cursor-pointer rounded-l-xl relative">
+                      0
+                    </div>
+
+                    <!-- Fila 3 -->
+                    <div onclick="addCasinoBetSpot('num_3')" id="casino-spot-num_3" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">3</div>
+                    <div onclick="addCasinoBetSpot('num_6')" id="casino-spot-num_6" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">6</div>
+                    <div onclick="addCasinoBetSpot('num_9')" id="casino-spot-num_9" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">9</div>
+                    <div onclick="addCasinoBetSpot('num_12')" id="casino-spot-num_12" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">12</div>
+                    <div onclick="addCasinoBetSpot('num_15')" id="casino-spot-num_15" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">15</div>
+                    <div onclick="addCasinoBetSpot('num_18')" id="casino-spot-num_18" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">18</div>
+                    <div onclick="addCasinoBetSpot('num_21')" id="casino-spot-num_21" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">21</div>
+                    <div onclick="addCasinoBetSpot('num_24')" id="casino-spot-num_24" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">24</div>
+                    <div onclick="addCasinoBetSpot('num_27')" id="casino-spot-num_27" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">27</div>
+                    <div onclick="addCasinoBetSpot('num_30')" id="casino-spot-num_30" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">30</div>
+                    <div onclick="addCasinoBetSpot('num_33')" id="casino-spot-num_33" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">33</div>
+                    <div onclick="addCasinoBetSpot('num_36')" id="casino-spot-num_36" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">36</div>
+                    <div onclick="addCasinoBetSpot('column_3')" id="casino-spot-column_3" class="col-span-1 h-12 bg-amber-500/10 hover:bg-amber-500/35 border border-amber-500/25 text-amber-300 flex items-center justify-center transition cursor-pointer rounded text-xs relative">2 to 1</div>
+
+                    <!-- Fila 2 -->
+                    <div onclick="addCasinoBetSpot('num_2')" id="casino-spot-num_2" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">2</div>
+                    <div onclick="addCasinoBetSpot('num_5')" id="casino-spot-num_5" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">5</div>
+                    <div onclick="addCasinoBetSpot('num_8')" id="casino-spot-num_8" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">8</div>
+                    <div onclick="addCasinoBetSpot('num_11')" id="casino-spot-num_11" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">11</div>
+                    <div onclick="addCasinoBetSpot('num_14')" id="casino-spot-num_14" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">14</div>
+                    <div onclick="addCasinoBetSpot('num_17')" id="casino-spot-num_17" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">17</div>
+                    <div onclick="addCasinoBetSpot('num_20')" id="casino-spot-num_20" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">20</div>
+                    <div onclick="addCasinoBetSpot('num_23')" id="casino-spot-num_23" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">23</div>
+                    <div onclick="addCasinoBetSpot('num_26')" id="casino-spot-num_26" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">26</div>
+                    <div onclick="addCasinoBetSpot('num_29')" id="casino-spot-num_29" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">29</div>
+                    <div onclick="addCasinoBetSpot('num_32')" id="casino-spot-num_32" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">32</div>
+                    <div onclick="addCasinoBetSpot('num_35')" id="casino-spot-num_35" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">35</div>
+                    <div onclick="addCasinoBetSpot('column_2')" id="casino-spot-column_2" class="col-span-1 h-12 bg-amber-500/10 hover:bg-amber-500/35 border border-amber-500/25 text-amber-300 flex items-center justify-center transition cursor-pointer rounded text-xs relative">2 to 1</div>
+
+                    <!-- Fila 1 -->
+                    <div onclick="addCasinoBetSpot('num_1')" id="casino-spot-num_1" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">1</div>
+                    <div onclick="addCasinoBetSpot('num_4')" id="casino-spot-num_4" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">4</div>
+                    <div onclick="addCasinoBetSpot('num_7')" id="casino-spot-num_7" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">7</div>
+                    <div onclick="addCasinoBetSpot('num_10')" id="casino-spot-num_10" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">10</div>
+                    <div onclick="addCasinoBetSpot('num_13')" id="casino-spot-num_13" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">13</div>
+                    <div onclick="addCasinoBetSpot('num_16')" id="casino-spot-num_16" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">16</div>
+                    <div onclick="addCasinoBetSpot('num_19')" id="casino-spot-num_19" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">19</div>
+                    <div onclick="addCasinoBetSpot('num_22')" id="casino-spot-num_22" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">22</div>
+                    <div onclick="addCasinoBetSpot('num_25')" id="casino-spot-num_25" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">25</div>
+                    <div onclick="addCasinoBetSpot('num_28')" id="casino-spot-num_28" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">28</div>
+                    <div onclick="addCasinoBetSpot('num_31')" id="casino-spot-num_31" class="col-span-1 h-12 bg-slate-950 border border-slate-800 hover:bg-slate-800 flex items-center justify-center transition cursor-pointer rounded relative">31</div>
+                    <div onclick="addCasinoBetSpot('num_34')" id="casino-spot-num_34" class="col-span-1 h-12 bg-rose-600 border border-rose-500 hover:bg-rose-500 flex items-center justify-center transition cursor-pointer rounded relative">34</div>
+                    <div onclick="addCasinoBetSpot('column_1')" id="casino-spot-column_1" class="col-span-1 h-12 bg-amber-500/10 hover:bg-amber-500/35 border border-amber-500/25 text-amber-300 flex items-center justify-center transition cursor-pointer rounded text-xs relative">2 to 1</div>
+
+                    <!-- Docenas -->
+                    <div class="col-span-1"></div>
+                    <div onclick="addCasinoBetSpot('dozen_1')" id="casino-spot-dozen_1" class="col-span-4 py-4 bg-amber-500/5 hover:bg-amber-500/20 border border-amber-500/15 text-amber-300/90 transition cursor-pointer rounded-xl mt-1 relative text-xs">1st 12</div>
+                    <div onclick="addCasinoBetSpot('dozen_2')" id="casino-spot-dozen_2" class="col-span-4 py-4 bg-amber-500/5 hover:bg-amber-500/20 border border-amber-500/15 text-amber-300/90 transition cursor-pointer rounded-xl mt-1 relative text-xs">2nd 12</div>
+                    <div onclick="addCasinoBetSpot('dozen_3')" id="casino-spot-dozen_3" class="col-span-4 py-4 bg-amber-500/5 hover:bg-amber-500/20 border border-amber-500/15 text-amber-300/90 transition cursor-pointer rounded-xl mt-1 relative text-xs">3rd 12</div>
+                    <div class="col-span-1"></div>
+
+                    <!-- Suertes Sencillas -->
+                    <div class="col-span-1"></div>
+                    <div onclick="addCasinoBetSpot('low_1_18')" id="casino-spot-low_1_18" class="col-span-2 py-4 bg-slate-900/30 hover:bg-slate-900 border border-slate-700/20 text-slate-350 transition cursor-pointer rounded-xl mt-1 relative text-xs">1-18</div>
+                    <div onclick="addCasinoBetSpot('even')" id="casino-spot-even" class="col-span-2 py-4 bg-slate-900/30 hover:bg-slate-900 border border-slate-700/20 text-slate-350 transition cursor-pointer rounded-xl mt-1 relative text-xs">PAR</div>
+                    <div onclick="addCasinoBetSpot('color_red')" id="casino-spot-color_red" class="col-span-2 py-4 bg-rose-800/80 hover:bg-rose-700 border border-rose-500/20 text-white transition cursor-pointer rounded-xl mt-1 relative text-xs flex items-center justify-center gap-1 shadow shadow-rose-950/40">🔴</div>
+                    <div onclick="addCasinoBetSpot('color_black')" id="casino-spot-color_black" class="col-span-2 py-4 bg-slate-950 hover:bg-slate-900 border border-slate-800/85 text-slate-100 transition cursor-pointer rounded-xl mt-1 relative text-xs flex items-center justify-center gap-1 shadow shadow-black/80">⚫</div>
+                    <div onclick="addCasinoBetSpot('odd')" id="casino-spot-odd" class="col-span-2 py-4 bg-slate-900/30 hover:bg-slate-900 border border-slate-700/20 text-slate-350 transition cursor-pointer rounded-xl mt-1 relative text-xs">IMPAR</div>
+                    <div onclick="addCasinoBetSpot('high_19_36')" id="casino-spot-high_19_36" class="col-span-2 py-4 bg-slate-900/30 hover:bg-slate-900 border border-slate-700/20 text-slate-350 transition cursor-pointer rounded-xl mt-1 relative text-xs">19-36</div>
+                    <div class="col-span-1"></div>
+
+                  </div>
+                </div>
+
+                <!-- Botón de Giro -->
+                <button id="casino-btn-spin" onclick="spinCasinoWheel()" class="w-full py-4 rounded-3xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:via-yellow-300 hover:to-amber-400 text-slate-950 font-black text-sm uppercase tracking-wider transition cursor-pointer shadow-lg shadow-amber-500/25 active:scale-95 duration-100 flex items-center justify-center gap-2 border border-amber-350/40 cursor-pointer">
+                  <i data-lucide="play" class="w-5 h-5 text-slate-950"></i> ¡GIRAR RULETA!
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
 
 
@@ -4089,6 +4250,19 @@
               }
               updateHeaderAndDashboardStats();
               routeUserToSection(user, currentUserProfile);
+
+              // Sincronizar balances de la ruleta de casino
+              const playerFcBal = document.getElementById("player-fc-balance");
+              const playerChipsBal = document.getElementById("player-chips-balance");
+              if (playerFcBal) playerFcBal.textContent = currentUserProfile.fonda_coins || 0;
+              if (playerChipsBal) playerChipsBal.textContent = currentUserProfile.casino_chips || 0;
+
+              if (!window.isCasinoSpinning) {
+                window.localCasinoChips = currentUserProfile.casino_chips || 0;
+                const localChipsDisp = document.getElementById("casino-local-chips-display");
+                if (localChipsDisp) localChipsDisp.textContent = window.localCasinoChips;
+                if (window.renderCasinoActiveBets) window.renderCasinoActiveBets();
+              }
 
               if (window.checkDailySpinWheelAvailability) {
                 window.checkDailySpinWheelAvailability(currentUserProfile);
@@ -17383,6 +17557,704 @@
         }
       };
 
+      // =========================================================================
+      // ==================== FONDA CASINO: RULETA EUROPEA =======================
+      // =========================================================================
+      window.localCasinoChips = 0;
+      window.currentCasinoBets = {};
+      window.currentCasinoChipValue = 1;
+      window.isCasinoSpinning = false;
+      window.casinoRotation = 0;
+      window.casinoHistory = [];
+
+      const casinoNumbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+
+      window.switchBetsMode = function(mode) {
+        const sportsContainer = document.getElementById("bets-sports-container");
+        const casinoContainer = document.getElementById("bets-casino-container");
+        const btnSports = document.getElementById("btn-bets-mode-sports");
+        const btnCasino = document.getElementById("btn-bets-mode-casino");
+
+        if (!sportsContainer || !casinoContainer || !btnSports || !btnCasino) return;
+
+        if (mode === "casino") {
+          sportsContainer.classList.add("hidden");
+          casinoContainer.classList.remove("hidden");
+          
+          btnSports.className = "px-5 py-2.5 rounded-2xl bg-purple-900/40 hover:bg-purple-900 border border-purple-500/25 hover:border-purple-400 text-purple-300 hover:text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 active:scale-95 duration-150";
+          btnCasino.className = "px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 shadow-lg active:scale-95 duration-150";
+          
+          setTimeout(() => {
+            window.drawIntegratedWheel();
+            window.renderCasinoActiveBets();
+            if (typeof lucide !== "undefined") lucide.createIcons();
+          }, 50);
+        } else {
+          sportsContainer.classList.remove("hidden");
+          casinoContainer.classList.add("hidden");
+          
+          btnCasino.className = "px-5 py-2.5 rounded-2xl bg-purple-900/40 hover:bg-purple-900 border border-purple-500/25 hover:border-purple-400 text-purple-300 hover:text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 active:scale-95 duration-150";
+          btnSports.className = "px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 shadow-lg active:scale-95 duration-150";
+        }
+      };
+
+      window.setCasinoActiveChip = function(val) {
+        if (window.isCasinoSpinning) return;
+        window.currentCasinoChipValue = val;
+        document.querySelectorAll("[id^='casino-chip-']").forEach(btn => {
+          btn.classList.remove("chip-selected");
+        });
+        const activeBtn = document.getElementById(`casino-chip-${val}`);
+        if (activeBtn) activeBtn.classList.add("chip-selected");
+      };
+
+      window.addCasinoBetSpot = function(spotId) {
+        if (window.isCasinoSpinning) return;
+
+        if (window.localCasinoChips < window.currentCasinoChipValue) {
+          showNotification("🪙 No tienes suficientes fichas. Compra más en el cajero.", "error");
+          return;
+        }
+
+        window.localCasinoChips -= window.currentCasinoChipValue;
+        const displayVal = document.getElementById("casino-local-chips-display");
+        if (displayVal) displayVal.textContent = window.localCasinoChips;
+
+        window.currentCasinoBets[spotId] = (window.currentCasinoBets[spotId] || 0) + window.currentCasinoChipValue;
+
+        window.renderCasinoActiveBets();
+      };
+
+      window.renderCasinoActiveBets = function() {
+        document.querySelectorAll(".casino-chip-overlay").forEach(el => el.remove());
+
+        let totalPlaced = 0;
+        for (const [spotId, amount] of Object.entries(window.currentCasinoBets)) {
+          if (amount <= 0) continue;
+          totalPlaced += amount;
+
+          const cell = document.getElementById(`casino-spot-${spotId}`);
+          if (cell) {
+            const chip = document.createElement("div");
+            chip.className = "casino-chip-overlay absolute inset-0 flex items-center justify-center pointer-events-none z-10";
+            chip.innerHTML = `
+              <div class="w-6 h-6 rounded-full bg-amber-500 border border-white flex items-center justify-center text-[7.5px] font-black text-slate-950 shadow shadow-black/85">
+                ${amount}
+              </div>
+            `;
+            cell.classList.add("relative");
+            cell.appendChild(chip);
+          }
+        }
+
+        const placedDisp = document.getElementById("total-placed-display");
+        if (placedDisp) placedDisp.textContent = `${totalPlaced} Fichas`;
+        
+        const projDisp = document.getElementById("projected-chips-display");
+        if (projDisp) projDisp.textContent = `${window.localCasinoChips} Fichas`;
+      };
+
+      window.clearCasinoBets = function() {
+        if (window.isCasinoSpinning) return;
+        for (const amount of Object.values(window.currentCasinoBets)) {
+          window.localCasinoChips += amount;
+        }
+        window.currentCasinoBets = {};
+        const displayVal = document.getElementById("casino-local-chips-display");
+        if (displayVal) displayVal.textContent = window.localCasinoChips;
+        window.renderCasinoActiveBets();
+      };
+
+      window.openCasinoConverterModal = function() {
+        if (window.isCasinoSpinning) return;
+        const modal = document.getElementById("casino-converter-modal");
+        if (modal) {
+          modal.classList.remove("hidden");
+          window.resetCasinoConverter();
+        }
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      };
+
+      window.closeCasinoConverterModal = function() {
+        const modal = document.getElementById("casino-converter-modal");
+        if (modal) modal.classList.add("hidden");
+        window.resetCasinoConverter();
+      };
+
+      window.casinoConverterMode = "buy";
+
+      window.switchCasinoConverterMode = function(mode) {
+        if (window.isCasinoSpinning) return;
+        window.casinoConverterMode = mode;
+        
+        const btnBuy = document.getElementById("btn-conv-tab-buy");
+        const btnSell = document.getElementById("btn-conv-tab-sell");
+        const viewBuy = document.getElementById("casino-converter-buy-view");
+        const viewSell = document.getElementById("casino-converter-sell-view");
+
+        if (mode === "buy") {
+          btnBuy.className = "flex-1 pb-2 font-black text-[10px] uppercase tracking-wider border-b-2 border-emerald-500 text-emerald-400 transition cursor-pointer";
+          btnSell.className = "flex-1 pb-2 font-black text-[10px] uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition cursor-pointer";
+          if (viewBuy) viewBuy.classList.remove("hidden");
+          if (viewSell) viewSell.classList.add("hidden");
+        } else {
+          btnSell.className = "flex-1 pb-2 font-black text-[10px] uppercase tracking-wider border-b-2 border-emerald-500 text-emerald-400 transition cursor-pointer";
+          btnBuy.className = "flex-1 pb-2 font-black text-[10px] uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition cursor-pointer";
+          if (viewBuy) viewBuy.classList.add("hidden");
+          if (viewSell) viewSell.classList.remove("hidden");
+        }
+        window.resetCasinoConverter();
+      };
+
+      window.updateCasinoBuyConversion = function() {
+        const input = document.getElementById("casino-conv-buy-input");
+        const output = document.getElementById("casino-conv-buy-output");
+        if (!input || !output) return;
+        const val = parseInt(input.value);
+        if (isNaN(val) || val <= 0) {
+          output.value = "";
+        } else {
+          output.value = (val * 100) + " Fichas";
+        }
+      };
+
+      window.updateCasinoSellConversion = function() {
+        const input = document.getElementById("casino-conv-sell-input");
+        const output = document.getElementById("casino-conv-sell-output");
+        if (!input || !output) return;
+        const val = parseInt(input.value);
+        if (isNaN(val) || val <= 0) {
+          output.value = "";
+        } else {
+          output.value = Math.floor(val / 100) + " FC";
+        }
+      };
+
+      window.resetCasinoConverter = function() {
+        const buyInput = document.getElementById("casino-conv-buy-input");
+        const buyOutput = document.getElementById("casino-conv-buy-output");
+        const sellInput = document.getElementById("casino-conv-sell-input");
+        const sellOutput = document.getElementById("casino-conv-sell-output");
+        
+        if (buyInput) buyInput.value = "";
+        if (buyOutput) buyOutput.value = "";
+        if (sellInput) sellInput.value = "";
+        if (sellOutput) sellOutput.value = "";
+      };
+
+      window.executeCasinoBuyConversion = async function() {
+        if (window.isCasinoSpinning) return;
+        if (!currentUser || !currentUserProfile) return;
+
+        const buyInput = document.getElementById("casino-conv-buy-input");
+        if (!buyInput) return;
+        const amountFC = parseInt(buyInput.value);
+        if (isNaN(amountFC) || amountFC <= 0) {
+          showNotification("Introduce una cantidad válida de FC a convertir.", "warning");
+          return;
+        }
+
+        const currentFC = currentUserProfile.fonda_coins || 0;
+        if (amountFC > currentFC) {
+          showNotification("No tienes suficientes Fonda Coins (FC).", "error");
+          return;
+        }
+
+        const userRef = doc(db, "users", currentUser.uid);
+        const newFC = currentFC - amountFC;
+        const chipsToReceive = amountFC * 100;
+        const newChips = (currentUserProfile.casino_chips || 0) + chipsToReceive;
+
+        try {
+          await updateDoc(userRef, {
+            fonda_coins: newFC,
+            casino_chips: newChips
+          });
+          showNotification(`✅ Cajero: Has convertido ${amountFC} FC en ${chipsToReceive} Fichas.`, "success");
+          window.closeCasinoConverterModal();
+        } catch (err) {
+          console.error(err);
+          showNotification("Error de red en el cajero.", "error");
+        }
+      };
+
+      window.executeCasinoSellConversion = async function() {
+        if (window.isCasinoSpinning) return;
+        if (!currentUser || !currentUserProfile) return;
+
+        const sellInput = document.getElementById("casino-conv-sell-input");
+        if (!sellInput) return;
+        const amountChips = parseInt(sellInput.value);
+        if (isNaN(amountChips) || amountChips <= 0) {
+          showNotification("Introduce una cantidad válida de Fichas a convertir.", "warning");
+          return;
+        }
+
+        if (amountChips % 100 !== 0) {
+          showNotification("El monto a retirar debe ser múltiplo de 100 Fichas.", "warning");
+          return;
+        }
+
+        const databaseChips = currentUserProfile.casino_chips || 0;
+        if (amountChips > databaseChips) {
+          showNotification("No tienes tantas fichas en tu cuenta.", "error");
+          return;
+        }
+
+        if (amountChips > window.localCasinoChips) {
+          showNotification("Retira primero las fichas del tapete.", "warning");
+          return;
+        }
+
+        const userRef = doc(db, "users", currentUser.uid);
+        const newChips = databaseChips - amountChips;
+        const fcToReceive = amountChips / 100;
+        const newFC = (currentUserProfile.fonda_coins || 0) + fcToReceive;
+
+        try {
+          await updateDoc(userRef, {
+            fonda_coins: newFC,
+            casino_chips: newChips
+          });
+          showNotification(`✅ Cajero: Has canjeado ${amountChips} Fichas por ${fcToReceive} FC.`, "success");
+          window.closeCasinoConverterModal();
+        } catch (err) {
+          console.error(err);
+          showNotification("Error de red en el cajero.", "error");
+        }
+      };
+
+      window.drawIntegratedWheel = function(wheelAngle, ballAngle, ballRadius) {
+        const canvas = document.getElementById("casino-canvas-wheel");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const size = canvas.width;
+        const center = size / 2;
+        const radius = center - 15;
+        const pocketRadius = radius - 26; // Radio de la pista de casillas
+
+        if (wheelAngle === undefined) wheelAngle = window.casinoWheelAngle || 0;
+
+        ctx.clearRect(0, 0, size, size);
+
+        // 1. ARO EXTERIOR ESTÁTICO (No rota, mantiene alineación con aguja)
+        ctx.beginPath();
+        ctx.arc(center, center, radius + 10, 0, 2 * Math.PI);
+        ctx.fillStyle = "#020617";
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#fbbf24";
+        ctx.stroke();
+
+        // 2. PARTE ROTATIVA (Se dibuja bajo rotación de wheelAngle)
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(wheelAngle);
+        ctx.translate(-center, -center);
+
+        const anglePerSeg = (2 * Math.PI) / casinoNumbers.length;
+
+        for (let i = 0; i < casinoNumbers.length; i++) {
+          const num = casinoNumbers[i];
+          const startAngle = i * anglePerSeg - Math.PI / 2 - anglePerSeg / 2;
+          const endAngle = startAngle + anglePerSeg;
+
+          // Ranura
+          ctx.beginPath();
+          ctx.moveTo(center, center);
+          ctx.arc(center, center, radius, startAngle, endAngle);
+          ctx.fillStyle = getCasinoNumberColor(num);
+          ctx.fill();
+
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+          ctx.stroke();
+
+          // Número
+          ctx.save();
+          ctx.translate(center, center);
+          ctx.rotate(i * anglePerSeg);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 9px Montserrat";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(num.toString(), 0, -radius + 18);
+          ctx.restore();
+        }
+
+        // Anillo metálico interior
+        ctx.beginPath();
+        ctx.arc(center, center, radius - 30, 0, 2 * Math.PI);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Centro / Cono
+        ctx.beginPath();
+        ctx.arc(center, center, radius - 40, 0, 2 * Math.PI);
+        ctx.fillStyle = "#073b29";
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "#d97706";
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(center, center, 24, 0, 2 * Math.PI);
+        ctx.fillStyle = "#fbbf24";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(center - 16, center);
+        ctx.lineTo(center + 16, center);
+        ctx.moveTo(center, center - 16);
+        ctx.lineTo(center, center + 16);
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = "#ffffff";
+        ctx.stroke();
+
+        ctx.restore(); // Restauramos para dibujar la bola en coordenadas absolutas de pantalla
+
+        // 3. DIBUJAR BOLA DE MARFIL
+        if (ballAngle === undefined || ballRadius === undefined) {
+          // Si la bola no está girando, dibujarla estática en la casilla del último ganador
+          let lastWinnerNum = window.casinoHistory[0];
+          if (lastWinnerNum === undefined) lastWinnerNum = 0;
+          const lastWinnerIndex = casinoNumbers.indexOf(lastWinnerNum);
+          if (lastWinnerIndex !== -1) {
+            ballAngle = wheelAngle + lastWinnerIndex * anglePerSeg - Math.PI / 2;
+            ballRadius = pocketRadius;
+          }
+        }
+
+        if (ballAngle !== undefined && ballRadius !== undefined) {
+          const ballX = center + ballRadius * Math.cos(ballAngle);
+          const ballY = center + ballRadius * Math.sin(ballAngle);
+
+          ctx.beginPath();
+          ctx.arc(ballX, ballY, 6.5, 0, 2 * Math.PI);
+
+          // Degradado radial 3D realista
+          const ballGrad = ctx.createRadialGradient(ballX - 2.5, ballY - 2.5, 1, ballX, ballY, 6.5);
+          ballGrad.addColorStop(0, "#ffffff");
+          ballGrad.addColorStop(0.2, "#f4f4eb");
+          ballGrad.addColorStop(0.8, "#d1d1c4");
+          ballGrad.addColorStop(1, "#8e8e80");
+
+          ctx.fillStyle = ballGrad;
+
+          ctx.save();
+          ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
+          ctx.shadowBlur = 5;
+          ctx.shadowOffsetX = 2;
+          ctx.shadowOffsetY = 2.5;
+          ctx.fill();
+          ctx.restore();
+        }
+      };
+
+      function getCasinoNumberColor(num) {
+        if (num === 0) return "#10b981";
+        const reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+        return reds.includes(num) ? "#dc2626" : "#111827";
+      }
+
+      window.updateCasinoHistoryUI = function() {
+        const container = document.getElementById("casino-history-container");
+        if (!container) return;
+        if (window.casinoHistory.length === 0) {
+          container.innerHTML = `<span class="text-xs text-slate-500 italic py-1">Sin tiradas</span>`;
+          return;
+        }
+
+        container.innerHTML = window.casinoHistory.map(num => {
+          let ledColor = "border-red-500 bg-rose-600 shadow-[0_0_8px_#dc2626]";
+          if (num === 0) ledColor = "border-emerald-500 bg-emerald-600 shadow-[0_0_8px_#10b981]";
+          else {
+            const reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+            if (!reds.includes(num)) ledColor = "border-slate-500 bg-slate-900 shadow-[0_0_8px_#6b7280]";
+          }
+          return `
+            <span class="w-7 h-7 rounded-full border-2 flex items-center justify-center font-black text-[10px] text-white ${ledColor}">
+              ${num}
+            </span>
+          `;
+        }).join("");
+      };
+
+      window.evaluateCasinoBet = function(spotId, amount, winnerNum) {
+        if (spotId === "num_" + winnerNum) return amount * 36;
+        
+        if (spotId === "color_red") {
+          const reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+          return reds.includes(winnerNum) ? amount * 2 : 0;
+        }
+        if (spotId === "color_black") {
+          const reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+          return (winnerNum !== 0 && !reds.includes(winnerNum)) ? amount * 2 : 0;
+        }
+        
+        if (spotId === "even") return (winnerNum !== 0 && winnerNum % 2 === 0) ? amount * 2 : 0;
+        if (spotId === "odd") return (winnerNum !== 0 && winnerNum % 2 !== 0) ? amount * 2 : 0;
+        
+        if (spotId === "low_1_18") return (winnerNum >= 1 && winnerNum <= 18) ? amount * 2 : 0;
+        if (spotId === "high_19_36") return (winnerNum >= 19 && winnerNum <= 36) ? amount * 2 : 0;
+        
+        if (spotId === "dozen_1") return (winnerNum >= 1 && winnerNum <= 12) ? amount * 3 : 0;
+        if (spotId === "dozen_2") return (winnerNum >= 13 && winnerNum <= 24) ? amount * 3 : 0;
+        if (spotId === "dozen_3") return (winnerNum >= 25 && winnerNum <= 36) ? amount * 3 : 0;
+        
+        if (spotId === "column_1") {
+          const col1 = [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34];
+          return col1.includes(winnerNum) ? amount * 3 : 0;
+        }
+        if (spotId === "column_2") {
+          const col2 = [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35];
+          return col2.includes(winnerNum) ? amount * 3 : 0;
+        }
+        if (spotId === "column_3") {
+          const col3 = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36];
+          return col3.includes(winnerNum) ? amount * 3 : 0;
+        }
+        
+        return 0;
+      };
+
+      window.closeCasinoResultModal = function() {
+        const modal = document.getElementById("casino-result-modal");
+        if (modal) modal.classList.add("hidden");
+      };
+
+      window.spinCasinoWheel = async function() {
+        if (window.isCasinoSpinning) return;
+        if (!currentUser || !currentUserProfile) return;
+
+        let totalBetPlaced = 0;
+        const betsCopy = {};
+        for (const [spotId, amount] of Object.entries(window.currentCasinoBets)) {
+          if (amount > 0) {
+            totalBetPlaced += amount;
+            betsCopy[spotId] = amount;
+          }
+        }
+
+        if (totalBetPlaced <= 0) {
+          showNotification("👉 Coloca fichas en el tapete para apostar.", "warning");
+          return;
+        }
+
+        const currentChipsInDB = currentUserProfile.casino_chips || 0;
+        window.isCasinoSpinning = true;
+        window.closeCasinoResultModal();
+
+        const btnSpin = document.getElementById("casino-btn-spin");
+        btnSpin.disabled = true;
+        btnSpin.innerHTML = `<i data-lucide="loader" class="w-5 h-5 animate-spin text-slate-950"></i> Lanzando Bola...`;
+        if (typeof lucide !== "undefined") lucide.createIcons();
+
+        const userRef = doc(db, "users", currentUser.uid);
+        const remainingChips = currentChipsInDB - totalBetPlaced;
+
+        try {
+          await updateDoc(userRef, { casino_chips: remainingChips });
+          window.localCasinoChips = remainingChips;
+          document.getElementById("casino-local-chips-display").textContent = remainingChips;
+          const playerChipsBal = document.getElementById("player-chips-balance");
+          if (playerChipsBal) playerChipsBal.textContent = remainingChips;
+        } catch (err) {
+          console.error(err);
+          showNotification("Error de red. No se pudo realizar la tirada.", "error");
+          window.isCasinoSpinning = false;
+          btnSpin.disabled = false;
+          btnSpin.innerHTML = `<i data-lucide="play" class="w-5 h-5 text-slate-950"></i> ¡GIRAR RULETA!`;
+          if (typeof lucide !== "undefined") lucide.createIcons();
+          return;
+        }
+
+        const winnerIndex  = Math.floor(Math.random() * casinoNumbers.length);
+        const winnerNumber = casinoNumbers[winnerIndex];
+
+        const canvas     = document.getElementById("casino-canvas-wheel");
+        const size       = canvas ? canvas.width : 320;
+        const center     = size / 2;
+        const radius     = center - 15;
+        const outerTrack = radius - 6;
+        const innerTrack = radius - 26;
+
+        const anglePerSeg = (2 * Math.PI) / casinoNumbers.length;
+        const startWheelAngle = window.casinoWheelAngle || 0;
+        const ballStartAngle = Math.random() * 2 * Math.PI;
+
+        const TOTAL_DURATION  = 6800;
+        const PHASE1_END      = 0.48;
+        const PHASE2_END      = 0.80;
+
+        const WHEEL_ROTATIONS   = Math.PI * 11;
+        const BALL_LAPS_PHASE1  = -Math.PI * 26;
+
+        const winnerLocalOffset = winnerIndex * anglePerSeg - Math.PI / 2;
+        const ballAngleEndP1    = ballStartAngle + BALL_LAPS_PHASE1;
+
+        // ── Posición EXACTA final de la rueda y del casillero ─────────────────
+        // easeOutCubic(1) = 1 exacto → el ángulo final es determinista desde el inicio
+        const FROZEN_WHEEL_ANGLE  = startWheelAngle + WHEEL_ROTATIONS;
+        const FROZEN_POCKET_ANGLE = FROZEN_WHEEL_ANGLE + winnerLocalOffset;
+        const FROZEN_BALL_RADIUS  = innerTrack;
+
+        let p2LastAngle  = ballStartAngle;
+        let p2LastRadius = outerTrack;
+
+        const startTime = performance.now();
+
+        const easeOutCubic  = t => 1 - Math.pow(1 - t, 3);
+        const easeOutQuad   = t => t * (2 - t);
+        const easeInOutSine = t => -(Math.cos(Math.PI * t) - 1) / 2;
+
+        function angularLerp(from, to, t) {
+          let diff = ((to - from) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+          return from + diff * t;
+        }
+
+        function lerp(a, b, t) { return a + (b - a) * t; }
+
+        function animate(now) {
+          const elapsed  = now - startTime;
+          const progress = Math.min(elapsed / TOTAL_DURATION, 1);
+
+          const wheelAngle = startWheelAngle + WHEEL_ROTATIONS * easeOutCubic(progress);
+          window.casinoWheelAngle = wheelAngle;
+
+          const pocketAngleNow = wheelAngle + winnerLocalOffset;
+
+          let ballAngle, ballRadius;
+
+          if (progress <= PHASE1_END) {
+            const p     = progress / PHASE1_END;
+            const eased = easeOutQuad(p);
+            ballAngle  = ballStartAngle + BALL_LAPS_PHASE1 * (1 - eased);
+            ballRadius = outerTrack;
+
+          } else if (progress <= PHASE2_END) {
+            const p     = (progress - PHASE1_END) / (PHASE2_END - PHASE1_END);
+            const eased = easeOutQuad(p);
+
+            ballRadius = lerp(outerTrack, innerTrack + 4, eased);
+            ballAngle = angularLerp(ballAngleEndP1, pocketAngleNow, eased);
+
+            const bounceFreq = 22;
+            const bounceAmp  = 7 * (1 - eased);
+            ballRadius += Math.sin(progress * bounceFreq * Math.PI) * bounceAmp;
+            ballAngle  += Math.cos(progress * bounceFreq * Math.PI) * (0.014 * bounceAmp);
+
+            p2LastAngle  = ballAngle;
+            p2LastRadius = ballRadius;
+
+          } else {
+            // FASE 3: converge hacia FROZEN_POCKET_ANGLE — valor calculado al inicio,
+            // invariante, garantiza que bola llega al punto exacto sin ningún drift.
+            const eased = easeInOutSine((progress - PHASE2_END) / (1 - PHASE2_END));
+            ballRadius  = lerp(p2LastRadius, FROZEN_BALL_RADIUS, eased);
+            ballAngle   = angularLerp(p2LastAngle, FROZEN_POCKET_ANGLE, eased);
+          }
+
+          window.drawIntegratedWheel(wheelAngle, ballAngle, ballRadius);
+
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            // Frame final: congelar rueda + bola en posición determinista.
+            window.casinoWheelAngle = FROZEN_WHEEL_ANGLE;
+            window.drawIntegratedWheel(FROZEN_WHEEL_ANGLE, FROZEN_POCKET_ANGLE, FROZEN_BALL_RADIUS);
+
+            // Mantener el frame estático durante la pausa (≈60fps)
+            // para que ninguna llamada externa a drawIntegratedWheel mueva la bola.
+            const freezeId = setInterval(() => {
+              window.drawIntegratedWheel(FROZEN_WHEEL_ANGLE, FROZEN_POCKET_ANGLE, FROZEN_BALL_RADIUS);
+            }, 16);
+            setTimeout(() => { clearInterval(freezeId); finalizeSpin(); }, 700);
+          }
+        }
+
+        async function finalizeSpin() {
+          try {
+            let totalWon = 0;
+            for (const [spotId, amount] of Object.entries(betsCopy)) {
+              totalWon += window.evaluateCasinoBet(spotId, amount, winnerNumber);
+            }
+            const netBalance = totalWon - totalBetPlaced;
+
+            if (totalWon > 0) {
+              await updateDoc(userRef, {
+                casino_chips: firebase.firestore.FieldValue.increment(totalWon)
+              });
+              window.localCasinoChips = window.localCasinoChips + totalWon;
+              document.getElementById("casino-local-chips-display").textContent = window.localCasinoChips;
+              const playerChipsBal = document.getElementById("player-chips-balance");
+              if (playerChipsBal) playerChipsBal.textContent = window.localCasinoChips;
+            }
+
+            window.casinoHistory.unshift(winnerNumber);
+            if (window.casinoHistory.length > 8) window.casinoHistory.pop();
+            window.updateCasinoHistoryUI();
+
+            const display = document.getElementById("casino-winner-display");
+            if (display) {
+              const reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+              let colorClass  = reds.includes(winnerNumber) ? "text-rose-500 shadow-[0_0_8px_#dc2626]" : "text-slate-400 shadow-[0_0_8px_#6b7280]";
+              if (winnerNumber === 0) colorClass = "text-emerald-400 shadow-[0_0_8px_#10b981]";
+              const colorLabel = winnerNumber === 0 ? "Verde" : reds.includes(winnerNumber) ? "Rojo" : "Negro";
+              display.className   = `text-2xl font-black uppercase tracking-wide px-3 py-1 border border-white/5 bg-slate-950/80 rounded-2xl ${colorClass}`;
+              display.textContent = `${winnerNumber} (${colorLabel})`;
+            }
+
+            window.currentCasinoBets = {};
+            window.renderCasinoActiveBets();
+
+            const modal       = document.getElementById("casino-result-modal");
+            const titleEl     = document.getElementById("casino-modal-title");
+            const subtitleEl  = document.getElementById("casino-modal-subtitle");
+            const containerEl = document.getElementById("casino-modal-icon-container");
+            const iconEl = document.getElementById("casino-modal-icon");
+            
+            document.getElementById("casino-modal-total-bet").textContent = `${totalBetPlaced} Fichas`;
+            document.getElementById("casino-modal-total-won").textContent = `${totalWon} Fichas`;
+
+            const netText = document.getElementById("casino-modal-net-balance");
+            if (netBalance >= 0) {
+              netText.className = "text-sm font-black text-emerald-400";
+              netText.textContent = `+${netBalance} Fichas`;
+              titleEl.textContent = "¡GANADOR!";
+              titleEl.className = "text-xl font-black text-emerald-400 uppercase tracking-wide";
+              subtitleEl.textContent = "Fonda Casino Payout";
+              containerEl.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto border-2 border-emerald-500 bg-emerald-500/10 text-emerald-400 animate-bounce";
+              iconEl.setAttribute("data-lucide", "award");
+              showNotification(`🎉 ¡Casino! Ganaste +${totalWon} Fichas de Casino.`, "success");
+            } else {
+              netText.className = "text-sm font-black text-rose-500";
+              netText.textContent = `${netBalance} Fichas`;
+              titleEl.textContent = "¡CASA GANA!";
+              titleEl.className = "text-xl font-black text-rose-500 uppercase tracking-wide";
+              subtitleEl.textContent = "Inténtalo de nuevo";
+              containerEl.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto border-2 border-rose-500 bg-rose-500/10 text-rose-400";
+              iconEl.setAttribute("data-lucide", "frown");
+              showNotification("😔 Ronda perdedora en la ruleta.", "warning");
+            }
+
+            if (typeof lucide !== "undefined") lucide.createIcons();
+            if (modal) modal.classList.remove("hidden");
+
+          } catch (err) {
+            console.error(err);
+          } finally {
+            window.isCasinoSpinning = false;
+            btnSpin.disabled = false;
+            btnSpin.innerHTML = `<i data-lucide="play" class="w-5 h-5 text-slate-950"></i> ¡GIRAR RULETA!`;
+            if (typeof lucide !== "undefined") lucide.createIcons();
+          }
+        }
+
+        requestAnimationFrame(animate);
+      };
+
     </script>
 
     <!-- Modal de Selección de Sustitución Directa (Fonda Engine) -->
@@ -17505,6 +18377,154 @@
       </div>
     </div>
 
+  <!-- ── MODAL DIALOG: CONVERSOR CAJERO CASINO ── -->
+  <div id="casino-converter-modal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" onclick="if(event.target === this) closeCasinoConverterModal()">
+    <div class="bg-slate-900/95 border border-purple-500/25 p-6 rounded-3xl max-w-md w-full relative shadow-2xl space-y-5">
+      <!-- Botón de Cerrar (X) -->
+      <button onclick="closeCasinoConverterModal()" class="absolute top-4 right-4 text-slate-450 hover:text-white transition cursor-pointer">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <h3 class="text-xs font-black text-white uppercase tracking-wider font-montserrat text-center">CONVERSIÓN DE MONEDA</h3>
+      
+      <!-- Tabs -->
+      <div class="flex border-b border-white/5 justify-center gap-2">
+        <button id="btn-conv-tab-buy" onclick="switchCasinoConverterMode('buy')" class="flex-1 pb-2 font-black text-[10px] uppercase tracking-wider border-b-2 border-emerald-500 text-emerald-400 transition cursor-pointer">
+          A FICHAS (Fc ➔ Chips)
+        </button>
+        <button id="btn-conv-tab-sell" onclick="switchCasinoConverterMode('sell')" class="flex-1 pb-2 font-black text-[10px] uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition cursor-pointer">
+          A FC COINS (Chips ➔ Fc)
+        </button>
+      </div>
+
+      <!-- VIEW 1: COMPRAR FICHAS (Fc -> Chips) -->
+      <div id="casino-converter-buy-view" class="space-y-4">
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <!-- Input FC -->
+          <div class="w-full sm:w-1/2 text-left space-y-1">
+            <span class="text-[9px] font-bold text-slate-450 uppercase tracking-wider">Cantidad de Fc a convertir</span>
+            <div class="relative flex items-center">
+              <input type="number" id="casino-conv-buy-input" min="1" placeholder="FC a convertir" oninput="updateCasinoBuyConversion()" class="w-full pl-3 pr-12 py-2.5 rounded-xl bg-slate-950 border border-purple-500/20 text-xs font-black text-white focus:outline-none focus:border-emerald-500">
+              <div class="absolute right-3 flex items-center pointer-events-none">
+                <span class="text-[10px] font-bold text-purple-400 uppercase bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Fc</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Arrow -->
+          <div class="flex items-center justify-center pt-4">
+            <i data-lucide="arrow-right" class="w-5 h-5 text-slate-500 rotate-90 sm:rotate-0"></i>
+          </div>
+
+          <!-- Output Chips -->
+          <div class="w-full sm:w-1/2 text-left space-y-1">
+            <span class="text-[9px] font-bold text-slate-450 uppercase tracking-wider">Recibirás Fichas de Casino</span>
+            <div class="relative flex items-center">
+              <input type="text" id="casino-conv-buy-output" readonly placeholder="0 Fichas" class="w-full pl-3 pr-10 py-2.5 rounded-xl bg-slate-900/60 border border-white/5 text-xs font-black text-emerald-400 focus:outline-none">
+              <div class="absolute right-3 flex items-center pointer-events-none text-emerald-400">
+                🎡
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rate display -->
+        <div class="bg-slate-900/20 px-4 py-2.5 rounded-xl border border-white/5 flex items-center justify-between max-w-xs mx-auto">
+          <span class="text-[10px] font-bold text-slate-400">Tasa de conversión actual:</span>
+          <span class="text-[10px] font-black text-white">1 Fc = 100 Chips</span>
+        </div>
+
+        <!-- Action Button -->
+        <button onclick="executeCasinoBuyConversion()" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider transition active:scale-95 duration-100 cursor-pointer shadow shadow-emerald-950">
+          CONVERTIR Fc A FICHAS
+        </button>
+      </div>
+
+      <!-- VIEW 2: CANJEAR FICHAS (Chips -> Fc) -->
+      <div id="casino-converter-sell-view" class="hidden space-y-4">
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <!-- Input Chips -->
+          <div class="w-full sm:w-1/2 text-left space-y-1">
+            <span class="text-[9px] font-bold text-slate-450 uppercase tracking-wider">Cantidad de Fichas a convertir</span>
+            <div class="relative flex items-center">
+              <input type="number" id="casino-conv-sell-input" min="100" step="100" placeholder="Fichas a convertir (mín. 100)" oninput="updateCasinoSellConversion()" class="w-full pl-3 pr-10 py-2.5 rounded-xl bg-slate-950 border border-purple-500/20 text-xs font-black text-white focus:outline-none focus:border-emerald-500">
+              <div class="absolute right-3 flex items-center pointer-events-none text-emerald-400">
+                🎡
+              </div>
+            </div>
+          </div>
+
+          <!-- Arrow -->
+          <div class="flex items-center justify-center pt-4">
+            <i data-lucide="arrow-right" class="w-5 h-5 text-slate-500 rotate-90 sm:rotate-0"></i>
+          </div>
+
+          <!-- Output FC -->
+          <div class="w-full sm:w-1/2 text-left space-y-1">
+            <span class="text-[9px] font-bold text-slate-450 uppercase tracking-wider">Recibirás FC Coins</span>
+            <div class="relative flex items-center">
+              <input type="text" id="casino-conv-sell-output" readonly placeholder="0 Fc" class="w-full pl-3 pr-12 py-2.5 rounded-xl bg-slate-900/60 border border-white/5 text-xs font-black text-purple-400 focus:outline-none">
+              <div class="absolute right-3 flex items-center pointer-events-none">
+                <span class="text-[10px] font-bold text-purple-400 uppercase bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Fc</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rate display -->
+        <div class="bg-slate-900/20 px-4 py-2.5 rounded-xl border border-white/5 flex items-center justify-between max-w-xs mx-auto">
+          <span class="text-[10px] font-bold text-slate-400">Tasa de conversión actual:</span>
+          <span class="text-[10px] font-black text-white">100 Chips = 1 Fc</span>
+        </div>
+
+        <!-- Action Button -->
+        <button onclick="executeCasinoSellConversion()" class="w-full py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs uppercase tracking-wider transition active:scale-95 duration-100 cursor-pointer shadow shadow-purple-950">
+          CONVERTIR FICHAS A Fc
+        </button>
+      </div>
+
+      <!-- Reset Button / Cancelar -->
+      <button onclick="closeCasinoConverterModal()" class="w-full py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-white/5 text-slate-400 font-extrabold text-[10px] uppercase tracking-wider transition active:scale-95 duration-100 cursor-pointer">
+        CANCELAR / SALIR
+      </button>
+      
+      <p class="text-[8px] text-slate-500 font-bold tracking-wide text-center">*Sujeto a límites diarios y condiciones.</p>
+    </div>
+  </div>
+
+
+  <!-- ── MODAL DIALOG: RESUMEN DE JUGADA DEL CASINO ── -->
+  <div id="casino-result-modal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+    <div class="glass-panel border border-amber-500/35 rounded-[2rem] p-6 max-w-sm w-full text-center space-y-5 shadow-2xl bg-slate-900">
+      <div id="casino-modal-icon-container" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto border-2">
+        <i id="casino-modal-icon" data-lucide="award" class="w-8 h-8"></i>
+      </div>
+      
+      <div class="space-y-1">
+        <h3 id="casino-modal-title" class="text-xl font-black uppercase tracking-wide"></h3>
+        <p id="casino-modal-subtitle" class="text-[11px] text-slate-400 uppercase font-extrabold tracking-widest">Fonda Casino Payout</p>
+      </div>
+
+      <div class="bg-slate-950/80 border border-white/5 p-4 rounded-2xl text-left space-y-2">
+        <div class="flex justify-between items-center text-xs">
+          <span class="text-slate-400 font-bold">Total Apostado:</span>
+          <span id="casino-modal-total-bet" class="font-black text-white"></span>
+        </div>
+        <div class="flex justify-between items-center text-xs border-b border-white/5 pb-2">
+          <span class="text-slate-400 font-bold">Total Ganado:</span>
+          <span id="casino-modal-total-won" class="font-black"></span>
+        </div>
+        <div class="flex justify-between items-center text-sm pt-1">
+          <span class="text-slate-200 font-extrabold">Balance Neto:</span>
+          <span id="casino-modal-net-balance" class="font-black"></span>
+        </div>
+      </div>
+
+      <button onclick="closeCasinoResultModal()" class="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 font-black text-xs uppercase text-slate-950 tracking-wider transition cursor-pointer active:scale-95 duration-100 shadow">
+        Aceptar
+      </button>
+    </div>
+  </div>
 
 </body>
 
