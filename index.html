@@ -1694,6 +1694,23 @@
       <!-- ================= PESTAÑA D: JUEGO DE APUESTAS ================= -->
       <div id="panel-bets" class="w-full hidden flex flex-col gap-6">
 
+        <!-- Banner de la ruleta si no se ha girado hoy -->
+        <div id="daily-spin-banner" class="hidden w-full glass-panel border border-amber-500/35 bg-gradient-to-r from-amber-500/10 to-purple-600/10 p-5 rounded-3xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-lg shadow-amber-500/5 relative overflow-hidden">
+          <div class="absolute -right-20 -top-20 w-44 h-44 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="flex items-center gap-3">
+            <div class="p-3 bg-amber-500/15 border border-amber-500/30 text-amber-400 rounded-2xl animate-pulse">
+              <i data-lucide="compass" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-sm text-white uppercase tracking-wider">🎡 Ruleta de la Fortuna Diaria</h4>
+              <p class="text-[11px] text-slate-300 font-medium mt-0.5">¡Tienes una tirada gratuita disponible para ganar Fonda Coins adicionales!</p>
+            </div>
+          </div>
+          <button onclick="openDailySpinModal(false)" class="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 border border-amber-400/30 text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 shadow-lg shadow-amber-500/20 active:scale-95 duration-150 self-start sm:self-center">
+            ¡Girar Ahora! <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
         <!-- ── CABECERA: LOSA DE OBSIDIANA AMATISTA ── -->
         <div class="fbet-header">
           <div class="fbet-header-frieze"></div>
@@ -1716,6 +1733,8 @@
                   <span class="fbet-odd-plaque exact">🏆 3. Resultado Exacto — Cuota ×5</span>
                 </div>
               </div>
+              
+
             </div>
           </div>
           <!-- Friso inferior -->
@@ -2579,6 +2598,81 @@
         class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-sm transition cursor-pointer flex items-center justify-center gap-2">
         <i data-lucide="check" class="w-4 h-4"></i> Confirmar Cambio
       </button>
+    </div>
+  </div>
+
+  <!-- Modal: Ruleta de la Fortuna Diaria -->
+  <div id="modal-daily-spin"
+    class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div
+      class="glass-panel rounded-[2rem] border border-amber-500/25 p-8 w-full max-w-sm shadow-2xl space-y-6 text-center bg-fonda-950/90 relative overflow-hidden">
+      <!-- absolute decorative backgrounds -->
+      <div class="absolute -left-16 -top-16 w-36 h-36 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -right-16 -bottom-16 w-36 h-36 bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-black text-white flex items-center gap-2 uppercase tracking-wider">
+          <i data-lucide="compass" class="w-5 h-5 text-amber-400 animate-spin" style="animation-duration: 10s"></i> Ruleta de la Fortuna
+        </h3>
+        <button id="btn-close-spin-modal" class="text-slate-500 hover:text-white transition cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      
+      <p class="text-xs text-slate-300 leading-relaxed font-medium">¡Gira la ruleta diaria de Fonda Fanegas y reclama tus Fonda Coins (FC) gratuitos para apuestas y sobres!</p>
+      
+      <!-- The Spin Wheel Area -->
+      <div class="relative flex flex-col items-center justify-center py-4">
+        <!-- Center Pointer -->
+        <div class="absolute top-0 z-20 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-amber-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"></div>
+        
+        <!-- Outer Glowing Ring -->
+        <div class="w-56 h-56 rounded-full border-4 border-amber-500/40 p-1 bg-slate-950 flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.25)] relative overflow-hidden">
+          
+          <!-- Inner Rotating Wheel -->
+          <div id="daily-spin-wheel-canvas" class="w-full h-full rounded-full relative" style="transform: rotate(0deg); background: conic-gradient(#7e22ce 0deg 18deg, #1e1b4b 18deg 36deg, #d97706 36deg 54deg, #0f172a 54deg 72deg, #7e22ce 72deg 90deg, #1e1b4b 90deg 108deg, #d97706 108deg 126deg, #0f172a 126deg 144deg, #7e22ce 144deg 162deg, #1e1b4b 162deg 180deg, #d97706 180deg 198deg, #0f172a 198deg 216deg, #7e22ce 216deg 234deg, #1e1b4b 234deg 252deg, #d97706 252deg 270deg, #0f172a 270deg 288deg, #7e22ce 288deg 306deg, #1e1b4b 306deg 324deg, #d97706 324deg 342deg, #0f172a 342deg 360deg);">
+            <!-- Labels on the wheel (20 slots, 18 deg each) -->
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-white" style="transform: translate(-50%, -50%) rotate(9deg) translateY(-82px)">2 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-slate-300" style="transform: translate(-50%, -50%) rotate(27deg) translateY(-82px)">3 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-white" style="transform: translate(-50%, -50%) rotate(45deg) translateY(-82px)">4 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-slate-300" style="transform: translate(-50%, -50%) rotate(63deg) translateY(-82px)">5 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-white" style="transform: translate(-50%, -50%) rotate(81deg) translateY(-82px)">2 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-slate-300" style="transform: translate(-50%, -50%) rotate(99deg) translateY(-82px)">3 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-white" style="transform: translate(-50%, -50%) rotate(117deg) translateY(-82px)">4 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-slate-300" style="transform: translate(-50%, -50%) rotate(135deg) translateY(-82px)">5 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-white" style="transform: translate(-50%, -50%) rotate(153deg) translateY(-82px)">2 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-slate-300" style="transform: translate(-50%, -50%) rotate(171deg) translateY(-82px)">3 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-white" style="transform: translate(-50%, -50%) rotate(189deg) translateY(-82px)">4 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-slate-300" style="transform: translate(-50%, -50%) rotate(207deg) translateY(-82px)">5 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-white" style="transform: translate(-50%, -50%) rotate(225deg) translateY(-82px)">2 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-slate-300" style="transform: translate(-50%, -50%) rotate(243deg) translateY(-82px)">3 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-white" style="transform: translate(-50%, -50%) rotate(261deg) translateY(-82px)">4 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-slate-300" style="transform: translate(-50%, -50%) rotate(279deg) translateY(-82px)">5 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-white" style="transform: translate(-50%, -50%) rotate(297deg) translateY(-82px)">6 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-white" style="transform: translate(-50%, -50%) rotate(315deg) translateY(-82px)">8 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-white" style="transform: translate(-50%, -50%) rotate(333deg) translateY(-82px)">10 FC</div>
+            <div class="wheel-label absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-[8px] text-gold" style="transform: translate(-50%, -50%) rotate(351deg) translateY(-82px)">20 FC</div>
+          </div>
+          
+          <!-- Inner Pin decoration -->
+          <div class="absolute w-10 h-10 rounded-full bg-slate-900 border-4 border-amber-500 shadow-lg flex items-center justify-center z-10">
+            <span class="w-3 h-3 rounded-full bg-amber-400 animate-ping absolute"></span>
+            <span class="w-3 h-3 rounded-full bg-amber-400 z-10"></span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <button id="btn-spin-wheel-start"
+        class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:via-yellow-300 hover:to-amber-400 text-slate-950 font-black text-sm uppercase tracking-wider transition cursor-pointer shadow-lg shadow-amber-500/20 active:scale-95 duration-150 flex items-center justify-center gap-1.5">
+        <i data-lucide="play" class="w-4.5 h-4.5"></i> ¡Girar Ahora!
+      </button>
+      
+      <!-- Result Banner (hidden initially) -->
+      <div id="spin-wheel-result-banner" class="hidden py-3 px-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl">
+        <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Premio Obtenido</p>
+        <h4 id="spin-wheel-result-text" class="text-lg font-black text-emerald-400 mt-0.5">¡+10 FC!</h4>
+      </div>
     </div>
   </div>
 
@@ -3541,6 +3635,22 @@
         }
       });
 
+      // --- Listeners de la Ruleta de la Fortuna Diaria ---
+      const modalDailySpin = document.getElementById("modal-daily-spin");
+      if (modalDailySpin) {
+        document.getElementById("btn-close-spin-modal").addEventListener("click", () => {
+          window.closeDailySpinModal();
+        });
+        modalDailySpin.addEventListener("click", (e) => {
+          if (e.target === modalDailySpin && !window.isSpinningWheel) {
+            window.closeDailySpinModal();
+          }
+        });
+        document.getElementById("btn-spin-wheel-start").addEventListener("click", () => {
+          window.spinDailyWheel();
+        });
+      }
+
       // --- ESCUCHA DEL SISTEMA DE TABS DE DASHBOARD ---
       const btnTabSquad = document.getElementById("btn-tab-squad");
       const btnTabMarket = document.getElementById("btn-tab-market");
@@ -3979,6 +4089,10 @@
               }
               updateHeaderAndDashboardStats();
               routeUserToSection(user, currentUserProfile);
+
+              if (window.checkDailySpinWheelAvailability) {
+                window.checkDailySpinWheelAvailability(currentUserProfile);
+              }
             }
           });
 
@@ -6042,6 +6156,212 @@
         } catch (e) { console.error("Error sending system chat message:", e); }
       };
 
+      // --- Ruleta de la Fortuna Diaria ---
+      window.hasClosedSpinModalThisSession = false;
+      window.hasShownDailySpinNotificationThisSession = false;
+      window.isSpinningWheel = false;
+
+      window.checkDailySpinWheelAvailability = function (profile) {
+        if (!currentUser || !profile) return;
+
+        const todayStr = getLocalDateString();
+        const lastSpinTimestamp = profile.last_spin_timestamp || 0;
+        const cooldownMs = 24 * 60 * 60 * 1000;
+        const timePassed = Date.now() - lastSpinTimestamp;
+
+        let hasSpunToday = false;
+        if (lastSpinTimestamp > 0) {
+          hasSpunToday = timePassed < cooldownMs;
+        } else {
+          hasSpunToday = profile.last_spin_date === todayStr;
+        }
+
+        // Banner en el panel de apuestas
+        const banner = document.getElementById("daily-spin-banner");
+        if (banner) {
+          if (hasSpunToday) {
+            banner.classList.add("hidden");
+          } else {
+            banner.classList.remove("hidden");
+          }
+        }
+
+        // Al entrar a la aplicación, si no ha girado la ruleta hoy en las últimas 24h, mostrar aviso flotante
+        if (!hasSpunToday && !window.hasShownDailySpinNotificationThisSession) {
+          window.hasShownDailySpinNotificationThisSession = true;
+          setTimeout(() => {
+            showNotification("🎡 ¡Atención! Tienes pendiente tu Tirada Diaria en la Ruleta de la Fortuna.", "warning");
+          }, 800);
+        }
+
+        // Abrir automáticamente si corresponde
+        if (!hasSpunToday && !window.hasClosedSpinModalThisSession) {
+          setTimeout(() => {
+            const loginBonusModal = document.getElementById("modal-login-bonus");
+            const spinModal = document.getElementById("modal-daily-spin");
+            if (loginBonusModal) {
+              // Si el modal de login está activo, esperar a que se cierre (o postergar 3s)
+              setTimeout(() => {
+                const freshSpinModal = document.getElementById("modal-daily-spin");
+                if (!document.getElementById("modal-login-bonus") && freshSpinModal && freshSpinModal.classList.contains("hidden")) {
+                  window.openDailySpinModal(false);
+                }
+              }, 3000);
+            } else {
+              if (spinModal && spinModal.classList.contains("hidden")) {
+                window.openDailySpinModal(false);
+              }
+            }
+          }, 1500);
+        }
+      };
+
+      window.openDailySpinModal = function (isTest = false) {
+        window.isTestSpin = isTest;
+        const modal = document.getElementById("modal-daily-spin");
+        if (!modal) return;
+
+        const wheel = document.getElementById("daily-spin-wheel-canvas");
+        if (wheel) {
+          wheel.style.transition = "none";
+          wheel.style.transform = "rotate(0deg)";
+        }
+
+        const btnStart = document.getElementById("btn-spin-wheel-start");
+        if (btnStart) {
+          btnStart.disabled = false;
+          btnStart.classList.remove("hidden");
+          btnStart.innerHTML = `<i data-lucide="play" class="w-4.5 h-4.5"></i> ¡Girar Ahora!`;
+        }
+
+        const resultBanner = document.getElementById("spin-wheel-result-banner");
+        if (resultBanner) resultBanner.classList.add("hidden");
+
+        modal.classList.remove("hidden");
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      };
+
+      window.closeDailySpinModal = function () {
+        const modal = document.getElementById("modal-daily-spin");
+        if (modal) {
+          modal.classList.add("hidden");
+        }
+        window.hasClosedSpinModalThisSession = true;
+      };
+
+      window.spinDailyWheel = async function () {
+        if (window.isSpinningWheel) return;
+        if (!currentUser || !currentUserProfile) return;
+
+        const todayStr = getLocalDateString();
+        const lastSpinTimestamp = currentUserProfile.last_spin_timestamp || 0;
+        const cooldownMs = 24 * 60 * 60 * 1000;
+        const timePassed = Date.now() - lastSpinTimestamp;
+
+        let hasSpunToday = false;
+        if (lastSpinTimestamp > 0) {
+          hasSpunToday = timePassed < cooldownMs;
+        } else {
+          hasSpunToday = currentUserProfile.last_spin_date === todayStr;
+        }
+
+        if (hasSpunToday && !window.isTestSpin) {
+          const remainingMs = cooldownMs - timePassed;
+          const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+          const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+          showNotification(`Debes esperar ${hours}h ${minutes}m para volver a girar la ruleta.`, "error");
+          return;
+        }
+
+        window.isSpinningWheel = true;
+        const btnStart = document.getElementById("btn-spin-wheel-start");
+        if (btnStart) {
+          btnStart.disabled = true;
+          btnStart.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Girando...`;
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }
+
+        const values = [2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5, 6, 8, 10, 20];
+        // Probabilidades acumuladas para: [2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5, 2, 3, 4, 5, 6, 8, 10, 20]
+        // Pesos: [12, 11, 10, 9, 12, 10, 8, 6, 10, 6, 3, 2.5, 0.1, 0.1, 0.1, 0.1, 0.6, 0.3, 0.1, 0.1] (Suma total = 100%)
+        const weights = [12, 11, 10, 9, 12, 10, 8, 6, 10, 6, 3, 2.5, 0.1, 0.1, 0.1, 0.1, 0.6, 0.3, 0.1, 0.1];
+        const cumulativeWeights = [];
+        let sum = 0;
+        for (let i = 0; i < weights.length; i++) {
+          sum += weights[i];
+          cumulativeWeights.push(sum);
+        }
+
+        const rand = Math.random() * 100;
+        let randomIndex = 0;
+        for (let i = 0; i < cumulativeWeights.length; i++) {
+          if (rand <= cumulativeWeights[i]) {
+            randomIndex = i;
+            break;
+          }
+        }
+        const prizeFC = values[randomIndex];
+
+        // Calcular ángulo final (para que caiga en el centro del segmento de 18 grados)
+        const segmentAngle = randomIndex * 18 + 9;
+        const totalRotation = (360 * 5) + (360 - segmentAngle);
+
+        const wheel = document.getElementById("daily-spin-wheel-canvas");
+        if (wheel) {
+          wheel.style.transition = "transform 4s cubic-bezier(0.15, 0.85, 0.1, 1)";
+          wheel.style.transform = `rotate(${totalRotation}deg)`;
+        }
+
+        setTimeout(async () => {
+          try {
+            const userRef = doc(db, "users", currentUser.uid);
+            const currentFC = currentUserProfile.fonda_coins || 0;
+            const newFC = currentFC + prizeFC;
+
+            if (!window.isTestSpin) {
+              await updateDoc(userRef, {
+                fonda_coins: newFC,
+                last_spin_date: todayStr,
+                last_spin_timestamp: Date.now()
+              });
+
+              currentUserProfile.fonda_coins = newFC;
+              currentUserProfile.last_spin_date = todayStr;
+              currentUserProfile.last_spin_timestamp = Date.now();
+              updateHeaderAndDashboardStats();
+            }
+
+            if (btnStart) btnStart.classList.add("hidden");
+
+            const resultBanner = document.getElementById("spin-wheel-result-banner");
+            const resultText = document.getElementById("spin-wheel-result-text");
+            if (resultBanner && resultText) {
+              resultText.textContent = window.isTestSpin ? `[PRUEBA] ¡+${prizeFC} FC!` : `¡+${prizeFC} Fonda Coins (FC)!`;
+              resultBanner.classList.remove("hidden");
+            }
+
+            if (!window.isTestSpin) {
+              showNotification(`🎡 Ruleta: ¡Has ganado +${prizeFC} FC!`, "success");
+              const banner = document.getElementById("daily-spin-banner");
+              if (banner) banner.classList.add("hidden");
+            } else {
+              showNotification(`🎡 [PRUEBA] Ruleta: ¡Hubieras ganado +${prizeFC} FC!`, "success");
+            }
+
+          } catch (err) {
+            console.error("Error processing daily spin reward:", err);
+            showNotification("Error de red al registrar tu premio.", "error");
+            if (btnStart) {
+              btnStart.disabled = false;
+              btnStart.innerHTML = `<i data-lucide="play" class="w-4.5 h-4.5"></i> ¡Intentar de Nuevo!`;
+              if (typeof lucide !== "undefined") lucide.createIcons();
+            }
+          } finally {
+            window.isSpinningWheel = false;
+          }
+        }, 4100);
+      };
+
       // --- Usar Token desde el buzón para cancelar clausulazo ---
       window.counterClausulazo = async function (clausulazoId) {
         await window.cancelClausulazoWithToken(clausulazoId);
@@ -6261,9 +6581,15 @@
           }
 
           const labels = sortedJornadaKeys.length > 0 ? sortedJornadaKeys : ["Sin Datos"];
-          const data = sortedJornadaKeys.length > 0 ? sortedJornadaKeys.map(k => puntosPorJornada[k] || 0) : [0];
+          const dataMatchday = sortedJornadaKeys.length > 0 ? sortedJornadaKeys.map(k => puntosPorJornada[k] || 0) : [0];
+          
+          let cumulativeSum = 0;
+          const dataCumulative = sortedJornadaKeys.length > 0 ? sortedJornadaKeys.map(k => {
+            cumulativeSum += (puntosPorJornada[k] || 0);
+            return cumulativeSum;
+          }) : [0];
 
-          const gradient = chartCtx.createLinearGradient(0, 0, 0, 200);
+          const gradient = chartCtx.createLinearGradient(0, 0, 0, 220);
           gradient.addColorStop(0, "rgba(245, 158, 11, 0.45)");
           gradient.addColorStop(1, "rgba(245, 158, 11, 0.0)");
 
@@ -6271,54 +6597,100 @@
             type: "line",
             data: {
               labels: labels,
-              datasets: [{
-                label: "Puntos en Jornada",
-                data: data,
-                borderColor: "#fbbf24",
-                borderWidth: 3,
-                pointBackgroundColor: "#ffffff",
-                pointBorderColor: "#fbbf24",
-                pointBorderWidth: 2.5,
-                pointRadius: 4.5,
-                pointHoverRadius: 6.5,
-                tension: 0.38,
-                fill: true,
-                backgroundColor: gradient
-              }]
+              datasets: [
+                {
+                  label: "Evolución Acumulada",
+                  data: dataCumulative,
+                  borderColor: "#fbbf24", // Gold
+                  borderWidth: 3.5,
+                  pointBackgroundColor: "#ffffff",
+                  pointBorderColor: "#fbbf24",
+                  pointBorderWidth: 2.5,
+                  pointRadius: 5,
+                  pointHoverRadius: 7.5,
+                  tension: 0.35,
+                  fill: true,
+                  backgroundColor: gradient,
+                  yAxisID: 'yCumulative'
+                },
+                {
+                  label: "Puntos en Jornada",
+                  data: dataMatchday,
+                  borderColor: "rgba(168, 85, 247, 0.65)", // Purple
+                  borderWidth: 2.5,
+                  pointBackgroundColor: "#ffffff",
+                  pointBorderColor: "rgba(168, 85, 247, 0.8)",
+                  pointBorderWidth: 2,
+                  pointRadius: 3.5,
+                  pointHoverRadius: 5.5,
+                  tension: 0.35,
+                  fill: false,
+                  yAxisID: 'yMatchday'
+                }
+              ]
             },
             options: {
               responsive: true,
               maintainAspectRatio: false,
               plugins: {
-                legend: { display: false },
+                legend: { 
+                  display: true,
+                  labels: {
+                    color: "rgba(255, 255, 255, 0.85)",
+                    font: { family: "Inter", weight: "bold", size: 9 }
+                  }
+                },
                 tooltip: {
                   backgroundColor: "rgba(15, 23, 42, 0.95)",
                   titleColor: "#ffffff",
-                  bodyColor: "#fbbf24",
+                  bodyColor: "#ffffff",
                   titleFont: { weight: "bold", family: "Inter" },
                   bodyFont: { family: "Inter" },
                   padding: 10,
-                  borderColor: "rgba(251, 191, 36, 0.2)",
+                  borderColor: "rgba(255, 255, 255, 0.1)",
                   borderWidth: 1,
-                  displayColors: false
+                  displayColors: true
                 }
               },
               scales: {
                 x: {
-                  grid: { display: false },
+                  grid: { color: "rgba(255, 255, 255, 0.04)" },
                   ticks: {
                     color: "rgba(255, 255, 255, 0.65)",
-                    font: { size: 9, weight: "bold" }
+                    font: { size: 9, weight: "bold", family: "Inter" }
                   }
                 },
-                y: {
-                  grid: {
-                    color: "rgba(255, 255, 255, 0.06)"
-                  },
+                yCumulative: {
+                  type: 'linear',
+                  position: 'left',
+                  grid: { color: "rgba(255, 255, 255, 0.06)" },
                   ticks: {
-                    color: "rgba(255, 255, 255, 0.65)",
-                    font: { size: 9 },
+                    color: "#fbbf24",
+                    font: { size: 9, weight: "bold", family: "Inter" },
                     precision: 0
+                  },
+                  title: {
+                    display: true,
+                    text: 'Puntos Acumulados',
+                    color: '#fbbf24',
+                    font: { family: "Inter", weight: "bold", size: 10 }
+                  },
+                  suggestedMin: 0
+                },
+                yMatchday: {
+                  type: 'linear',
+                  position: 'right',
+                  grid: { drawOnChartArea: false }, // Evita superposición de rejilla
+                  ticks: {
+                    color: "#c084fc",
+                    font: { size: 9, weight: "bold", family: "Inter" },
+                    precision: 0
+                  },
+                  title: {
+                    display: true,
+                    text: 'Puntos Jornada',
+                    color: '#c084fc',
+                    font: { family: "Inter", weight: "bold", size: 10 }
                   },
                   suggestedMin: 0
                 }

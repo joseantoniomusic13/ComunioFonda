@@ -18,11 +18,13 @@ function showNotification(message, type = "success") {
   if (oldToast) oldToast.remove();
 
   const toast = document.createElement("div");
-  toast.className = `notification-toast glass-panel border ${
-    type === "success" 
-      ? "border-emerald-500 bg-slate-900/90 text-emerald-400" 
-      : "border-rose-500 bg-slate-900/90 text-rose-400"
-  }`;
+  let themeClasses = "border-rose-500 bg-slate-900/90 text-rose-400";
+  if (type === "success") {
+    themeClasses = "border-emerald-500 bg-slate-900/90 text-emerald-400";
+  } else if (type === "warning") {
+    themeClasses = "border-amber-500 bg-slate-900/90 text-amber-400";
+  }
+  toast.className = `notification-toast glass-panel border ${themeClasses}`;
 
   // Icono dinámico
   const icon = type === "success" 
