@@ -606,6 +606,41 @@
                 </div>
               </div>
 
+              <!-- Enviar Recompensa Personalizada al Buzón -->
+              <div class="space-y-2 border-t border-white/5 pt-4">
+                <label class="block text-xs font-bold uppercase tracking-wider text-amber-400 font-extrabold">Enviar Recompensa al Buzón</label>
+                <div class="space-y-2.5">
+                  <input type="text" id="admin-reward-title" placeholder="Título de la Recompensa (ej: Premio Jornada)" disabled
+                    class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-amber-500/20 placeholder:text-slate-500 disabled:opacity-40">
+                  <textarea id="admin-reward-desc" placeholder="Descripción / Mensaje personalizado..." rows="2" disabled
+                    class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-amber-500/20 placeholder:text-slate-500 resize-none disabled:opacity-40"></textarea>
+                  
+                  <div class="grid grid-cols-2 gap-2">
+                    <div>
+                      <label for="admin-reward-type" class="block text-[9px] text-slate-400 font-bold uppercase mb-1">Tipo de Premio</label>
+                      <select id="admin-reward-type" disabled
+                        class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-amber-500/20 disabled:opacity-40">
+                        <option value="fc">Fonda Coins (FC)</option>
+                        <option value="money">Dólares ($)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="admin-reward-amount" class="block text-[9px] text-slate-400 font-bold uppercase mb-1">Cantidad</label>
+                      <div class="relative">
+                        <input type="number" id="admin-reward-amount" min="1" value="10" disabled
+                          class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-amber-500/20 disabled:opacity-40">
+                        <span id="admin-reward-amount-suffix" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 text-[10px] font-bold">FC</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button id="btn-admin-send-reward" disabled
+                    class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black py-2 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-1 shadow-md shadow-amber-500/10 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i> Enviar Recompensa al Buzón
+                  </button>
+                </div>
+              </div>
+
               <!-- Otorgar / Quitar Jugadores -->
               <div class="space-y-2 border-t border-white/5 pt-4">
                 <label for="admin-player-mod"
@@ -4564,6 +4599,30 @@
         }
       }
 
+      // Retirar puja en subasta del sistema
+      async function cancelSecretBid(playerId) {
+        if (!currentUser || !currentActiveLeagueData || !currentUserProfile) return;
+
+        try {
+          const leagueCode = currentActiveLeagueData.id;
+          const leagueRef = doc(db, "leagues", leagueCode);
+
+          const updatedMarketPlayers = (currentActiveLeagueData.market_players || []).map(item => {
+            if (item.id === playerId) {
+              const cleanBids = (item.bids || []).filter(b => b.uid !== currentUser.uid);
+              return { ...item, bids: cleanBids };
+            }
+            return item;
+          });
+
+          await updateDoc(leagueRef, { market_players: updatedMarketPlayers });
+          showNotification("Tu puja ha sido retirada con éxito.", "success");
+        } catch (err) {
+          console.error("Error cancelling secret bid:", err);
+          showNotification("Error en Firestore al retirar tu puja.", "error");
+        }
+      }
+
       // Ofertar directamente por un jugador en el mercado secundario
       async function makeDirectOffer(playerId, offerAmount) {
         if (!currentUser || !currentActiveLeagueData || !currentUserProfile) return;
@@ -6173,7 +6232,7 @@
           summaryEl.innerHTML = `
             <div class="flex justify-between items-center py-1 border-b border-white/[0.03]">
               <span class="text-slate-400">Total Jugadores:</span>
-              <span class="font-bold text-white">${squadPlayers.length} / 15</span>
+              <span class="font-bold text-white">${squadPlayers.length} / 30</span>
             </div>
             <div class="flex justify-between items-center py-1 border-b border-white/[0.03] text-[10px] pl-2">
               <span class="text-slate-500">Distribución:</span>
@@ -7428,6 +7487,18 @@
         const inputFCMod = document.getElementById("admin-fc-mod");
         if (inputFCMod) inputFCMod.disabled = disabled;
 
+        // CONTROLES DE RECOMPENSAS
+        const btnSendReward = document.getElementById("btn-admin-send-reward");
+        if (btnSendReward) btnSendReward.disabled = disabled;
+        const inputRewTitle = document.getElementById("admin-reward-title");
+        if (inputRewTitle) inputRewTitle.disabled = disabled;
+        const inputRewDesc = document.getElementById("admin-reward-desc");
+        if (inputRewDesc) inputRewDesc.disabled = disabled;
+        const inputRewType = document.getElementById("admin-reward-type");
+        if (inputRewType) inputRewType.disabled = disabled;
+        const inputRewAmount = document.getElementById("admin-reward-amount");
+        if (inputRewAmount) inputRewAmount.disabled = disabled;
+
         document.getElementById("btn-admin-give-player").disabled = disabled;
         document.getElementById("btn-admin-take-player").disabled = disabled;
         document.getElementById("admin-player-mod").disabled = disabled;
@@ -7568,6 +7639,88 @@
           showNotification("Error de base de datos al quitar Fonda Coins.", "error");
         }
       });
+
+      // Admin: Cambiar el sufijo según el tipo de recompensa seleccionado
+      const rewardTypeSelect = document.getElementById("admin-reward-type");
+      if (rewardTypeSelect) {
+        rewardTypeSelect.addEventListener("change", (e) => {
+          const suffix = document.getElementById("admin-reward-amount-suffix");
+          if (suffix) {
+            suffix.textContent = e.target.value === "money" ? "M$" : "FC";
+          }
+        });
+      }
+
+      // Admin: Enviar Recompensa Personalizada al Buzón
+      const btnSendReward = document.getElementById("btn-admin-send-reward");
+      if (btnSendReward) {
+        btnSendReward.addEventListener("click", async () => {
+          if (!adminSelectedUserId) {
+            showNotification("Debes seleccionar un mánager primero.", "error");
+            return;
+          }
+          
+          const title = document.getElementById("admin-reward-title").value.trim();
+          const desc = document.getElementById("admin-reward-desc").value.trim();
+          const rewardType = document.getElementById("admin-reward-type").value;
+          const amountVal = parseFloat(document.getElementById("admin-reward-amount").value) || 0;
+
+          if (!title) {
+            showNotification("Por favor, introduce un título para la recompensa.", "error");
+            return;
+          }
+          if (!desc) {
+            showNotification("Por favor, introduce una descripción.", "error");
+            return;
+          }
+          if (amountVal <= 0) {
+            showNotification("La cantidad debe ser mayor que 0.", "error");
+            return;
+          }
+
+          // Si es dinero, multiplicar por 1.000.000 (ya que se introduce en millones M$)
+          const finalAmount = rewardType === "money" ? amountVal * 1000000 : amountVal;
+
+          btnSendReward.disabled = true;
+          btnSendReward.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Enviando...`;
+          if (typeof lucide !== "undefined") lucide.createIcons();
+
+          try {
+            const userRef = doc(db, "users", adminSelectedUserId);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              
+              await db.collection("users").doc(adminSelectedUserId).collection("mailbox").add({
+                type: "custom_reward",
+                title: title,
+                description: desc,
+                rewardType: rewardType,
+                amount: finalAmount,
+                claimed: false,
+                createdAt: new Date().toISOString()
+              });
+
+              showNotification(`✉️ Recompensa enviada al buzón de ${userData.nombre_usuario} con éxito.`, "success");
+              
+              // Limpiar inputs
+              document.getElementById("admin-reward-title").value = "";
+              document.getElementById("admin-reward-desc").value = "";
+              document.getElementById("admin-reward-amount").value = "10";
+            } else {
+              showNotification("El usuario seleccionado no existe.", "error");
+            }
+          } catch (err) {
+            console.error("Error al enviar recompensa:", err);
+            showNotification("Error de red al enviar la recompensa.", "error");
+          } finally {
+            btnSendReward.disabled = false;
+            btnSendReward.innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5"></i> Enviar Recompensa al Buzón`;
+            if (typeof lucide !== "undefined") lucide.createIcons();
+          }
+        });
+      }
 
       // Admin: Otorgar Jugador Directamente
       document.getElementById("btn-admin-give-player").addEventListener("click", async () => {
@@ -8609,27 +8762,43 @@
               </div>
             </div>
 
-            <!-- Puja status -->
-            <div class="bg-slate-950/80 p-3 rounded-2xl border border-white/5 flex items-center justify-between text-xs md:text-sm">
-              <span class="text-slate-400 font-bold">Tu Puja Oculta:</span>
-              <span class="${hasBid ? 'text-purple-400' : 'text-slate-500'} font-extrabold flex items-center gap-1">
-                <i data-lucide="${hasBid ? 'check-circle' : 'circle-dashed'}" class="w-4 h-4"></i>
-                ${myBidText}
-              </span>
+            <!-- Puja status & total bids -->
+            <div class="bg-slate-950/80 p-3 rounded-2xl border border-white/5 flex flex-col gap-2 text-xs md:text-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 font-bold">Tu Puja Oculta:</span>
+                <span class="${hasBid ? 'text-purple-400' : 'text-slate-500'} font-extrabold flex items-center gap-1">
+                  <i data-lucide="${hasBid ? 'check-circle' : 'circle-dashed'}" class="w-4 h-4 shrink-0"></i>
+                  ${myBidText}
+                </span>
+              </div>
+              <div class="flex items-center justify-between border-t border-white/5 pt-2">
+                <span class="text-slate-400 font-bold">Pujas en Curso:</span>
+                <span class="${item.bids && item.bids.length > 0 ? 'text-amber-400' : 'text-slate-500'} font-extrabold flex items-center gap-1.5">
+                  <i data-lucide="users" class="w-4 h-4 shrink-0"></i>
+                  ${item.bids ? item.bids.length : 0} ${item.bids && item.bids.length === 1 ? 'puja' : 'pujas'}
+                </span>
+              </div>
             </div>
 
             <!-- Action controls -->
-            <div class="flex items-center gap-2 mt-1">
-              <div class="relative flex-grow">
+            <div class="flex flex-col gap-2 mt-1 w-full">
+              <div class="relative w-full">
                 <input type="number" step="0.1" min="${(finalPrice / 1000000).toFixed(1)}" 
                   class="input-bid w-full pl-3 pr-9 py-3 text-xs md:text-sm rounded-xl border border-white/10 bg-slate-950/90 font-bold text-slate-100 focus:outline-none focus:border-purple-500/50" 
                   placeholder="${(finalPrice / 1000000).toFixed(1)}" 
                   value="${myBid ? (myBid.price / 1000000).toFixed(1) : ''}">
                 <span class="absolute right-3 inset-y-0 flex items-center text-[10px] text-slate-500 font-bold">M$</span>
               </div>
-              <button class="btn-submit-bid bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-slate-950 font-black px-4 py-3 rounded-xl text-[10px] md:text-xs cursor-pointer transition flex items-center gap-1" data-id="${player.id}">
-                ${hasBid ? 'Pujado' : 'Pujar'} <i data-lucide="send" class="w-3.5 h-3.5"></i>
-              </button>
+              <div class="grid ${hasBid ? 'grid-cols-2' : 'grid-cols-1'} gap-2 w-full">
+                <button class="btn-submit-bid bg-purple-600 hover:bg-purple-500 text-slate-950 font-black py-3 rounded-xl text-xs md:text-sm cursor-pointer transition flex items-center justify-center gap-1 shadow-md shadow-purple-500/10" data-id="${player.id}">
+                  ${hasBid ? 'Modificar' : 'Pujar'} <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                </button>
+                ${hasBid ? `
+                <button class="btn-delete-bid bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 hover:border-transparent text-rose-400 hover:text-slate-950 font-black py-3 rounded-xl text-xs md:text-sm cursor-pointer transition flex items-center justify-center gap-1 shadow-md shadow-rose-500/5" data-id="${player.id}">
+                  Retirar <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+                ` : ''}
+              </div>
             </div>
           `;
             systemTbody.appendChild(divCard);
@@ -8771,14 +8940,21 @@
         systemTbody.querySelectorAll(".btn-submit-bid").forEach(btn => {
           btn.addEventListener("click", () => {
             const playerId = btn.getAttribute("data-id");
-            const inputContainer = btn.previousElementSibling;
-            const input = inputContainer.querySelector(".input-bid") || inputContainer;
+            const card = btn.closest(".market-card-premium");
+            const input = card.querySelector(".input-bid");
             const valM = parseFloat(input.value) || 0;
             if (valM <= 0) {
               showNotification("Ingresa una oferta válida.", "error");
               return;
             }
             placeSecretBid(playerId, valM * 1000000);
+          });
+        });
+
+        systemTbody.querySelectorAll(".btn-delete-bid").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const playerId = btn.getAttribute("data-id");
+            cancelSecretBid(playerId);
           });
         });
 
@@ -15049,6 +15225,42 @@
         }
 
         listEl.innerHTML = unclaimed.map(r => {
+          if (r.type === "custom_reward") {
+            const isMoney = r.rewardType === "money";
+            const borderClass = isMoney ? "border-emerald-500/30 bg-emerald-500/[0.02]" : "border-purple-500/30 bg-purple-500/[0.02]";
+            const titleClass = isMoney ? "text-emerald-400" : "text-purple-400";
+            const iconName = isMoney ? "dollar-sign" : "coins";
+            const btnClass = isMoney
+              ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs px-4 py-2 rounded-xl transition cursor-pointer hover:scale-[1.03] active:scale-95 duration-150 flex items-center gap-1 shadow-md shadow-emerald-500/10"
+              : "bg-purple-500 hover:bg-purple-400 text-slate-950 font-black text-xs px-4 py-2 rounded-xl transition cursor-pointer hover:scale-[1.03] active:scale-95 duration-150 flex items-center gap-1 shadow-md shadow-purple-500/10";
+            const badgeText = isMoney ? `+${(r.amount / 1000000).toFixed(1)}M$` : `+${r.amount} FC`;
+
+            return `
+            <div class="glass-panel p-5 rounded-2xl border ${borderClass} flex flex-col justify-between gap-4 hover:border-white/10 transition duration-300 text-left">
+              <div class="space-y-2">
+                <div class="flex justify-between items-start gap-2">
+                  <h5 class="font-black text-sm ${titleClass} flex items-center gap-1.5 leading-snug">
+                    <i data-lucide="${iconName}" class="w-4.5 h-4.5 shrink-0"></i>
+                    ${r.title}
+                  </h5>
+                  <span class="text-[10px] bg-slate-950 border border-white/5 font-extrabold px-2 py-0.5 rounded text-slate-400 whitespace-nowrap">
+                    ${badgeText}
+                  </span>
+                </div>
+                <p class="text-slate-300 text-[11px] leading-relaxed font-medium">${r.description}</p>
+              </div>
+              <div class="flex justify-between items-center gap-2 pt-2 border-t border-white/5">
+                <span class="text-[8px] text-slate-500 font-extrabold uppercase">
+                  ${r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "Reciente"}
+                </span>
+                <button onclick="claimReward('${r.id}', ${r.amount})" class="${btnClass}">
+                  <i data-lucide="gift" class="w-3.5 h-3.5"></i> Reclamar
+                </button>
+              </div>
+            </div>
+          `;
+          }
+
           if (r.type === "clausulazo_alert") {
             return `
             <div class="glass-panel p-5 rounded-2xl border border-red-500/30 bg-red-950/10 flex flex-col justify-between gap-4 hover:border-white/10 transition duration-300 relative overflow-hidden text-left">
@@ -15297,24 +15509,49 @@
           const rewardRef = doc(db, "users", currentUser.uid, "mailbox", rewardId);
 
           const batch = firebase.firestore().batch();
+          const isMoney = reward.rewardType === "money";
 
-          const currentFC = currentUserProfile.fonda_coins || 0;
-          const newFC = currentFC + amount;
+          if (isMoney) {
+            const currentBActual = currentUserProfile.presupuesto_actual || 0;
+            const currentBClub = currentUserProfile.presupuesto_club || 0;
+            const newBActual = currentBActual + reward.amount;
+            const newBClub = currentBClub + reward.amount;
 
-          batch.update(firebase.firestore().doc(`users/${currentUser.uid}`), {
-            fonda_coins: newFC
-          });
+            batch.update(firebase.firestore().doc(`users/${currentUser.uid}`), {
+              presupuesto_actual: newBActual,
+              presupuesto_club: newBClub
+            });
 
-          batch.update(firebase.firestore().doc(`users/${currentUser.uid}/mailbox/${rewardId}`), {
-            claimed: true,
-            claimedAt: new Date().toISOString()
-          });
+            batch.update(firebase.firestore().doc(`users/${currentUser.uid}/mailbox/${rewardId}`), {
+              claimed: true,
+              claimedAt: new Date().toISOString()
+            });
 
-          await batch.commit();
+            await batch.commit();
 
-          currentUserProfile.fonda_coins = newFC;
-          updateHeaderAndDashboardStats();
-          showNotification(`🎉 ¡Recompensa reclamada! +${amount} Fonda Coins (FC) añadidos.`, "success");
+            currentUserProfile.presupuesto_actual = newBActual;
+            currentUserProfile.presupuesto_club = newBClub;
+            updateHeaderAndDashboardStats();
+            showNotification(`🎉 ¡Recompensa reclamada! +${(reward.amount / 1000000).toFixed(1)}M$ añadidos a tu presupuesto.`, "success");
+          } else {
+            const currentFC = currentUserProfile.fonda_coins || 0;
+            const newFC = currentFC + reward.amount;
+
+            batch.update(firebase.firestore().doc(`users/${currentUser.uid}`), {
+              fonda_coins: newFC
+            });
+
+            batch.update(firebase.firestore().doc(`users/${currentUser.uid}/mailbox/${rewardId}`), {
+              claimed: true,
+              claimedAt: new Date().toISOString()
+            });
+
+            await batch.commit();
+
+            currentUserProfile.fonda_coins = newFC;
+            updateHeaderAndDashboardStats();
+            showNotification(`🎉 ¡Recompensa reclamada! +${reward.amount} Fonda Coins (FC) añadidos.`, "success");
+          }
         } catch (err) {
           // Revertir estado local en caso de error
           reward.claimed = false;
@@ -15342,8 +15579,8 @@
         const btnClaimAll = document.getElementById("btn-mailbox-claim-all");
         if (btnClaimAll) {
           btnClaimAll.disabled = true;
-          btnClaimAll.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Procesando...`;
-          lucide.createIcons();
+          btnClaimAll.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Procesando...`;
+          if (typeof lucide !== "undefined") lucide.createIcons();
         }
 
         // Marcar localmente como reclamados todos inmediatamente
@@ -15355,13 +15592,8 @@
         renderMailboxList();
 
         try {
-          const totalAmount = unclaimed.reduce((sum, r) => {
-            // Solamente sumar monedas si es un premio (no alertas, reembolsos o éxitos de clausulazos que guardan dólares)
-            if (r.type === "clausulazo_alert" || r.type === "clausulazo_refund" || r.type === "clausulazo_success") {
-              return sum;
-            }
-            return sum + (r.amount || 0);
-          }, 0);
+          let totalFC = 0;
+          let totalMoney = 0;
           const batch = firebase.firestore().batch();
 
           unclaimed.forEach(r => {
@@ -15369,20 +15601,58 @@
               claimed: true,
               claimedAt: new Date().toISOString()
             });
+
+            // Sumar según el tipo de recompensa
+            if (r.type === "clausulazo_alert" || r.type === "clausulazo_refund" || r.type === "clausulazo_success" || r.type === "offer_received" || r.type === "auction_won" || r.type === "transfer_confirmed") {
+              // No otorgan saldo directamente
+            } else if (r.rewardType === "money") {
+              totalMoney += (r.amount || 0);
+            } else {
+              // Fonda Coins (recompensas legacy o tipo === custom_reward con rewardType === fc)
+              totalFC += (r.amount || 0);
+            }
           });
 
           const currentFC = currentUserProfile.fonda_coins || 0;
-          const newFC = currentFC + totalAmount;
+          const newFC = currentFC + totalFC;
 
-          batch.update(firebase.firestore().doc(`users/${currentUser.uid}`), {
-            fonda_coins: newFC
-          });
+          const currentBActual = currentUserProfile.presupuesto_actual || 0;
+          const currentBClub = currentUserProfile.presupuesto_club || 0;
+          const newBActual = currentBActual + totalMoney;
+          const newBClub = currentBClub + totalMoney;
+
+          const updateObj = {};
+          if (totalFC > 0) {
+            updateObj.fonda_coins = newFC;
+          }
+          if (totalMoney > 0) {
+            updateObj.presupuesto_actual = newBActual;
+            updateObj.presupuesto_club = newBClub;
+          }
+
+          if (Object.keys(updateObj).length > 0) {
+            batch.update(firebase.firestore().doc(`users/${currentUser.uid}`), updateObj);
+          }
 
           await batch.commit();
 
-          currentUserProfile.fonda_coins = newFC;
+          if (totalFC > 0) currentUserProfile.fonda_coins = newFC;
+          if (totalMoney > 0) {
+            currentUserProfile.presupuesto_actual = newBActual;
+            currentUserProfile.presupuesto_club = newBClub;
+          }
+
           updateHeaderAndDashboardStats();
-          showNotification(`🎉 ¡Bandeja limpia! Has reclamado un total de +${totalAmount} Fonda Coins (FC).`, "success");
+
+          let successMsg = "🎉 ¡Bandeja limpia! Has reclamado tus recompensas.";
+          if (totalFC > 0 && totalMoney > 0) {
+            successMsg = `🎉 ¡Bandeja limpia! Has reclamado +${totalFC} FC y +${(totalMoney / 1000000).toFixed(1)}M$.`;
+          } else if (totalFC > 0) {
+            successMsg = `🎉 ¡Bandeja limpia! Has reclamado +${totalFC} FC.`;
+          } else if (totalMoney > 0) {
+            successMsg = `🎉 ¡Bandeja limpia! Has reclamado +${(totalMoney / 1000000).toFixed(1)}M$.`;
+          }
+          showNotification(successMsg, "success");
         } catch (err) {
           // Revertir estado local en caso de error
           unclaimed.forEach(r => {
@@ -15396,7 +15666,7 @@
           if (btnClaimAll) {
             btnClaimAll.disabled = false;
             btnClaimAll.innerHTML = `<i data-lucide="check-square" class="w-4 h-4"></i> Reclamar Todo`;
-            lucide.createIcons();
+            if (typeof lucide !== "undefined") lucide.createIcons();
           }
         }
       };
