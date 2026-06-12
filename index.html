@@ -9967,14 +9967,24 @@
                     </div>
                   </div>
                 </div>
-                <button class="btn-editor-remove-player bg-rose-500/10 hover:bg-rose-500 hover:text-slate-950 text-rose-400 border border-rose-500/20 hover:border-transparent p-2 rounded-xl transition cursor-pointer ${isReadOnly ? 'hidden' : ''}" data-id="${player.id}" title="Quitar jugador de la plantilla">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                  <select class="btn-editor-change-pos bg-slate-900 text-slate-300 border border-white/10 rounded-xl px-2 py-1 text-[10px] font-bold cursor-pointer hover:border-purple-500/50 ${isReadOnly ? 'hidden' : ''}">
+                    <option value="titular" ${titularIds.includes(player.id) ? 'selected' : ''}>Titular</option>
+                    <option value="suplente" ${suplenteIds.includes(player.id) ? 'selected' : ''}>Suplente</option>
+                    <option value="reserva" ${(!titularIds.includes(player.id) && !suplenteIds.includes(player.id)) ? 'selected' : ''}>Reserva</option>
+                  </select>
+                  <button class="btn-editor-remove-player bg-rose-500/10 hover:bg-rose-500 hover:text-slate-950 text-rose-400 border border-rose-500/20 hover:border-transparent p-2 rounded-xl transition cursor-pointer ${isReadOnly ? 'hidden' : ''}" data-id="${player.id}" title="Quitar jugador de la plantilla">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </div>
               `;
 
                 if (!isReadOnly) {
                   itemDiv.querySelector(".btn-editor-remove-player").addEventListener("click", () => {
                     removePlayerFromAdminSquad(player.id, player.nombre);
+                  });
+                  itemDiv.querySelector(".btn-editor-change-pos").addEventListener("change", (e) => {
+                    changePlayerPositionFromAdminSquad(player.id, e.target.value);
                   });
                 }
 
@@ -10395,6 +10405,120 @@
         } catch (err) {
           console.error("Error al retirar jugador de plantilla en editor:", err);
           showNotification("Error de base de datos al retirar jugador.", "error");
+        }
+      }
+
+      async function changePlayerPositionFromAdminSquad(playerId, newPosition) {
+        if (!adminSelectedUserId || !adminSelectedLeagueId) return;
+
+        try {
+          const teamDocId = `${adminSelectedUserId}_${adminSelectedLeagueId}`;
+          const teamRef = doc(db, "user_teams", teamDocId);
+          const teamSnap = await getDoc(teamRef);
+
+          if (teamSnap.exists()) {
+            const teamData = teamSnap.data();
+            const ownedIds = teamData.jugadores_ids || [];
+
+            if (!ownedIds.includes(playerId)) return;
+
+            const titulares = {
+              portero: [...(teamData.alineacion?.titulares?.portero || [])],
+              defensas: [...(teamData.alineacion?.titulares?.defensas || [])],
+              mediocampistas: [...(teamData.alineacion?.titulares?.mediocampistas || [])],
+              delanteros: [...(teamData.alineacion?.titulares?.delanteros || [])]
+            };
+            const suplentes = {
+              portero: [...(teamData.alineacion?.suplentes?.portero || [])],
+              defensas: [...(teamData.alineacion?.suplentes?.defensas || [])],
+              mediocampistas: [...(teamData.alineacion?.suplentes?.mediocampistas || [])],
+              delanteros: [...(teamData.alineacion?.suplentes?.delanteros || [])]
+            };
+
+            const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId) || { posicion: "mediocampista" };
+            const posPlural = player.posicion === "portero" ? "portero" :
+              player.posicion === "defensa" ? "defensas" :
+                player.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
+
+            // Quitar de titulares y suplentes primero
+            titulares[posPlural] = titulares[posPlural].filter(id => id !== playerId);
+            suplentes[posPlural] = suplentes[posPlural].filter(id => id !== playerId);
+
+            if (newPosition === "titular") {
+              // Validar límites de formación
+              const activeFormation = teamData.formacion || "4-4-2";
+              let dfSlots = 4, mfSlots = 4, fwSlots = 2;
+              if (activeFormation === "4-3-3") { dfSlots = 4; mfSlots = 3; fwSlots = 3; }
+              else if (activeFormation === "3-5-2") { dfSlots = 3; mfSlots = 5; fwSlots = 2; }
+              else if (activeFormation === "4-5-1") { dfSlots = 4; mfSlots = 5; fwSlots = 1; }
+              else if (activeFormation === "5-3-2") { dfSlots = 5; mfSlots = 3; fwSlots = 2; }
+              else if (activeFormation === "3-4-3") { dfSlots = 3; mfSlots = 4; fwSlots = 3; }
+
+              let maxSlots = 1; // portero
+              if (posPlural === "defensas") maxSlots = dfSlots;
+              else if (posPlural === "mediocampistas") maxSlots = mfSlots;
+              else if (posPlural === "delanteros") maxSlots = fwSlots;
+
+              if (titulares[posPlural].length >= maxSlots) {
+                showNotification(`La posición de ${player.posicion} ya está llena para la formación ${activeFormation}. Retira a otro titular primero.`, "error");
+                openAdminSquadEditor(false);
+                return;
+              }
+
+              const totalTitulares = [
+                ...(titulares.portero || []),
+                ...(titulares.defensas || []),
+                ...(titulares.mediocampistas || []),
+                ...(titulares.delanteros || [])
+              ];
+              if (totalTitulares.length >= 11) {
+                showNotification("Ya hay 11 titulares. Cambia a otro titular a suplente/reserva primero.", "error");
+                openAdminSquadEditor(false);
+                return;
+              }
+
+              titulares[posPlural].push(playerId);
+            } else if (newPosition === "suplente") {
+              const totalSuplentes = [
+                ...(suplentes.portero || []),
+                ...(suplentes.defensas || []),
+                ...(suplentes.mediocampistas || []),
+                ...(suplentes.delanteros || [])
+              ];
+              if (totalSuplentes.length >= 2) {
+                showNotification("El Banquillo Oficial ya tiene el límite máximo de 2 jugadores.", "error");
+                openAdminSquadEditor(false);
+                return;
+              }
+
+              suplentes[posPlural].push(playerId);
+            }
+
+            // Sincronizar Capitán
+            let capitanId = teamData.capitan_id || "";
+            const nuevosTitulares = [
+              ...(titulares.portero || []),
+              ...(titulares.defensas || []),
+              ...(titulares.mediocampistas || []),
+              ...(titulares.delanteros || [])
+            ];
+            if (capitanId && !nuevosTitulares.includes(capitanId)) {
+              capitanId = "";
+            }
+
+            const finalSuplentes = constrenirSuplentes(suplentes);
+
+            await updateDoc(teamRef, {
+              alineacion: { titulares, suplentes: finalSuplentes },
+              capitan_id: capitanId,
+              players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, ownedIds)
+            });
+
+            showNotification(`Se ha cambiado la posición de ${player.nombre} a ${newPosition.toUpperCase()}.`, "success");
+          }
+        } catch (err) {
+          console.error("Error al cambiar posición del jugador desde admin:", err);
+          showNotification("Error de base de datos al cambiar la posición.", "error");
         }
       }
 
@@ -11608,7 +11732,8 @@
 
       // Intercambiar Titular <-> Suplente <-> Reserva (Alineaciones)
       async function handleSquadCardClick(playerId) {
-        if (areLineupsLocked()) {
+        const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
+        if (areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -11619,7 +11744,7 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
-        if (lockStatus.isLocked) {
+        if (lockStatus.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${player.nombre} está bloqueado por kickoff de su partido.`, "error");
           return;
         }
@@ -11769,7 +11894,8 @@
 
       // Permitir drop en ranuras vacías de suplentes oficiales (Máx 4)
       async function handleDropOnEmptyBanquilloSlot(draggedId) {
-        if (areLineupsLocked()) {
+        const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
+        if (areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -11779,7 +11905,7 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
-        if (lockStatus.isLocked) {
+        if (lockStatus.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${player.nombre} está bloqueado por kickoff de su partido.`, "error");
           return;
         }
@@ -11848,7 +11974,8 @@
 
       // Permitir drop en el contenedor de reservas para quitar del campo/banquillo
       async function handleMoveToReservas(draggedId) {
-        if (areLineupsLocked()) {
+        const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
+        if (areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -11858,7 +11985,7 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
-        if (lockStatus.isLocked) {
+        if (lockStatus.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${player.nombre} está bloqueado por kickoff de su partido. Cierre: ${lockStatus.deadline.toLocaleTimeString()}`, "error");
           return;
         }
@@ -11923,7 +12050,8 @@
       }
 
       async function handleMoveToTitulares(playerId) {
-        if (areLineupsLocked()) {
+        const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
+        if (areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -11933,7 +12061,7 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
-        if (lockStatus.isLocked) {
+        if (lockStatus.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${player.nombre} está bloqueado por kickoff de su partido. Cierre: ${lockStatus.deadline.toLocaleTimeString()}`, "error");
           return;
         }
@@ -12018,7 +12146,8 @@
       }
 
       async function handleMoveToBanquillo(playerId) {
-        if (areLineupsLocked()) {
+        const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
+        if (areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -12028,7 +12157,7 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
-        if (lockStatus.isLocked) {
+        if (lockStatus.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${player.nombre} está bloqueado por kickoff de su partido. Cierre: ${lockStatus.deadline.toLocaleTimeString()}`, "error");
           return;
         }
@@ -12106,7 +12235,8 @@
 
       // --- INTERCAMBIAR JUGADOR DE RESERVAS CON UNO DEL BANQUILLO OFICIAL ---
       window.openBenchSwapSelector = function (reservePlayerId) {
-        if (areLineupsLocked()) {
+        const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
+        if (areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -12182,7 +12312,8 @@
       };
 
       async function executeBenchSwap(reserveId, benchId) {
-        if (areLineupsLocked()) {
+        const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
+        if (areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -12194,12 +12325,12 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockReserve = checkPlayerLockStatus(reservePlayer, window.matchesListGlobal || [], activeJor);
-        if (lockReserve.isLocked) {
+        if (lockReserve.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${reservePlayer.nombre} está bloqueado por kickoff de su partido.`, "error");
           return;
         }
         const lockBench = checkPlayerLockStatus(benchPlayer, window.matchesListGlobal || [], activeJor);
-        if (lockBench.isLocked) {
+        if (lockBench.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${benchPlayer.nombre} está bloqueado por kickoff de su partido.`, "error");
           return;
         }
@@ -12262,9 +12393,11 @@
         
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
 
+        const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
+
         // Validar si el jugador arrastrado está bloqueado
         const lockDragged = checkPlayerLockStatus(draggedPlayer, window.matchesListGlobal || [], activeJor);
-        if (lockDragged.isLocked) {
+        if (lockDragged.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${draggedPlayer.nombre} está bloqueado por kickoff de su partido.`, "error");
           return;
         }
@@ -12272,7 +12405,7 @@
         // Validar si el jugador destino está bloqueado (si hay un swap directo)
         if (targetPlayer) {
           const lockTarget = checkPlayerLockStatus(targetPlayer, window.matchesListGlobal || [], activeJor);
-          if (lockTarget.isLocked) {
+          if (lockTarget.isLocked && !isSystemAdmin) {
             showNotification(`🔒 Movimiento bloqueado: ${targetPlayer.nombre} está bloqueado por kickoff de su partido.`, "error");
             return;
           }
