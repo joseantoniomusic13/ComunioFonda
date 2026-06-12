@@ -377,6 +377,27 @@ h6 {
   text-align: center;
 }
 
+.card-bottom-score-badge {
+  position: absolute;
+  bottom: 12px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  background: radial-gradient(circle, #ffeb3b 0%, #fbc02d 100%);
+  color: #1a0500;
+  border-radius: 50%;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 950;
+  font-size: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  z-index: 21;
+  border: 1px solid rgba(0,0,0,0.25);
+  line-height: 1;
+}
+
 .card-score-badge.zero-pts {
   /* pts = 0: muy discreto, casi invisible */
   background: rgba(255,255,255,0.06);

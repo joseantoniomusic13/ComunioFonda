@@ -3225,6 +3225,15 @@
               <li><strong class="text-purple-400">Cómo Apostar:</strong> Apuesta tus FC a favor del equipo local (1), empate (X) o visitante (2). También hay más tipos de apuestas, como adivinar el goleador o el resultado exacto. Si tu predicción es correcta, ganarás fichas según la cuota asignada al partido.</li>
               <li><strong class="text-purple-400">Ruleta de la Suerte Diaria:</strong> Dispones de un <span class="text-emerald-400 font-extrabold">giro gratuito cada 24 horas</span> en el que puedes obtener Fonda Coins, Fichas de Casino o valiosos consumibles de forma gratuita.</li>
               <li><strong class="text-purple-400">Ruleta Normal (Conversión de FC):</strong> Si te quedas sin fichas para apostar, puedes jugar a la ruleta convencional en la sección "Fonda Casino" canjeando tus Fonda Coins (FC) para obtener Casino Chips a cambio.</li>
+              <li><strong class="text-purple-400">Fonda Slots (Tragaperras):</strong> El casino cuenta con una máquina de rodillos 3x3 de alta gama con 5 líneas de pago activas (horizontales y diagonales).
+                <ul class="pl-5 mt-1.5 space-y-1.5 list-circle text-[11px] text-slate-400">
+                  <li><span class="text-yellow-400 font-bold">🧤 Guante (x5) / ⚽ Balón (x10) / 👑 Corona (x20):</span> Multiplicadores de línea aplicados a tu apuesta.</li>
+                  <li><span class="text-sky-400 font-bold">🃏 Comodín (Wild):</span> Sustituye a cualquier símbolo (excepto la Copa 🏆 y Tarjeta 🟥). Obtener tres comodines en línea activa (🃏x3) premia con el <span class="text-gold font-extrabold">BOTE ACUMULADO (JACKPOT)</span> de la liga.</li>
+                  <li><span class="text-emerald-400 font-bold">🏆 Copa del Mundo (Scatter):</span> Si aparecen 3 o más en cualquier celda de la cuadrícula, ganas <span class="text-emerald-300 font-bold">+5 Giros Gratis</span> con premios <span class="text-emerald-300 font-black">al doble (x2)</span>.</li>
+                  <li><span class="text-rose-400 font-bold">🟥 Tarjeta Roja (Penalty):</span> Si consigues 3 Tarjetas Rojas en una línea activa (🟥x3), se anulan las ganancias de toda esa tirada.</li>
+                  <li><span class="text-amber-500 font-bold">Sistema de Cobro:</span> Las ganancias de cada tirada deben consolidarse manualmente pulsando el botón **"COBRAR"** para sumarlas a tus Casino Chips. Si olvidas cobrar y vuelves a girar, se cobrará automáticamente el saldo previo.</li>
+                </ul>
+              </li>
             </ul>
           </div>
 
@@ -9991,6 +10000,17 @@
             const isImmune = acquisition > 0 && elapsed < immunityPeriod;
             const remainingDays = Math.ceil((immunityPeriod - elapsed) / (24 * 60 * 60 * 1000));
 
+            // Verificar si ha jugado
+            const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+            const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
+            const match = lockStatus.partido;
+            const hasPlayed = match && (match.resuelto || (match.kickoff_time && new Date() >= new Date(match.kickoff_time)));
+            const livePts = (player.puntos_jornadas) ? (player.puntos_jornadas[activeJor] || 0) : 0;
+
+            // Si es capitán del rival, recibe el doble
+            const isCaptain = teamData?.capitan_id === id;
+            const contributedPts = isCaptain ? livePts * 2 : livePts;
+
             // Avatar and visual elements
             const avatar = window.getPlayerCardAvatarHTML(id, player, "w-10 h-10", false);
             const isClausulazoPending = (currentActiveLeagueData?.pending_clausulazos || []).some(
@@ -10014,6 +10034,7 @@
             <div class="relative">
               ${avatar}
               <span class="absolute -top-1 -right-1 text-[8px] bg-slate-900 border border-white/10 text-slate-300 font-extrabold px-1 rounded-full">${formattedClause}M</span>
+              ${hasPlayed ? `<div class="absolute -bottom-1 -left-1 w-4 h-4 bg-yellow-400 text-slate-950 rounded-full flex items-center justify-center text-[8.5px] font-black border border-slate-950/20 shadow shadow-yellow-500/40">${contributedPts}</div>` : ''}
             </div>
             <p class="text-[8px] font-black text-slate-100 truncate max-w-[65px]">${player.nombre.split(" ").pop()}</p>
             <div class="mt-0.5">${actionBtn}</div>
@@ -10653,7 +10674,7 @@
         const list = [];
         const addedIds = new Set();
 
-        const addGroup = (ids, isTit) => {
+        const addGroup = (ids, isTit, isSup) => {
           (ids || []).forEach(id => {
             if (addedIds.has(id)) return;
             const fPlayer = firestorePlayersList.find(pl => pl.id === id);
@@ -10668,21 +10689,22 @@
                 posicion: p.posicion === "portero" ? "POR" :
                   p.posicion === "defensa" ? "DFC" :
                     p.posicion === "mediocampista" ? "MC" : "DEL",
-                isTitular: isTit
+                isTitular: isTit,
+                isSuplente: isSup
               });
             }
           });
         };
 
-        addGroup(titulares.portero, true);
-        addGroup(titulares.defensas, true);
-        addGroup(titulares.mediocampistas, true);
-        addGroup(titulares.delanteros, true);
+        addGroup(titulares.portero, true, false);
+        addGroup(titulares.defensas, true, false);
+        addGroup(titulares.mediocampistas, true, false);
+        addGroup(titulares.delanteros, true, false);
 
-        addGroup(suplentes.portero, false);
-        addGroup(suplentes.defensas, false);
-        addGroup(suplentes.mediocampistas, false);
-        addGroup(suplentes.delanteros, false);
+        addGroup(suplentes.portero, false, true);
+        addGroup(suplentes.defensas, false, true);
+        addGroup(suplentes.mediocampistas, false, true);
+        addGroup(suplentes.delanteros, false, true);
 
         // Sincronizar reservas que están en la lista general de IDs pero no en alineación activa (titulares ni suplentes)
         (jugadoresIds || []).forEach(id => {
@@ -10698,7 +10720,8 @@
                 posicion: p.posicion === "portero" ? "POR" :
                   p.posicion === "defensa" ? "DFC" :
                     p.posicion === "mediocampista" ? "MC" : "DEL",
-                isTitular: false
+                isTitular: false,
+                isSuplente: false
               });
             }
           }
@@ -10827,6 +10850,47 @@
         const nameClass = nameLen > 18 ? 'name-very-long' : nameLen > 12 ? 'name-long' : '';
         const photoClass = photoUrl ? 'has-photo' : 'no-photo';
 
+        // Verificar si ha jugado su partido en la jornada activa
+        const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+        const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
+        const match = lockStatus.partido;
+        const hasPlayed = match && (match.resuelto || (match.kickoff_time && new Date() >= new Date(match.kickoff_time)));
+
+        // Calcular puntos recibidos (contributed points) para el círculo amarillo
+        let contributedPts = 0;
+        if (currentUserTeam) {
+          const rawTitulares = currentUserTeam.alineacion?.titulares || {};
+          const rawSuplentes = currentUserTeam.alineacion?.suplentes || {};
+          
+          const allTit = [
+            ...(rawTitulares.portero || []),
+            ...(rawTitulares.defensas || []),
+            ...(rawTitulares.mediocampistas || []),
+            ...(rawTitulares.delanteros || [])
+          ];
+          const allSup = [
+            ...(rawSuplentes.portero || []),
+            ...(rawSuplentes.defensas || []),
+            ...(rawSuplentes.mediocampistas || []),
+            ...(rawSuplentes.delanteros || [])
+          ];
+
+          if (allTit.includes(id)) {
+            contributedPts = isCaptain ? rawPts * 2 : rawPts;
+          } else if (allSup.includes(id)) {
+            const hasSuperBanquillo = currentUserTeam.chips?.super_banquillo?.usado_en_jornada === activeJor;
+            if (hasSuperBanquillo) {
+              contributedPts = rawPts;
+            } else {
+              contributedPts = Math.round((rawPts / 2) * 10) / 10;
+            }
+          } else {
+            contributedPts = 0; // Reserva
+          }
+        } else {
+          contributedPts = rawPts;
+        }
+
         return `
           <div class="player-pitch-card
                       pos-${player.posicion || 'mediocampista'}
@@ -10874,6 +10938,9 @@
             <div class="card-info-area">
               <p class="card-player-name ${nameClass}">${player.nombre || 'Desconocido'}</p>
             </div>
+
+            <!-- ⑤ Círculo amarillo de puntos (esquina inferior-izquierda, absoluta) -->
+            ${hasPlayed ? `<div class="card-bottom-score-badge" title="Puntos aportados a la jornada">${contributedPts}</div>` : ''}
 
           </div>`;
       };
@@ -10998,10 +11065,15 @@
             // Determinar estado de titularidad
             const isTit = playerObj.isTitular === true || playerObj.titular === true || playerObj.estado === "titular";
 
+            // Determinar si es suplente (con fallback para datos heredados)
+            const isSup = ('isSuplente' in playerObj)
+              ? (playerObj.isSuplente === true)
+              : (currentUserTeam.alineacion?.suplentes?.[posPlural]?.includes(playerObj.id) || false);
+
             if (isTit) {
               if (!titulares[posPlural]) titulares[posPlural] = [];
               titulares[posPlural].push(playerObj.id);
-            } else {
+            } else if (isSup) {
               if (!suplentes[posPlural]) suplentes[posPlural] = [];
               suplentes[posPlural].push(playerObj.id);
             }
@@ -11846,7 +11918,11 @@
         if (totalSuplentes.includes(playerId)) return; // Ya es suplente
 
         if (totalSuplentes.length >= 2) {
-          showNotification("El Banquillo Oficial ya tiene el límite máximo de 2 jugadores. Libera un slot primero o envía un jugador a Reservas.", "error");
+          if (window.openBenchSwapSelector) {
+            window.openBenchSwapSelector(playerId);
+          } else {
+            showNotification("El Banquillo Oficial ya tiene el límite máximo de 2 jugadores.", "error");
+          }
           return;
         }
 
@@ -11881,6 +11957,153 @@
         } catch (err) {
           console.error(err);
           showNotification("Error de base de datos al mover jugador.", "error");
+        } finally {
+          renderSquadAndPitch();
+        }
+      }
+
+      // --- INTERCAMBIAR JUGADOR DE RESERVAS CON UNO DEL BANQUILLO OFICIAL ---
+      window.openBenchSwapSelector = function (reservePlayerId) {
+        if (areLineupsLocked()) {
+          showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
+          return;
+        }
+        if (!currentUserTeam) return;
+
+        const modal = document.getElementById("swap-player-modal");
+        const title = document.getElementById("swap-modal-title") || (modal ? modal.querySelector("h4") : null);
+        const subtitle = document.getElementById("swap-modal-subtitle");
+        const listContainer = document.getElementById("swap-modal-list");
+
+        if (!modal || !listContainer) return;
+
+        if (title) title.textContent = "Intercambiar Banquillo";
+        const reservePlayer = PLAYERS_POOL.find(p => p.id === reservePlayerId) || firestorePlayersList.find(p => p.id === reservePlayerId);
+        if (subtitle) {
+          subtitle.innerHTML = `Selecciona a quién deseas reemplazar por <strong class="text-gold">${reservePlayer?.nombre || 'este jugador'}</strong>:`;
+        }
+
+        listContainer.innerHTML = "";
+
+        const suplentes = {
+          portero: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'portero'),
+          defensas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'defensas'),
+          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'mediocampistas'),
+          delanteros: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'delanteros')
+        };
+
+        const totalSuplentesIds = [
+          ...(suplentes.portero || []),
+          ...(suplentes.defensas || []),
+          ...(suplentes.mediocampistas || []),
+          ...(suplentes.delanteros || [])
+        ].slice(0, 2);
+
+        if (totalSuplentesIds.length === 0) {
+          listContainer.innerHTML = `<div class="py-6 text-center text-slate-500 text-xs font-bold">No hay suplentes en el Banquillo Oficial.</div>`;
+        } else {
+          totalSuplentesIds.forEach(id => {
+            const fPlayer = firestorePlayersList.find(p => p.id === id);
+            const staticPlayer = PLAYERS_POOL.find(p => p.id === id);
+            const player = fPlayer || staticPlayer;
+            if (!player) return;
+
+            const btn = document.createElement("button");
+            btn.className = "w-full p-3 rounded-xl bg-slate-900/60 hover:bg-slate-900 border border-white/5 hover:border-amber-500/30 flex items-center justify-between text-left transition cursor-pointer text-white";
+
+            btn.innerHTML = `
+              <div class="flex items-center gap-2">
+                <span class="text-base">${player.flag || "🌐"}</span>
+                <div>
+                  <p class="text-xs font-bold text-white">${player.nombre}</p>
+                  <p class="text-[9px] text-slate-500">${(player.precio / 1000000).toFixed(1)}M$ &nbsp;·&nbsp; ${player.posicion.toUpperCase()}</p>
+                </div>
+              </div>
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-400 font-extrabold uppercase">Reemplazar</span>
+            `;
+
+            btn.addEventListener("click", async () => {
+              closeSwapPlayerModal();
+              await executeBenchSwap(reservePlayerId, id);
+            });
+
+            listContainer.appendChild(btn);
+          });
+        }
+
+        modal.classList.remove("hidden");
+        setTimeout(() => {
+          modal.classList.remove("opacity-0");
+        }, 50);
+
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      };
+
+      async function executeBenchSwap(reserveId, benchId) {
+        if (areLineupsLocked()) {
+          showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
+          return;
+        }
+        if (!currentUserTeam) return;
+
+        const reservePlayer = PLAYERS_POOL.find(p => p.id === reserveId) || firestorePlayersList.find(p => p.id === reserveId);
+        const benchPlayer = PLAYERS_POOL.find(p => p.id === benchId) || firestorePlayersList.find(p => p.id === benchId);
+        if (!reservePlayer || !benchPlayer) return;
+
+        const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+        const lockReserve = checkPlayerLockStatus(reservePlayer, window.matchesListGlobal || [], activeJor);
+        if (lockReserve.isLocked) {
+          showNotification(`🔒 Movimiento bloqueado: ${reservePlayer.nombre} está bloqueado por kickoff de su partido.`, "error");
+          return;
+        }
+        const lockBench = checkPlayerLockStatus(benchPlayer, window.matchesListGlobal || [], activeJor);
+        if (lockBench.isLocked) {
+          showNotification(`🔒 Movimiento bloqueado: ${benchPlayer.nombre} está bloqueado por kickoff de su partido.`, "error");
+          return;
+        }
+
+        const titulares = {
+          portero: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'portero'),
+          defensas: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'defensas'),
+          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'mediocampistas'),
+          delanteros: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'delanteros')
+        };
+        const suplentes = {
+          portero: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'portero'),
+          defensas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'defensas'),
+          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'mediocampistas'),
+          delanteros: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'delanteros')
+        };
+
+        const posPluralReserve = reservePlayer.posicion === "portero" ? "portero" :
+          reservePlayer.posicion === "defensa" ? "defensas" :
+          reservePlayer.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
+        const posPluralBench = benchPlayer.posicion === "portero" ? "portero" :
+          benchPlayer.posicion === "defensa" ? "defensas" :
+          benchPlayer.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
+
+        // Quitar suplente de suplentes y añadir el de reservas
+        suplentes[posPluralBench] = suplentes[posPluralBench].filter(id => id !== benchId);
+        suplentes[posPluralReserve].push(reserveId);
+
+        let capitanId = currentUserTeam.capitan_id || "";
+        if (capitanId === benchId || capitanId === reserveId) {
+          capitanId = ""; 
+        }
+
+        const finalSuplentes = constrenirSuplentes(suplentes);
+
+        try {
+          const teamRef = doc(db, "user_teams", getTeamDocId());
+          await updateDoc(teamRef, {
+            alineacion: { titulares, suplentes: finalSuplentes },
+            capitan_id: capitanId,
+            players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
+          });
+          showNotification(`🔄 Intercambiado ${reservePlayer.nombre} por ${benchPlayer.nombre} en el banquillo.`, "success");
+        } catch (err) {
+          console.error(err);
+          showNotification("Error de base de datos al realizar el intercambio.", "error");
         } finally {
           renderSquadAndPitch();
         }
@@ -12070,9 +12293,11 @@
         if (!currentUserTeam) return;
 
         const modal = document.getElementById("swap-player-modal");
+        const title = document.getElementById("swap-modal-title");
         const subtitle = document.getElementById("swap-modal-subtitle");
         const listContainer = document.getElementById("swap-modal-list");
 
+        if (title) title.textContent = "Sustituir Jugador";
         if (!modal || !listContainer) return;
 
         let posPlural = posicion === "portero" ? "portero" :
@@ -21290,7 +21515,7 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
         <div class="text-center space-y-1">
-          <h4 class="text-lg font-black text-white">Sustituir Jugador</h4>
+          <h4 id="swap-modal-title" class="text-lg font-black text-white">Sustituir Jugador</h4>
           <p id="swap-modal-subtitle" class="text-xs text-slate-400">Selecciona un jugador del banquillo para esta
             posición.</p>
         </div>
