@@ -1213,6 +1213,33 @@
               </div>
             </div>
           </div>
+
+          <!-- CATEGORY 8 (NUEVA ACTUALIZACIÓN Y REGALO DE FC) -->
+          <div class="glass-panel border border-white/5 rounded-2xl overflow-hidden mt-4">
+            <button
+              class="w-full px-5 py-4 flex items-center justify-between text-left font-extrabold text-xs md:text-sm uppercase tracking-wider text-purple-400 bg-purple-950/10 hover:bg-purple-950/20 cursor-pointer transition select-none"
+              onclick="toggleAccordion('acc-admin-updates')">
+              <span class="flex items-center gap-2">
+                <i data-lucide="megaphone" class="w-4 h-4 text-purple-400"></i>
+                8. Publicar Actualización y Regalar 5 FC
+              </span>
+              <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" id="chevron-acc-admin-updates"></i>
+            </button>
+            <div id="acc-admin-updates" class="p-5 space-y-4 bg-fonda-950/40 hidden">
+              <p class="text-[10px] text-slate-400 leading-relaxed">
+                Escribe un mensaje describiendo la nueva actualización del juego. Este mensaje se enviará al buzón de correo de todos los usuarios registrados y les permitirá reclamar <strong class="text-purple-400">+5 Fonda Coins (FC)</strong> como regalo.
+              </p>
+              <div class="space-y-2">
+                <label for="admin-update-message" class="block text-xs font-bold uppercase tracking-wider text-slate-400">Mensaje de Actualización</label>
+                <textarea id="admin-update-message" rows="3" placeholder="Ej: Se ha solucionado el problema visual de los emojis en las tragaperras y se han centrado los botones de la consola." class="glass-input w-full p-3 rounded-xl text-xs bg-fonda-950 text-white font-medium border-purple-500/20 focus:outline-none focus:border-purple-500"></textarea>
+              </div>
+              <button id="admin-update-submit-btn" onclick="sendSystemUpdateMessage()" class="w-full py-3 px-4 rounded-xl text-slate-950 font-black text-xs uppercase tracking-wider bg-purple-500 hover:bg-purple-400 active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-purple-500/10">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                Enviar Mensaje y Regalar 5 FC
+                <span id="admin-update-spinner" class="hidden animate-spin rounded-full h-3 w-3 border-2 border-slate-950 border-t-transparent"></span>
+              </button>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -1819,9 +1846,9 @@
                 </div>
               </div>
 
-              <!-- Botón Premium: Ruleta de Casino Fonda -->
-              <button onclick="switchBetsMode('casino')" class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:via-yellow-300 hover:to-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 duration-150 shrink-0 self-center border border-amber-300/35" title="Entrar al Casino de la Fonda y jugar a la Ruleta Europea">
-                <i data-lucide="compass" class="w-4.5 h-4.5 animate-spin" style="animation-duration: 12s"></i> 🎡 Jugar a la Ruleta
+              <!-- Botón Premium: Casino Fonda (Lobby) -->
+              <button onclick="switchBetsMode('casino')" class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:via-yellow-300 hover:to-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 duration-150 shrink-0 self-center border border-amber-300/35" title="Entrar al Casino Fonda: Ruleta y Slots">
+                <i data-lucide="sparkles" class="w-4.5 h-4.5 animate-pulse"></i> 🎰 CASINO FONDA
               </button>
             </div>
           </div>
@@ -1835,7 +1862,7 @@
             ⚽ Apuestas Deportivas
           </button>
           <button id="btn-bets-mode-casino" onclick="switchBetsMode('casino')" class="px-5 py-2.5 rounded-2xl bg-purple-900/40 hover:bg-purple-900 border border-purple-500/25 hover:border-purple-400 text-purple-300 hover:text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 active:scale-95 duration-150">
-            🎡 Fonda Casino (Ruleta)
+            🎰 CASINO FONDA
           </button>
         </div>
 
@@ -1930,7 +1957,73 @@
 
         <!-- ── CUERPO CASINO: RULETA Y TAPETE ── -->
         <div id="bets-casino-container" class="hidden flex flex-col gap-6">
-          <div class="glass-panel p-6 rounded-3xl border border-purple-500/20 bg-slate-900/40 text-left space-y-6">
+
+          <!-- Menú de Navegación del Casino (Pestañas) -->
+          <div class="flex flex-col sm:flex-row items-center justify-between bg-slate-950/65 p-3 rounded-2xl border border-purple-500/10 w-full gap-3">
+            <div class="flex gap-2 w-full sm:w-auto">
+              <button id="btn-casino-game-lobby" onclick="switchCasinoGame('lobby')" class="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-150 cursor-pointer flex items-center justify-center gap-1.5">
+                🏠 Lobby
+              </button>
+              <button id="btn-casino-game-roulette" onclick="switchCasinoGame('roulette')" class="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-purple-950 text-purple-400 hover:text-purple-350 font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-150 cursor-pointer flex items-center justify-center gap-1.5">
+                🎡 Ruleta
+              </button>
+              <button id="btn-casino-game-slots" onclick="switchCasinoGame('slots')" class="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-purple-950 text-purple-400 hover:text-purple-350 font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-150 cursor-pointer flex items-center justify-center gap-1.5">
+                🎰 Slots
+              </button>
+            </div>
+            <div class="text-[9px] font-black text-amber-400/80 tracking-widest uppercase select-none">🎰 CASINO FONDA FANEGAS</div>
+          </div>
+
+          <!-- Vista: Lobby del Casino -->
+          <div id="casino-lobby-view" class="glass-panel p-8 rounded-3xl border border-[#c27a15]/30 bg-gradient-to-br from-slate-950/90 to-fonda-950/80 text-center space-y-8 max-w-4xl mx-auto w-full relative overflow-hidden animate-fade-in-up">
+            <!-- Deco top lights -->
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 pointer-events-none z-0" style="background: radial-gradient(ellipse at center top, rgba(251,191,36,0.15) 0%, transparent 70%);"></div>
+
+            <div class="relative z-10 space-y-2">
+              <h2 class="text-3xl font-black tracking-[0.2em] uppercase slots-marquee-title select-none">
+                FONDA FANEGAS
+              </h2>
+              <div class="text-xs font-black tracking-[0.3em] uppercase text-amber-400/90">✦ CASINO LOBBY ✦</div>
+              <p class="text-slate-400 text-xs max-w-md mx-auto leading-relaxed">
+                Bienvenido al templo del azar de la Fonda. Canjea tus Fonda Coins por fichas y demuestra tu destreza en la Ruleta Europea o en nuestras Tragaperras.
+              </p>
+            </div>
+
+            <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+              <!-- TARJETA: RULETA -->
+              <div onclick="switchCasinoGame('roulette')" class="group relative rounded-3xl p-6 bg-slate-900/70 border border-emerald-500/20 hover:border-emerald-500/50 hover:bg-slate-950/90 shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between items-center text-center space-y-6 overflow-hidden min-h-[340px]">
+                <div class="absolute -right-8 -top-8 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition duration-300"></div>
+                <div class="w-20 h-20 rounded-full bg-emerald-950/80 border border-emerald-500/30 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition duration-350 select-none">🎡</div>
+                <div class="space-y-2">
+                  <h3 class="text-xl font-black text-emerald-400 tracking-wider uppercase">Ruleta Europea</h3>
+                  <p class="text-[11px] text-slate-400 font-medium leading-relaxed max-w-[260px] mx-auto">
+                    Realiza tus apuestas sobre el tapete. Juega al rojo/negro, par/impar, docenas o pleno y multiplica tus fichas en cada giro del cilindro.
+                  </p>
+                </div>
+                <button class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-indigo-600 text-white font-black text-xs uppercase tracking-wider transition group-hover:scale-105 active:scale-95 duration-150 cursor-pointer pointer-events-none">
+                  Entrar a la Ruleta
+                </button>
+              </div>
+
+              <!-- TARJETA: SLOTS -->
+              <div onclick="switchCasinoGame('slots')" class="group relative rounded-3xl p-6 bg-slate-900/70 border border-purple-500/20 hover:border-purple-500/50 hover:bg-slate-950/90 shadow-2xl transition-all duration-300 transform hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between items-center text-center space-y-6 overflow-hidden min-h-[340px]">
+                <div class="absolute -right-8 -top-8 w-24 h-24 bg-purple-550/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition duration-300"></div>
+                <div class="w-20 h-20 rounded-full bg-purple-950/80 border border-purple-500/30 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition duration-350 select-none">🎰</div>
+                <div class="space-y-2">
+                  <h3 class="text-xl font-black text-purple-400 tracking-wider uppercase">Fonda Slots</h3>
+                  <p class="text-[11px] text-slate-400 font-medium leading-relaxed max-w-[260px] mx-auto">
+                    Consigue giros gratis con multiplicador doble y compite por el gran Bote Acumulado. ¡Consigue Comodines y Copas Mundiales en el rodillo 3x3!
+                  </p>
+                </div>
+                <button class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider transition group-hover:scale-105 active:scale-95 duration-150 cursor-pointer pointer-events-none">
+                  Entrar a las Slots
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vista: Ruleta Europea (Oculta por defecto) -->
+          <div id="casino-roulette-view" class="hidden glass-panel p-6 rounded-3xl border border-purple-500/20 bg-slate-900/40 text-left space-y-6">
 
             <!-- CONTENEDOR SUPERIOR: CILINDRO Y PANEL DE RESULTADOS/HISTORIAL -->
             <div class="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 max-w-4xl mx-auto w-full border-b border-purple-500/10 pb-6">
@@ -2074,6 +2167,257 @@
 
           </div>
         </div>
+
+        <div id="casino-slots-view" class="hidden relative p-4 md:p-6 text-left select-none overflow-hidden max-w-6xl mx-auto fslots-main-container">
+            <!-- Comfort Mode amber overlay filter -->
+            <div class="slots-comfort-overlay"></div>
+
+            <!-- Comfort Mode Switch (Top Right) -->
+            <div class="absolute top-4 right-4 z-40 flex items-center gap-2 rounded-full py-1.5 px-3 shadow-lg comfort-switch-container">
+              <span class="text-[9px] font-black uppercase tracking-wider text-slate-400">MODO CONFORT</span>
+              <button id="slots-comfort-toggle" onclick="toggleSlotsComfortMode()" class="w-10 h-5 rounded-full relative flex items-center p-0.5 cursor-pointer bg-slate-950 transition-colors" aria-label="Toggle comfort mode">
+                <span id="slots-comfort-knob" class="comfort-switch-knob w-4 h-4 rounded-full shadow transition-transform transform translate-x-0"></span>
+              </button>
+            </div>
+
+            <!-- Ambient top glow -->
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 pointer-events-none z-0" style="background: radial-gradient(ellipse at center top, rgba(251,191,36,0.1) 0%, transparent 70%);"></div>
+            
+            <!-- Particle Container for Coin Rain Win Animation -->
+            <div id="slots-win-particles-container" class="absolute inset-0 pointer-events-none z-50"></div>
+
+            <div class="relative z-10 flex flex-col gap-5 max-w-4xl mx-auto w-full">
+                
+                <!-- Marquesina Superior -->
+                <div class="marquee-slots-header w-full py-4 px-6 rounded-2xl text-center relative select-none">
+                  <div id="slots-marquee-bulbs" class="absolute inset-0 pointer-events-none"></div>
+                  <h2 class="text-2xl font-black tracking-[0.25em] uppercase slots-marquee-title">
+                    FONDA FANEGAS
+                  </h2>
+                  <div class="text-[9px] font-black tracking-[0.35em] uppercase text-amber-400/80 mt-0.5">✦ TRAGAPERRAS DEL CASINO ✦</div>
+                </div>
+
+                <!-- Banner de Información Horizontal (Multiplicadores y Free Spins) -->
+                <div class="flex flex-col md:flex-row items-center justify-between gap-3 p-3 rounded-2xl bg-slate-950/70 border border-[#c27a15]/30">
+                  <!-- Multiplicadores en pequeño -->
+                  <div class="flex flex-wrap gap-x-3 gap-y-1 items-center justify-center text-[8.5px] font-bold text-slate-400">
+                    <span class="text-amber-400 font-black uppercase tracking-wider mr-1">🏆 MULTIPLICADORES:</span>
+                    <span class="flex items-center gap-1"><span class="text-purple-300">🃏 Comodín x3:</span> <span class="text-amber-400 font-black">BOTE</span></span>
+                    <span class="text-slate-600">|</span>
+                    <span class="flex items-center gap-1"><span class="text-yellow-300">👑 x3:</span> <span class="text-white">×20</span></span>
+                    <span class="text-slate-600">|</span>
+                    <span class="flex items-center gap-1"><span class="text-slate-200">⚽ x3:</span> <span class="text-white">×10</span></span>
+                    <span class="text-slate-600">|</span>
+                    <span class="flex items-center gap-1"><span class="text-blue-300">🧤 x3:</span> <span class="text-white">×5</span></span>
+                    <span class="text-slate-600">|</span>
+                    <span class="flex items-center gap-1"><span class="text-red-400">🟥 x3:</span> <span class="text-red-400">-50%</span></span>
+                    <span class="text-slate-600">|</span>
+                    <span class="flex items-center gap-1"><span class="text-amber-300">🏆 3+ Scatter:</span> <span class="text-purple-400 font-black">+5 Giros Gratis</span></span>
+                  </div>
+                  <!-- Free Spins active (compact badge) -->
+                  <div id="slots-free-spins-badge" class="flex items-center gap-2 px-3 py-1 rounded-xl border border-purple-500/30 bg-purple-950/40 shadow-purple-glow">
+                    <span class="text-[8.5px] font-black text-purple-300 uppercase tracking-wider">GIROS GRATIS:</span>
+                    <span id="slots-display-free-spins" class="text-xs font-black text-purple-300">0 / 0</span>
+                  </div>
+                </div>
+
+                <!-- Chasis de Rodillos 3x3 -->
+                <div id="slots-reel-cabinet" class="w-full relative rounded-2xl transition-all duration-300">
+                  <!-- Win Flash Overlay -->
+                  <div id="slots-win-flash" class="hidden absolute inset-0 rounded-xl z-30 pointer-events-none" style="background: radial-gradient(ellipse at center, rgba(251,191,36,0.9) 0%, rgba(234,88,12,0.6) 50%, transparent 80%);"></div>
+                  <!-- Win Text Overlay -->
+                  <div id="slots-win-text" class="hidden absolute inset-0 z-40 pointer-events-none flex flex-col items-center justify-center gap-2">
+                    <div id="slots-win-amount-text" class="text-5xl font-black tracking-wider" style="color: #fef08a; text-shadow: 0 0 30px #fbbf24, 0 0 60px rgba(251,191,36,0.7), 0 0 5px rgba(0,0,0,0.8);">+0</div>
+                    <div class="text-sm font-black uppercase tracking-[0.3em]" style="color: rgba(255,255,255,0.95); text-shadow: 0 0 10px rgba(255,255,255,0.5);">¡ GANASTE !</div>
+                  </div>
+
+                  <!-- Area de rodillos con tapete de terciopelo verde esmeralda -->
+                  <div class="slots-window-pitch relative flex justify-center gap-3 p-4 overflow-hidden">
+                    <div class="reel-scan-line"></div>
+                    <!-- Hidden IDs para JS -->
+                    <div class="hidden">
+                      <div id="slots-paylines-svg"></div>
+                      <div id="slots-ind-left-1"></div><div id="slots-ind-left-2"></div>
+                      <div id="slots-ind-left-3"></div><div id="slots-ind-left-4"></div>
+                      <div id="slots-ind-left-5"></div><div id="slots-ind-right-1"></div>
+                      <div id="slots-ind-right-2"></div><div id="slots-ind-right-3"></div>
+                      <div id="slots-ind-right-4"></div><div id="slots-ind-right-5"></div>
+                    </div>
+
+                    <!-- Rodillo 1 -->
+                    <div class="reel overflow-hidden rounded-xl relative flex flex-col items-center" style="width:200px; height:464px; background: linear-gradient(180deg, #010a04 0%, #030f06 50%, #010a04 100%); border: 1px solid rgba(16,185,129,0.25); box-shadow: inset 0 0 25px rgba(0,0,0,0.98);">
+                      <div id="slots-reel-track-0" class="reel-track flex flex-col gap-2.5 py-2" style="transform: translate3d(0, 0px, 0);">
+                        <div class="slots-symbol w-[180px] h-[140px] flex flex-col items-center justify-center rounded-xl relative slots-symbol-glow-crown" style="background: linear-gradient(145deg, rgba(251,191,36,0.08), rgba(0,0,0,0.6)); border: 1px solid rgba(251,191,36,0.25);"><span class="text-[80px] leading-none">👑</span><span class="slots-symbol-label text-yellow-300 bg-yellow-950/90" style="border:1px solid rgba(251,191,36,0.3);">×20</span></div>
+                        <div class="slots-symbol w-[180px] h-[140px] flex flex-col items-center justify-center rounded-xl relative slots-symbol-glow-ball" style="background: linear-gradient(145deg, rgba(200,220,255,0.05), rgba(0,0,0,0.6)); border: 1px solid rgba(200,220,255,0.12);"><span class="text-[80px] leading-none">⚽</span><span class="slots-symbol-label text-slate-200 bg-slate-900/90">×10</span></div>
+                        <div class="slots-symbol w-[180px] h-[140px] flex flex-col items-center justify-center rounded-xl relative slots-symbol-glow-glove" style="background: linear-gradient(145deg, rgba(59,130,246,0.08), rgba(0,0,0,0.6)); border: 1px solid rgba(59,130,246,0.2);"><span class="text-[80px] leading-none">🧤</span><span class="slots-symbol-label text-blue-300 bg-blue-950/90" style="border:1px solid rgba(59,130,246,0.3);">×5</span></div>
+                      </div>
+                    </div>
+
+                    <!-- Rodillo 2 -->
+                    <div class="reel overflow-hidden rounded-xl relative flex flex-col items-center" style="width:200px; height:464px; background: linear-gradient(180deg, #010a04 0%, #030f06 50%, #010a04 100%); border: 1px solid rgba(16,185,129,0.25); box-shadow: inset 0 0 25px rgba(0,0,0,0.98);">
+                      <div id="slots-reel-track-1" class="reel-track flex flex-col gap-2.5 py-2" style="transform: translate3d(0, 0px, 0);">
+                        <div class="slots-symbol w-[180px] h-[140px] flex flex-col items-center justify-center rounded-xl relative slots-symbol-glow-ball" style="background: linear-gradient(145deg, rgba(200,220,255,0.05), rgba(0,0,0,0.6)); border: 1px solid rgba(200,220,255,0.12);"><span class="text-[80px] leading-none">⚽</span><span class="slots-symbol-label text-slate-200 bg-slate-900/90">×10</span></div>
+                        <div class="slots-symbol w-[180px] h-[140px] flex flex-col items-center justify-center rounded-xl relative slots-symbol-glow-wild" style="background: linear-gradient(145deg, rgba(168,85,247,0.12), rgba(0,0,0,0.6)); border: 1px solid rgba(168,85,247,0.3);"><span class="text-[80px] leading-none">🃏</span><span class="slots-symbol-label text-purple-200 bg-purple-950/90" style="border:1px solid rgba(168,85,247,0.4);">COMODÍN</span></div>
+                        <div class="slots-symbol w-[180px] h-[140px] flex flex-col items-center justify-center rounded-xl relative slots-symbol-glow-crown" style="background: linear-gradient(145deg, rgba(251,191,36,0.08), rgba(0,0,0,0.6)); border: 1px solid rgba(251,191,36,0.25);"><span class="text-[80px] leading-none">👑</span><span class="slots-symbol-label text-yellow-300 bg-yellow-950/90" style="border:1px solid rgba(251,191,36,0.3);">×20</span></div>
+                      </div>
+                    </div>
+
+                    <!-- Rodillo 3 -->
+                    <div class="reel overflow-hidden rounded-xl relative flex flex-col items-center" style="width:200px; height:464px; background: linear-gradient(180deg, #010a04 0%, #030f06 50%, #010a04 100%); border: 1px solid rgba(16,185,129,0.25); box-shadow: inset 0 0 25px rgba(0,0,0,0.98);">
+                      <div id="slots-reel-track-2" class="reel-track flex flex-col gap-2.5 py-2" style="transform: translate3d(0, 0px, 0);">
+                        <div class="slots-symbol w-[180px] h-[140px] flex flex-col items-center justify-center rounded-xl relative slots-symbol-glow-glove" style="background: linear-gradient(145deg, rgba(59,130,246,0.08), rgba(0,0,0,0.6)); border: 1px solid rgba(59,130,246,0.2);"><span class="text-[80px] leading-none">🧤</span><span class="slots-symbol-label text-blue-300 bg-blue-950/90" style="border:1px solid rgba(59,130,246,0.3);">×5</span></div>
+                        <div class="slots-symbol w-[180px] h-[140px] flex flex-col items-center justify-center rounded-xl relative slots-symbol-glow-crown" style="background: linear-gradient(145deg, rgba(251,191,36,0.08), rgba(0,0,0,0.6)); border: 1px solid rgba(251,191,36,0.25);"><span class="text-[80px] leading-none">👑</span><span class="slots-symbol-label text-yellow-300 bg-yellow-950/90" style="border:1px solid rgba(251,191,36,0.3);">×20</span></div>
+                        <div class="slots-symbol w-[180px] h-[140px] flex flex-col items-center justify-center rounded-xl relative slots-symbol-glow-ball" style="background: linear-gradient(145deg, rgba(200,220,255,0.05), rgba(0,0,0,0.6)); border: 1px solid rgba(200,220,255,0.12);"><span class="text-[80px] leading-none">⚽</span><span class="slots-symbol-label text-slate-200 bg-slate-900/90">×10</span></div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Consola de Mandos Horizontal en Terciopelo Esmeralda -->
+                <div class="w-full rounded-2xl p-4 border border-[#c27a15]/50 shadow-2xl" style="background: radial-gradient(circle, #0e3a1f 0%, #051c0e 100%); border: 3px solid #854d0e; box-shadow: inset 0 0 20px rgba(0,0,0,0.85), 0 10px 30px rgba(0,0,0,0.75);">
+                  <div class="flex flex-col md:flex-row gap-6 items-center justify-between w-full">
+
+                    <!-- Fichas de apuesta y Costo de Tirada (Lado Izquierdo / Centro) -->
+                    <div class="flex flex-wrap items-center justify-center md:justify-start gap-5">
+                      <!-- Fichas de apuesta -->
+                      <div class="flex items-center gap-2.5">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-[#fbbf24] font-montserrat">FICHAS</span>
+                        <div class="flex gap-2 p-2 rounded-xl bg-slate-950/90 border border-slate-700/50">
+                          <button id="slots-chip-10" onclick="selectSlotsChip(10)" class="casino-token-btn slots-chip-active" style="--chip-color: radial-gradient(circle at 35% 35%, #60a5fa 0%, #1d4ed8 75%, #1e3a8a 100%);"><span>10</span></button>
+                          <button id="slots-chip-50" onclick="selectSlotsChip(50)" class="casino-token-btn" style="--chip-color: radial-gradient(circle at 35% 35%, #34d399 0%, #047857 75%, #064e3b 100%);"><span>50</span></button>
+                          <button id="slots-chip-100" onclick="selectSlotsChip(100)" class="casino-token-btn" style="--chip-color: radial-gradient(circle at 35% 35%, #fbbf24 0%, #d97706 75%, #7c2d12 100%);"><span>100</span></button>
+                          <button id="slots-chip-500" onclick="selectSlotsChip(500)" class="casino-token-btn" style="--chip-color: radial-gradient(circle at 35% 35%, #f87171 0%, #b91c1c 75%, #7f1d1d 100%);"><span>500</span></button>
+                        </div>
+                      </div>
+
+                      <!-- Costo de tirada total -->
+                      <div class="flex flex-col text-center rounded-xl px-4 py-2.5 bg-slate-950/80 border border-slate-800 min-w-[90px]">
+                        <span class="text-[7.5px] text-slate-500 uppercase font-black tracking-wider">COSTO TIRADA</span>
+                        <span id="slots-display-total-bet" class="text-sm font-black text-yellow-400 mt-0.5" style="text-shadow: 0 0 5px rgba(251,191,36,0.3);">10</span>
+                      </div>
+                    </div>
+
+                    <!-- Botones de acción (Llamativos / Epic Spin - DESPLAZADOS A LA DERECHA) -->
+                    <div class="flex gap-4 items-center justify-center md:justify-end">
+                      <!-- COBRAR (w-20 h-20) -->
+                      <button id="slots-btn-collect" onclick="collectSlotsWin()"
+                        class="opacity-40 pointer-events-none slots-btn-epic-collect w-20 h-20 rounded-full flex flex-col items-center justify-center gap-0.5 cursor-pointer flex-shrink-0"
+                        title="Cobrar Premio">
+                        <span class="text-xl leading-none">💰</span>
+                        <span class="text-[9px] font-black text-amber-200 uppercase leading-none">COBRAR</span>
+                      </button>
+
+                      <!-- TIRAR PALANCA (w-24 h-24) -->
+                      <button id="slots-btn-spin" onclick="spinSlots()"
+                        class="slots-btn-epic-spin w-24 h-24 rounded-full flex flex-col items-center justify-center gap-0.5 cursor-pointer flex-shrink-0 animate-pulse">
+                        <span class="text-3xl leading-none">🎰</span>
+                        <span class="text-[9.5px] font-black text-white uppercase leading-none tracking-tight">¡TIRAR!</span>
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Paneles Inferiores (Cashier, Autogiros, Ticker y Gamble) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  
+                  <!-- Wallet & Cashier Box (Bottom Left mahogany/wood/metal panel) -->
+                  <div class="slots-mahogany-panel p-4 rounded-2xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center border-b border-[#854d0e]/30 pb-1.5">
+                      <span class="text-[9px] font-black text-amber-400 uppercase tracking-wider">💳 MONEDERO Y CAJA</span>
+                      <span class="text-[8px] bg-slate-950/60 px-1.5 py-0.5 rounded text-slate-400">BANCO FONDA</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                      <div class="p-2 bg-slate-950/60 rounded-xl border border-white/5">
+                        <span class="text-[8px] text-slate-400 font-bold block">MONEDAS FONDA</span>
+                        <span id="slots-wallet-fc" class="text-xs font-black text-purple-300">0 FC</span>
+                      </div>
+                      <div class="p-2 bg-slate-950/60 rounded-xl border border-amber-500/25 shadow-inner">
+                        <span class="text-[8px] text-yellow-500 font-bold block">FICHAS CASINO</span>
+                        <span id="slots-wallet-chips" class="text-sm font-black text-yellow-400" style="text-shadow: 0 0 5px rgba(251,191,36,0.3);">0</span>
+                      </div>
+                    </div>
+                    <div class="flex gap-1.5 pt-1.5 border-t border-[#854d0e]/20">
+                      <input type="number" id="slots-convert-input" min="1" placeholder="Monto" class="w-1/2 rounded-lg px-2.5 py-1 text-center text-xs font-bold text-white bg-slate-950 border border-slate-700/80 focus:outline-none focus:border-amber-500">
+                      <div class="flex gap-1 w-1/2">
+                        <button onclick="executeSlotsBuy()" class="flex-1 py-1 rounded-lg text-white font-extrabold text-[8.5px] uppercase tracking-wider bg-emerald-700 hover:bg-emerald-600 active:scale-95 transition cursor-pointer">Comprar</button>
+                        <button onclick="executeSlotsSell()" class="flex-1 py-1 rounded-lg text-purple-300 font-extrabold text-[8.5px] uppercase tracking-wider bg-purple-950 border border-purple-800/30 hover:bg-purple-900/40 active:scale-95 transition cursor-pointer">Retirar</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Autospin & Historial Dashboard (Bottom Center mahogany/metal panel) -->
+                  <div class="slots-mahogany-panel p-4 rounded-2xl flex flex-col justify-between space-y-4">
+                    <div>
+                      <span class="text-[8.5px] text-amber-500 font-black uppercase tracking-wider block text-center mb-2">CONTROL DE AUTO-GIROS</span>
+                      <div class="grid grid-cols-4 gap-1.5 text-[10px] text-center font-bold">
+                        <button id="slots-auto-off" onclick="setAutoSpinCount(0)" class="slots-auto-tile slots-auto-tile-active py-2 rounded-xl cursor-pointer">APAGADO</button>
+                        <button id="slots-auto-5" onclick="setAutoSpinCount(5)" class="slots-auto-tile py-2 rounded-xl cursor-pointer">5</button>
+                        <button id="slots-auto-10" onclick="setAutoSpinCount(10)" class="slots-auto-tile py-2 rounded-xl cursor-pointer">10</button>
+                        <button id="slots-auto-25" onclick="setAutoSpinCount(25)" class="slots-auto-tile py-2 rounded-xl cursor-pointer">25</button>
+                      </div>
+                      <div id="slots-auto-spin-info" class="hidden text-[9px] font-black text-center text-yellow-400 animate-pulse mt-2">
+                        Restantes: <span id="slots-auto-spin-rem">0</span>
+                      </div>
+                    </div>
+                    
+                    <!-- Historial LED -->
+                    <div class="border-t border-white/5 pt-2">
+                      <div id="slots-history-leds" class="flex flex-wrap gap-1 justify-center">
+                        <!-- Se rellena dinámicamente -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Gamble Widget (Leather Bound interface) -->
+                  <div id="slots-gamble-panel" class="p-4 rounded-2xl text-center flex flex-col justify-between opacity-50 pointer-events-none transition-all duration-300">
+                    <h4 class="text-[10px] font-black text-yellow-400 uppercase tracking-widest">🃏 APUESTA DE TARJETA</h4>
+                    
+                    <div class="flex gap-3 justify-center items-center my-2">
+                      <!-- Tarjeta Amarilla -->
+                      <button id="slots-btn-gamble-yellow" onclick="gambleGuess('yellow')" class="gamble-card-option w-9 h-14 bg-yellow-400 border border-yellow-300 rounded-lg flex flex-col items-center justify-center cursor-pointer select-none">
+                        <span class="text-lg">🟨</span>
+                        <span class="text-[5px] text-slate-950 font-black uppercase tracking-tighter mt-1">AMARILLA</span>
+                      </button>
+                      
+                      <!-- Ranura de revelación -->
+                      <div id="slots-gamble-card-reveal" class="w-9 h-14 bg-slate-950 border-2 border-dashed border-slate-700 rounded-lg flex items-center justify-center text-sm font-black text-slate-500 shadow-inner">
+                        ?
+                      </div>
+                      
+                      <!-- Tarjeta Roja -->
+                      <button id="slots-btn-gamble-red" onclick="gambleGuess('red')" class="gamble-card-option w-9 h-14 bg-red-600 border border-red-500 rounded-lg flex flex-col items-center justify-center cursor-pointer select-none">
+                        <span class="text-lg">🟥</span>
+                        <span class="text-[5px] text-white font-black uppercase tracking-tighter mt-1">ROJA</span>
+                      </button>
+                    </div>
+
+                    <div class="text-[8px] font-black text-slate-400 space-y-0.5">
+                      <div id="slots-gamble-risked">Riesgo: 0 Fichas</div>
+                      <div id="slots-gamble-potential" class="text-emerald-400 font-extrabold">Doble o Nada</div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Ticker de Bote Jackpot Acumulado (Al fondo del contenedor) -->
+                <div class="slots-jackpot-display-bar w-full py-2.5 px-6 rounded-2xl flex items-center justify-between mt-1">
+                  <span class="text-[9.5px] font-black text-purple-400 uppercase tracking-widest flex items-center gap-1.5">
+                    🏆 BOTE COMÚN ACUMULADO
+                  </span>
+                  <div class="flex items-center gap-1.5">
+                    <span id="slots-jackpot-display" class="text-xl font-black text-white tracking-wide" style="text-shadow: 0 0 10px rgba(168, 85, 247, 0.9);">10,000</span>
+                    <span class="text-[9px] font-bold text-amber-400">PTS</span>
+                  </div>
+                  <span class="text-[8px] text-slate-500 font-bold uppercase tracking-wider">3 Joker / Comodín = ¡BOTE!</span>
+                </div>
+
+            </div>
+
+          </div><!-- Fin casino-slots-view -->
+
+        </div><!-- Fin bets-casino-container -->
 
       </div>
 
@@ -4517,11 +4861,12 @@
               if (playerFcBal) playerFcBal.textContent = currentUserProfile.fonda_coins || 0;
               if (playerChipsBal) playerChipsBal.textContent = currentUserProfile.casino_chips || 0;
 
-              if (!window.isCasinoSpinning) {
+              if (!window.isCasinoSpinning && !window.isSlotsSpinning) {
                 window.localCasinoChips = currentUserProfile.casino_chips || 0;
                 const localChipsDisp = document.getElementById("casino-local-chips-display");
                 if (localChipsDisp) localChipsDisp.textContent = window.localCasinoChips;
                 if (window.renderCasinoActiveBets) window.renderCasinoActiveBets();
+                if (window.syncSlotsUIBalances) window.syncSlotsUIBalances();
               }
 
               if (window.checkDailySpinWheelAvailability) {
@@ -7889,6 +8234,7 @@
             }
             previousSecondaryMarket = lData.secondary_market || [];
             currentActiveLeagueData = lData; // Guardar estado global de la liga activa
+            if (window.syncSlotsUIBalances) window.syncSlotsUIBalances();
 
             // Comprobar y resolver automáticamente el mercado si ha caducado
             checkAndAutoResolveMarket(leagueCode, lData);
@@ -15232,6 +15578,50 @@
         });
       }
 
+      // Megáfono de actualizaciones y regalo de 5 FC (Admin Only)
+      window.sendSystemUpdateMessage = async function() {
+        const textInput = document.getElementById("admin-update-message");
+        if (!textInput) return;
+        const message = textInput.value.trim();
+        if (!message) {
+          showNotification("Por favor, escribe un mensaje de actualización.", "error");
+          return;
+        }
+
+        const btn = document.getElementById("admin-update-submit-btn");
+        const spinner = document.getElementById("admin-update-spinner");
+        if (btn) btn.disabled = true;
+        if (spinner) spinner.classList.remove("hidden");
+
+        try {
+          // Obtener todos los mánagers (usuarios) registrados
+          const usersSnap = await getDocs(collection(db, "users"));
+          
+          const promises = usersSnap.docs.map(async (uDoc) => {
+            const userId = uDoc.id;
+            return db.collection("users").doc(userId).collection("mailbox").add({
+              type: "custom_reward",
+              rewardType: "coins",
+              title: "📢 Actualización del Sistema",
+              description: message,
+              amount: 5,
+              claimed: false,
+              createdAt: Date.now()
+            });
+          });
+
+          await Promise.all(promises);
+          showNotification(`📢 Actualización enviada con éxito a ${usersSnap.docs.length} usuarios (+5 FC asignados en su buzón).`, "success");
+          textInput.value = "";
+        } catch (err) {
+          console.error("Error al enviar actualizaciones:", err);
+          showNotification("Error al enviar la actualización y los FC.", "error");
+        } finally {
+          if (btn) btn.disabled = false;
+          if (spinner) spinner.classList.add("hidden");
+        }
+      };
+
       // 8. Eliminar Cuenta de Manager Permanentemente (Admin Only)
       const btnAdminDeleteAccount = document.getElementById("btn-admin-delete-account");
       if (btnAdminDeleteAccount) {
@@ -19186,8 +19576,10 @@
           btnSports.className = "px-5 py-2.5 rounded-2xl bg-purple-900/40 hover:bg-purple-900 border border-purple-500/25 hover:border-purple-400 text-purple-300 hover:text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 active:scale-95 duration-150";
           btnCasino.className = "px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 shadow-lg active:scale-95 duration-150";
           
+          // Entrar directamente al lobby
+          window.switchCasinoGame('lobby');
+          
           setTimeout(() => {
-            window.drawIntegratedWheel();
             window.renderCasinoActiveBets();
             if (typeof lucide !== "undefined") lucide.createIcons();
           }, 50);
@@ -19686,7 +20078,7 @@
         const startWheelAngle = window.casinoWheelAngle || 0;
         const ballStartAngle = Math.random() * 2 * Math.PI;
 
-        const TOTAL_DURATION  = 6800;
+        const TOTAL_DURATION  = 4800;
         const PHASE1_END      = 0.48;
         const PHASE2_END      = 0.80;
 
@@ -19856,6 +20248,1035 @@
 
         requestAnimationFrame(animate);
       };
+
+      // =========================================================================
+      // ==================== FONDA CASINO: FONDA SLOTS =========================
+      // =========================================================================
+      window.isSlotsSpinning = false;
+      window.slotsLineBet = 10; // Apuesta inicial por línea (fichas)
+      window.slotsActiveLines = 5; // Cantidad de líneas de pago fija en 5
+      window.slotsFreeSpins = 0; // Giros gratis restantes
+      window.slotsFreeSpinsTotal = 0; // Total de giros gratis ganados en el ciclo
+      window.slotsPendingWin = 0; // Saldo de premio pendiente de cobro/riesgo
+      window.slotsAutoSpinCount = 0; // Cantidad de giros automáticos restantes
+
+      const SLOTS_SYMBOLS = ['🧤', '⚽', '👑', '🟥', '🃏', '🏆'];
+      const SLOTS_SYMBOL_GLOWS = {
+        '🧤': 'slots-symbol-glow-glove',
+        '⚽': 'slots-symbol-glow-ball',
+        '👑': 'slots-symbol-glow-crown',
+        '🟥': 'slots-symbol-glow-red',
+        '🃏': 'slots-symbol-glow-wild',
+        '🏆': 'slots-symbol-glow-scatter'
+      };
+
+      // Metadatos de labels y colores por símbolo
+      const SLOTS_SYMBOL_META = {
+        '🧤': { label: '×5',          color: 'text-blue-300',    bg: 'bg-blue-950/90',    border: 'border:1px solid rgba(59,130,246,0.3);',  bgStyle: 'background:linear-gradient(145deg,rgba(59,130,246,0.08),rgba(0,0,0,0.6));border:1px solid rgba(59,130,246,0.2);' },
+        '⚽': { label: '×10',         color: 'text-slate-200',   bg: 'bg-slate-900/90',   border: '',                                        bgStyle: 'background:linear-gradient(145deg,rgba(200,220,255,0.05),rgba(0,0,0,0.6));border:1px solid rgba(200,220,255,0.12);' },
+        '👑': { label: '×20',         color: 'text-yellow-300',  bg: 'bg-yellow-950/90',  border: 'border:1px solid rgba(251,191,36,0.3);',  bgStyle: 'background:linear-gradient(145deg,rgba(251,191,36,0.08),rgba(0,0,0,0.6));border:1px solid rgba(251,191,36,0.25);' },
+        '🟥': { label: 'PENAL',        color: 'text-red-300',     bg: 'bg-red-950/90',     border: 'border:1px solid rgba(239,68,68,0.4);',   bgStyle: 'background:linear-gradient(145deg,rgba(239,68,68,0.1),rgba(0,0,0,0.6));border:1px solid rgba(239,68,68,0.3);' },
+        '🃏': { label: 'COMODÍN',      color: 'text-purple-200',  bg: 'bg-purple-950/90',  border: 'border:1px solid rgba(168,85,247,0.4);',  bgStyle: 'background:linear-gradient(145deg,rgba(168,85,247,0.12),rgba(0,0,0,0.6));border:1px solid rgba(168,85,247,0.3);' },
+        '🏆': { label: 'SCATTER',      color: 'text-amber-300',   bg: 'bg-amber-950/90',   border: 'border:1px solid rgba(251,191,36,0.5);',  bgStyle: 'background:linear-gradient(145deg,rgba(251,191,36,0.12),rgba(0,0,0,0.5));border:1px solid rgba(251,191,36,0.4);' }
+      };
+
+      // Audio API nativa con rutas vacías preconfiguradas
+      const AUDIO_SPIN = new Audio('sounds/spin.mp3');
+      const AUDIO_WIN = new Audio('sounds/win.mp3');
+      const AUDIO_PENALTY = new Audio('sounds/penalty.mp3');
+
+      const slotsSounds = {
+        spin: AUDIO_SPIN,
+        win: AUDIO_WIN,
+        penalty: AUDIO_PENALTY,
+        gambleWin: new Audio('sounds/gamble_win.mp3'),
+        gambleLose: new Audio('sounds/gamble_lose.mp3')
+      };
+
+      function playSlotsSound(name) {
+        if (slotsSounds[name]) {
+          slotsSounds[name].currentTime = 0;
+          slotsSounds[name].play().catch(() => console.log(`Audio slots: ${name} silenciado o no encontrado.`));
+        }
+      }
+
+      // Inicialización de focos alrededor de la marquesina
+      window.initMarqueeBulbs = function() {
+        const bulbsContainer = document.getElementById("slots-marquee-bulbs");
+        if (!bulbsContainer) return;
+        
+        bulbsContainer.innerHTML = "";
+        const count = 26;
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2;
+          const x = 50 + Math.cos(angle) * 48.2;
+          const y = 50 + Math.sin(angle) * 40.8;
+          
+          const bulb = document.createElement("div");
+          bulb.className = `absolute w-2 h-2 rounded-full transition-all duration-300 slots-bulb-${i % 2 === 0 ? 'even' : 'odd'}`;
+          bulb.style.left = x + "%";
+          bulb.style.top = y + "%";
+          bulb.style.transform = "translate(-50%, -50%)";
+          
+          bulb.style.backgroundColor = "#fef08a";
+          bulb.style.boxShadow = "0 0 6px #facc15";
+          
+          bulbsContainer.appendChild(bulb);
+        }
+      };
+
+      // Alternador de Juego: Ruleta vs Slots
+      window.switchCasinoGame = function(game) {
+        const lobbyView = document.getElementById("casino-lobby-view");
+        const rouletteView = document.getElementById("casino-roulette-view");
+        const slotsView = document.getElementById("casino-slots-view");
+        
+        const btnLobby = document.getElementById("btn-casino-game-lobby");
+        const btnRoulette = document.getElementById("btn-casino-game-roulette");
+        const btnSlots = document.getElementById("btn-casino-game-slots");
+
+        if (!lobbyView || !rouletteView || !slotsView || !btnLobby || !btnRoulette || !btnSlots) return;
+
+        const activeClass = "px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black text-[10px] uppercase tracking-wider transition shadow-md active:scale-95 duration-150 cursor-pointer flex items-center justify-center gap-1.5";
+        const inactiveClass = "px-4 py-2 rounded-xl bg-purple-950 text-purple-400 hover:text-purple-305 font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-150 cursor-pointer flex items-center justify-center gap-1.5";
+
+        if (game === "lobby") {
+          lobbyView.classList.remove("hidden");
+          rouletteView.classList.add("hidden");
+          slotsView.classList.add("hidden");
+
+          btnLobby.className = activeClass;
+          btnRoulette.className = inactiveClass;
+          btnSlots.className = inactiveClass;
+
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        } else if (game === "slots") {
+          lobbyView.classList.add("hidden");
+          rouletteView.classList.add("hidden");
+          slotsView.classList.remove("hidden");
+
+          btnLobby.className = inactiveClass;
+          btnRoulette.className = inactiveClass;
+          btnSlots.className = activeClass;
+
+          window.syncSlotsUIBalances();
+          window.initMarqueeBulbs();
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        } else {
+          lobbyView.classList.add("hidden");
+          rouletteView.classList.remove("hidden");
+          slotsView.classList.add("hidden");
+
+          btnLobby.className = inactiveClass;
+          btnRoulette.className = activeClass;
+          btnSlots.className = inactiveClass;
+
+          if (typeof lucide !== "undefined") lucide.createIcons();
+          setTimeout(() => {
+            if (window.drawIntegratedWheel) window.drawIntegratedWheel();
+          }, 50);
+        }
+      };
+
+      // Sincronizar Balances y Jackpot
+      window.syncSlotsUIBalances = function() {
+        const fcBal = document.getElementById("slots-user-fc");
+        const chipsBal = document.getElementById("slots-user-chips");
+        const walletFcBal = document.getElementById("slots-wallet-fc");
+        const walletChipsBal = document.getElementById("slots-wallet-chips");
+        
+        if (currentUserProfile) {
+          const fcVal = (currentUserProfile.fonda_coins || 0).toLocaleString() + " FC";
+          const chipsVal = (currentUserProfile.casino_chips || 0).toLocaleString();
+          
+          if (fcBal) fcBal.textContent = fcVal;
+          if (walletFcBal) walletFcBal.textContent = fcVal;
+          
+          if (chipsBal) chipsBal.textContent = chipsVal + " Fichas";
+          if (walletChipsBal) walletChipsBal.textContent = chipsVal;
+          
+          const localChipsDisp = document.getElementById("casino-local-chips-display");
+          if (localChipsDisp && !window.isSlotsSpinning && !window.isCasinoSpinning) {
+            localChipsDisp.textContent = currentUserProfile.casino_chips || 0;
+            window.localCasinoChips = currentUserProfile.casino_chips || 0;
+          }
+        }
+
+        const jackpotDisp = document.getElementById("slots-jackpot-display");
+        if (jackpotDisp) {
+          const jackpotVal = currentActiveLeagueData ? (currentActiveLeagueData.slots_jackpot || 10000) : 10000;
+          jackpotDisp.textContent = Number(jackpotVal).toLocaleString();
+        }
+      };
+
+      // Control del Modo Confort
+      window.toggleSlotsComfortMode = function() {
+        const slotsView = document.getElementById("casino-slots-view");
+        const knob = document.getElementById("slots-comfort-knob");
+        if (!slotsView || !knob) return;
+
+        const isActive = slotsView.classList.toggle("slots-comfort-active");
+        if (isActive) {
+          knob.classList.remove("translate-x-0");
+          knob.classList.add("translate-x-5");
+        } else {
+          knob.classList.remove("translate-x-5");
+          knob.classList.add("translate-x-0");
+        }
+      };
+
+      // Cajero: Comprar Fichas
+      window.executeSlotsBuy = async function() {
+        if (window.isSlotsSpinning) return;
+        if (!currentUser || !currentUserProfile) return;
+
+        const input = document.getElementById("slots-convert-input");
+        if (!input) return;
+        const amountFC = parseInt(input.value);
+        if (isNaN(amountFC) || amountFC <= 0) {
+          showNotification("Introduce una cantidad válida de FC a convertir (mayor que 0).", "warning");
+          return;
+        }
+
+        const currentFC = currentUserProfile.fonda_coins || 0;
+        if (amountFC > currentFC) {
+          showNotification("No tienes suficientes Fonda Coins (FC).", "error");
+          return;
+        }
+
+        const userRef = doc(db, "users", currentUser.uid);
+        const newFC = currentFC - amountFC;
+        const chipsToReceive = amountFC * 100;
+        const newChips = (currentUserProfile.casino_chips || 0) + chipsToReceive;
+
+        try {
+          await updateDoc(userRef, {
+            fonda_coins: newFC,
+            casino_chips: newChips
+          });
+          showNotification(`✅ Cajero: Has convertido ${amountFC} FC en ${chipsToReceive} Fichas.`, "success");
+          input.value = "";
+          window.syncSlotsUIBalances();
+        } catch (err) {
+          console.error(err);
+          showNotification("Error en la transacción del cajero.", "error");
+        }
+      };
+
+      // Cajero: Canjear Fichas por FC
+      window.executeSlotsSell = async function() {
+        if (window.isSlotsSpinning) return;
+        if (!currentUser || !currentUserProfile) return;
+
+        const input = document.getElementById("slots-convert-input");
+        if (!input) return;
+        const amountChips = parseInt(input.value);
+        if (isNaN(amountChips) || amountChips <= 0) {
+          showNotification("Introduce una cantidad válida de Fichas a retirar (mayor que 0).", "warning");
+          return;
+        }
+
+        if (amountChips % 100 !== 0) {
+          showNotification("El monto a retirar debe ser múltiplo de 100 Fichas.", "warning");
+          return;
+        }
+
+        const databaseChips = currentUserProfile.casino_chips || 0;
+        if (amountChips > databaseChips) {
+          showNotification("No tienes tantas fichas en tu cuenta.", "error");
+          return;
+        }
+
+        const userRef = doc(db, "users", currentUser.uid);
+        const newChips = databaseChips - amountChips;
+        const fcToReceive = amountChips / 100;
+        const newFC = (currentUserProfile.fonda_coins || 0) + fcToReceive;
+
+        try {
+          await updateDoc(userRef, {
+            fonda_coins: newFC,
+            casino_chips: newChips
+          });
+          showNotification(`✅ Cajero: Has retirado ${amountChips} Fichas por ${fcToReceive} FC.`, "success");
+          input.value = "";
+          window.syncSlotsUIBalances();
+        } catch (err) {
+          console.error(err);
+          showNotification("Error en la transacción del cajero.", "error");
+        }
+      };
+
+      // Selección de Ficha Directa
+      window.selectSlotsChip = function(value) {
+        if (window.isSlotsSpinning || window.slotsPendingWin > 0) return;
+        window.slotsLineBet = value;
+        updateSlotsControlsDisplay();
+      };
+
+      window.changeSlotsLines = function(delta) {
+        // Bloqueado a 5 líneas por requerimiento del usuario
+      };
+
+      window.toggleActiveLines = function(lineNumber) {
+        // Bloqueado a 5 líneas por requerimiento del usuario
+      };
+
+      function updateSlotsControlsDisplay() {
+        const displayLines = document.getElementById("slots-display-lines");
+        const displayTotal = document.getElementById("slots-display-total-bet");
+        const displayFree = document.getElementById("slots-display-free-spins");
+
+        if (displayLines) displayLines.textContent = window.slotsActiveLines;
+        
+        const isFree = window.slotsFreeSpins > 0;
+        if (displayTotal) {
+          // El costo es simple: igual al valor de la ficha (slotsLineBet), no slotsLineBet * 5
+          displayTotal.textContent = isFree ? "0 (FREE)" : window.slotsLineBet;
+        }
+        if (displayFree) {
+          displayFree.textContent = isFree ? `${window.slotsFreeSpins}/${window.slotsFreeSpinsTotal}` : "0 / 0";
+        }
+
+        // Resaltar la ficha activa y desmarcar las otras utilizando la clase slots-chip-active
+        const chips = [10, 50, 100, 500];
+        chips.forEach(val => {
+          const btn = document.getElementById(`slots-chip-${val}`);
+          if (btn) {
+            if (val === window.slotsLineBet) {
+              btn.classList.add("slots-chip-active");
+            } else {
+              btn.classList.remove("slots-chip-active");
+            }
+          }
+        });
+      }
+
+      // Lluvia física de monedas/estrellas + Flash dorado
+      function spawnWinParticles(winAmount) {
+        const flashEl = document.getElementById('slots-win-flash');
+        const textEl  = document.getElementById('slots-win-text');
+        const amountEl = document.getElementById('slots-win-amount-text');
+        const cabinetEl = document.getElementById('slots-reel-cabinet');
+
+        if (flashEl) {
+          flashEl.classList.remove('hidden', 'slots-win-overlay');
+          flashEl.style.opacity = '0';
+          void flashEl.offsetWidth; // reflow
+          flashEl.classList.add('slots-win-overlay');
+          setTimeout(() => flashEl.classList.add('hidden'), 2000);
+        }
+        if (textEl && amountEl) {
+          amountEl.textContent = `+${winAmount}`;
+          textEl.classList.remove('hidden', 'slots-win-text-anim');
+          void textEl.offsetWidth;
+          textEl.classList.add('slots-win-text-anim');
+          setTimeout(() => textEl.classList.add('hidden'), 2400);
+        }
+        if (cabinetEl) {
+          cabinetEl.classList.remove('slots-win-border-pulse');
+          void cabinetEl.offsetWidth;
+          cabinetEl.classList.add('slots-win-border-pulse');
+          setTimeout(() => cabinetEl.classList.remove('slots-win-border-pulse'), 1600);
+        }
+
+        const container = document.getElementById("slots-win-particles-container");
+        if (!container) return;
+        container.innerHTML = "";
+
+        const count = 80;
+        const symbols = ['🪙', '✨', '⭐', '💵', '🌟', '🏆', '💰'];
+        const colors  = ['#fbbf24','#fde68a','#f59e0b','#10b981','#34d399','#a78bfa','#60a5fa'];
+
+        for (let i = 0; i < count; i++) {
+          const p = document.createElement("div");
+          p.style.cssText = `position:absolute;pointer-events:none;z-index:60;select:none;font-size:${16 + Math.random()*16}px;`;
+
+          if (Math.random() < 0.55) {
+            p.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+          } else {
+            const size = 6 + Math.random() * 8;
+            p.style.width  = size + 'px';
+            p.style.height = size + 'px';
+            p.style.borderRadius = Math.random() < 0.5 ? '50%' : '2px';
+            p.style.background = colors[Math.floor(Math.random() * colors.length)];
+            p.style.fontSize = '0';
+          }
+
+          const startX = 35 + Math.random() * 30;
+          const startY = 20 + Math.random() * 40;
+          p.style.left    = startX + "%";
+          p.style.top     = startY + "%";
+          p.style.opacity = "0";
+          container.appendChild(p);
+
+          const angle  = Math.random() * Math.PI * 2;
+          const speed  = 3 + Math.random() * 8;
+          let velX     = Math.cos(angle) * speed;
+          let velY     = Math.sin(angle) * speed - 7;
+          const gravity = 0.3;
+          let x        = (startX / 100) * container.clientWidth;
+          let y        = (startY / 100) * container.clientHeight;
+          let scale    = 0.6 + Math.random() * 1.2;
+          let opacity  = 0.0;
+          let rotation = Math.random() * 360;
+          const rotSpeed = -15 + Math.random() * 30;
+          let frame    = 0;
+
+          function update() {
+            if (opacity <= 0.01 || !container.contains(p)) { p.remove(); return; }
+            frame++;
+            velY += gravity;
+            x    += velX;
+            y    += velY;
+            velX *= 0.995;
+            rotation += rotSpeed;
+
+            if (frame < 6)  opacity = Math.min(1, frame / 6);
+            if (frame > 50) opacity = Math.max(0, opacity - 0.02);
+
+            p.style.left      = x + "px";
+            p.style.top       = y + "px";
+            p.style.transform = `translate(-50%,-50%) scale(${scale}) rotate(${rotation}deg)`;
+            p.style.opacity   = opacity;
+            requestAnimationFrame(update);
+          }
+          setTimeout(() => requestAnimationFrame(update), i * 12);
+        }
+      }
+
+      // Limpieza de marcos luminosos en celdas
+      function clearWinHighlights() {
+        for (let c = 0; c < 3; c++) {
+          const track = document.getElementById(`slots-reel-track-${c}`);
+          if (track) {
+            Array.from(track.children).forEach(cell => {
+              cell.classList.remove('slots-cell-win', 'border-yellow-400', 'scale-105', 'animate-pulse');
+            });
+          }
+        }
+      }
+
+      // Generación de símbolos con pesos
+      function getRandomSymbol() {
+        const r = Math.random();
+        if (r < 0.28) return '🧤';
+        if (r < 0.52) return '⚽';
+        if (r < 0.70) return '👑';
+        if (r < 0.85) return '🟥';
+        if (r < 0.93) return '🃏';
+        return '🏆';
+      }
+
+      function getCurrentReelSymbols() {
+        const current = [['👑', '⚽', '🧤'], ['⚽', '🃏', '👑'], ['🧤', '👑', '⚽']];
+        for (let r = 0; r < 3; r++) {
+          const track = document.getElementById(`slots-reel-track-${r}`);
+          if (track) {
+            const cells = Array.from(track.getElementsByClassName("slots-symbol"));
+            if (cells.length >= 3) {
+              // Obtener los últimos 3 símbolos (los visibles al detenerse)
+              current[r] = cells.slice(-3).map(el => {
+                const firstSpan = el.querySelector('span');
+                return firstSpan ? firstSpan.textContent.trim() : el.textContent.trim();
+              });
+            }
+          }
+        }
+        return current;
+      }
+
+      // Lanzamiento del giro (Spin) - Detención escalonada a 2s, 2.5s y 3s
+      window.spinSlots = async function() {
+        if (window.isSlotsSpinning) return;
+        if (!currentUser || !currentUserProfile) {
+          showNotification("Inicia sesión para jugar a la Fonda Slots.", "warning");
+          return;
+        }
+
+        // Auto-cobrar saldo pendiente si no lo hicieron antes de girar
+        if (window.slotsPendingWin > 0) {
+          await collectSlotsWin();
+        }
+
+        const isFree = window.slotsFreeSpins > 0;
+        // Costo de tirada es simple: igual al valor de la ficha (slotsLineBet)
+        const totalBet = window.slotsLineBet;
+        const cost = isFree ? 0 : totalBet;
+
+        const currentChips = currentUserProfile.casino_chips || 0;
+        if (currentChips < cost) {
+          showNotification("Saldo de fichas insuficiente para realizar la tirada.", "error");
+          window.setAutoSpinCount(0);
+          return;
+        }
+
+        // Bloqueo y limpieza visual
+        setSlotsInterfaceLocked(true);
+        window.isSlotsSpinning = true;
+        clearWinHighlights();
+
+        // Descontar saldo inmediatamente en Firestore de forma atómica
+        const userRef = doc(db, "users", currentUser.uid);
+        if (cost > 0) {
+          try {
+            await updateDoc(userRef, {
+              casino_chips: firebase.firestore.FieldValue.increment(-cost)
+            });
+            currentUserProfile.casino_chips -= cost;
+            window.localCasinoChips = currentUserProfile.casino_chips;
+            window.syncSlotsUIBalances();
+          } catch (e) {
+            console.error(e);
+            showNotification("Error de red al procesar el descuento de la tirada.", "error");
+            setSlotsInterfaceLocked(false);
+            window.isSlotsSpinning = false;
+            return;
+          }
+        }
+
+        playSlotsSound('spin');
+        updateSlotsControlsDisplay();
+
+        // Determinar resultado
+        const grid = [];
+        for (let c = 0; c < 3; c++) {
+          const col = [];
+          for (let r = 0; r < 3; r++) {
+            col.push(getRandomSymbol());
+          }
+          grid.push(col);
+        }
+        const outcome = { grid };
+
+        // Animación vertical de rodillos
+        const reelTracks = [
+          document.getElementById("slots-reel-track-0"),
+          document.getElementById("slots-reel-track-1"),
+          document.getElementById("slots-reel-track-2")
+        ];
+
+        const symbolHeight = 140; 
+        const gap = 10;           
+        const itemStep = symbolHeight + gap; 
+        const currentSymbols = getCurrentReelSymbols();
+        
+        // GIRO RAPIDO: 2s, 2.5s, 3s
+        const spinDurations = [2000, 2500, 3000];
+
+        for (let r = 0; r < 3; r++) {
+          const track = reelTracks[r];
+          if (!track) continue;
+
+          // Añadir la clase específica de animación de giro manteniendo las clases de layout por defecto
+          track.classList.add(`reel-spinning-${r + 1}`);
+
+          const filler = [];
+          for (let f = 0; f < 18; f++) { 
+            filler.push(getRandomSymbol());
+          }
+          const target = outcome.grid[r];
+          const stripSymbols = [...currentSymbols[r], ...filler, ...target];
+
+          track.innerHTML = stripSymbols.map(sym => {
+            const glowClass = SLOTS_SYMBOL_GLOWS[sym] || '';
+            const m = SLOTS_SYMBOL_META[sym] || { label: '', color: 'text-slate-300', bg: 'bg-slate-900/90', border:'', bgStyle:'background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.05);' };
+            return `<div class="slots-symbol w-[180px] h-[140px] flex flex-col items-center justify-center rounded-xl relative transition-all ${glowClass}" style="${m.bgStyle}"><span class="text-[80px] leading-none">${sym}</span><span class="slots-symbol-label ${m.color} ${m.bg}" style="${m.border}">${m.label}</span></div>`;
+          }).join('');
+
+          track.style.transition = 'none';
+          track.style.transform = 'translate3d(0, 0px, 0)';
+          track.offsetHeight;
+
+          const translateOffset = -(stripSymbols.length - 3) * itemStep;
+          // Utiliza cubic-bezier(0.12, 0.85, 0.38, 1.15) para un efecto elástico (bounce back) al detenerse
+          track.style.transition = `transform ${spinDurations[r]}ms cubic-bezier(0.12, 0.85, 0.38, 1.15)`;
+          track.style.transform = `translate3d(0, ${translateOffset}px, 0)`;
+        }
+
+        // Paradas escalonadas
+        setTimeout(() => {
+          if (reelTracks[0]) reelTracks[0].classList.remove("reel-spinning-1");
+        }, 2000);
+
+        setTimeout(() => {
+          if (reelTracks[1]) reelTracks[1].classList.remove("reel-spinning-2");
+        }, 2500);
+
+        setTimeout(() => {
+          if (reelTracks[2]) reelTracks[2].classList.remove("reel-spinning-3");
+          // Evitar reiniciar el transform e innerHTML para eliminar por completo el parpadeo de re-renderizado
+          for (let r = 0; r < 3; r++) {
+            if (reelTracks[r]) {
+              reelTracks[r].className = "reel-track flex flex-col gap-2.5 py-2";
+            }
+          }
+          processSlotsOutcome(outcome, cost, totalBet);
+        }, 3100);
+      };
+
+      // Cálculo de combinaciones ganadoras
+      function checkLineCombination(symbols) {
+        // Wild x3 = JACKPOT
+        if (symbols.every(s => s === '🃏')) {
+          return { win: true, type: 'JACKPOT', multiplier: 0 };
+        }
+        // Si hay 3 Tarjetas Rojas en la línea (🟥x3), es penalización y no puede ser ganadora
+        if (symbols.every(s => s === '🟥')) {
+          return { win: false, penalty: true };
+        }
+        // Si contiene alguna tarjeta roja pero no 3, no es ganadora y no penaliza
+        if (symbols.includes('🟥')) {
+          return { win: false, penalty: false };
+        }
+        const targetSymbols = ['👑', '⚽', '🧤'];
+        for (const target of targetSymbols) {
+          if (symbols.every(s => s === target || s === '🃏')) {
+            let mult = 5;
+            if (target === '👑') mult = 20;
+            else if (target === '⚽') mult = 10;
+            return { win: true, type: target, multiplier: mult };
+          }
+        }
+        return { win: false, penalty: false };
+      }
+
+      // Resaltar celdas ganadoras en la cuadrícula
+      function highlightWinningCells(winningLines, outcome) {
+        const linesCoords = {
+          1: [[0, 1], [1, 1], [2, 1]], // Central
+          2: [[0, 0], [1, 0], [2, 0]], // Superior
+          3: [[0, 2], [1, 2], [2, 2]], // Inferior
+          4: [[0, 0], [1, 1], [2, 0]], // Diagonal V
+          5: [[0, 2], [1, 1], [2, 2]]  // Diagonal V inv
+        };
+
+        winningLines.forEach(w => {
+          const coords = linesCoords[w.lineId];
+          if (coords) {
+            coords.forEach(([c, r]) => {
+              const track = document.getElementById(`slots-reel-track-${c}`);
+              if (track) {
+                const targetIdx = track.children.length - 3 + r;
+                if (track.children[targetIdx]) {
+                  track.children[targetIdx].classList.add('slots-cell-win');
+                }
+              }
+            });
+          }
+        });
+      }
+
+      // Procesar resultados
+      async function processSlotsOutcome(outcome, cost, totalBet) {
+        const isFree = window.slotsFreeSpins > 0;
+        let winAmount = 0;
+        let winningLines = [];
+        let hasPenalty = false;
+
+        const linesToCheck = [
+          { id: 1, coords: [[0, 1], [1, 1], [2, 1]] },
+          { id: 2, coords: [[0, 0], [1, 0], [2, 0]] },
+          { id: 3, coords: [[0, 2], [1, 2], [2, 2]] },
+          { id: 4, coords: [[0, 0], [1, 1], [2, 0]] },
+          { id: 5, coords: [[0, 2], [1, 1], [2, 2]] }
+        ];
+
+        for (let i = 0; i < window.slotsActiveLines; i++) {
+          const line = linesToCheck[i];
+          const symbols = line.coords.map(([c, r]) => outcome.grid[c][r]);
+          const result = checkLineCombination(symbols);
+
+          if (result.win) {
+            winningLines.push({
+              lineId: line.id,
+              type: result.type,
+              multiplier: result.multiplier
+            });
+            winAmount += window.slotsLineBet * result.multiplier;
+          } else if (result.penalty) {
+            hasPenalty = true;
+          }
+        }
+
+        // Si hay penalización, pierdes toda la tirada
+        if (hasPenalty) {
+          winAmount = 0;
+          winningLines = [];
+        }
+
+        // Copa del Mundo 🏆 visibles en total
+        let scatterCount = 0;
+        for (let c = 0; c < 3; c++) {
+          for (let r = 0; r < 3; r++) {
+            if (outcome.grid[c][r] === '🏆') scatterCount++;
+          }
+        }
+        const triggeredFreeSpins = scatterCount >= 3;
+
+        // Doble de premio en Free Spins
+        if (isFree && winAmount > 0) {
+          winAmount *= 2;
+        }
+
+        // Jackpot
+        let wonJackpot = false;
+        winningLines.forEach(l => {
+          if (l.type === 'JACKPOT') wonJackpot = true;
+        });
+
+        let jackpotVal = 0;
+        if (wonJackpot) {
+          jackpotVal = currentActiveLeagueData ? (currentActiveLeagueData.slots_jackpot || 10000) : 10000;
+          winAmount += jackpotVal;
+          if (currentActiveLeague) {
+            try {
+              const leagueRef = doc(db, "leagues", currentActiveLeague);
+              await updateDoc(leagueRef, { slots_jackpot: 10000 });
+            } catch (err) {
+              console.error(err);
+            }
+          }
+        }
+
+        if (isFree) {
+          window.slotsFreeSpins--;
+        }
+
+        if (triggeredFreeSpins) {
+          window.slotsFreeSpins += 5;
+          window.slotsFreeSpinsTotal = (window.slotsFreeSpinsTotal || 0) + 5;
+          playSlotsSound('win');
+          showNotification("🏆 ¡3 COPAS DEL MUNDO! +5 Tiradas Gratis (Premios ×2)", "success");
+          addLedToHistory('free', '3 Scatters: +5 Giros Gratis');
+        }
+
+        // Resaltar símbolos ganadores
+        highlightWinningCells(winningLines, outcome);
+
+        if (winAmount > 0) {
+          spawnWinParticles(winAmount);
+          playSlotsSound('win');
+          window.slotsPendingWin = winAmount;
+
+          let msg = `¡Premio de +${winAmount} Fichas!`;
+          if (isFree) msg += " (×2 Giros Gratis)";
+          if (wonJackpot) msg += ` ¡BOTE GANADO (+${jackpotVal} Fichas)!`;
+          showNotification(`🎉 ${msg}`, "success");
+
+          if (window.slotsAutoSpinCount > 0) {
+            setTimeout(() => {
+              collectSlotsWin();
+            }, 1500);
+          } else {
+            // Habilitar y animar el botón de COBRAR
+            const collectBtn = document.getElementById("slots-btn-collect");
+            if (collectBtn) {
+              collectBtn.disabled = false;
+              collectBtn.classList.remove('opacity-40', 'pointer-events-none');
+              collectBtn.classList.add('active-collect');
+            }
+
+            // Encender el panel de Gamble integrado
+            const gamblePanel = document.getElementById("slots-gamble-panel");
+            if (gamblePanel) {
+              gamblePanel.classList.remove("opacity-50", "pointer-events-none");
+              document.getElementById("slots-gamble-risked").textContent = `Riesgo: ${winAmount} Fichas`;
+              document.getElementById("slots-gamble-potential").textContent = `Si aciertas: +${winAmount * 2}`;
+            }
+          }
+
+        } else if (hasPenalty) {
+          playSlotsSound('penalty');
+          // Penalización del 50% de la apuesta del tiro
+          const penaltyVal = Math.floor(totalBet * 0.5);
+          showNotification(`🟥 ¡TARJETA ROJA! Penalización: pierdes la tirada y te resta ${penaltyVal} Fichas de tu saldo.`, "error");
+
+          const userRef = doc(db, "users", currentUser.uid);
+          try {
+            await updateDoc(userRef, {
+              casino_chips: firebase.firestore.FieldValue.increment(-penaltyVal)
+            });
+            currentUserProfile.casino_chips = Math.max(0, (currentUserProfile.casino_chips || 0) - penaltyVal);
+            window.localCasinoChips = currentUserProfile.casino_chips;
+            window.syncSlotsUIBalances();
+          } catch (err) {
+            console.error(err);
+          }
+
+          addLedToHistory('penalty', `Penalización Roja: -${penaltyVal}`);
+          setSlotsInterfaceLocked(false);
+          window.isSlotsSpinning = false;
+          checkContinueAutoSpin();
+
+        } else {
+          addLedToHistory('loss', 'Sin premio');
+
+          if (cost > 0 && currentActiveLeague) {
+            const jackpotIncrement = Math.ceil(cost * 0.02);
+            try {
+              const leagueRef = doc(db, "leagues", currentActiveLeague);
+              await updateDoc(leagueRef, { slots_jackpot: firebase.firestore.FieldValue.increment(jackpotIncrement) });
+            } catch (err) {
+              console.error(err);
+            }
+          }
+
+          setSlotsInterfaceLocked(false);
+          window.isSlotsSpinning = false;
+          checkContinueAutoSpin();
+        }
+
+        updateSlotsControlsDisplay();
+      }
+
+      // Minijuego Gamble integrado
+      window.gambleGuess = function(guess) {
+        if (window.slotsPendingWin <= 0) return;
+
+        const cardReveal = document.getElementById("slots-gamble-card-reveal");
+        if (cardReveal && cardReveal.textContent !== "?") return;
+
+        const colors = ['yellow', 'red'];
+        const drawnColor = colors[Math.floor(Math.random() * 2)];
+
+        if (cardReveal) {
+          cardReveal.classList.add("animate-pulse");
+          cardReveal.textContent = "...";
+        }
+
+        // Bloquear los botones de gamble durante la revelación
+        const btnYellow = document.getElementById("slots-btn-gamble-yellow");
+        const btnRed = document.getElementById("slots-btn-gamble-red");
+        if (btnYellow) btnYellow.disabled = true;
+        if (btnRed) btnRed.disabled = true;
+
+        setTimeout(() => {
+          if (!cardReveal) return;
+          cardReveal.classList.remove("animate-pulse");
+
+          if (drawnColor === 'yellow') {
+            cardReveal.className = "w-8 h-12 bg-yellow-400 border border-yellow-350 rounded flex items-center justify-center text-sm shadow-lg shadow-yellow-400/25 flex-shrink-0";
+            cardReveal.textContent = "🟨";
+          } else {
+            cardReveal.className = "w-8 h-12 bg-red-600 border border-red-500 rounded flex items-center justify-center text-sm shadow-lg shadow-red-500/25 flex-shrink-0";
+            cardReveal.textContent = "🟥";
+          }
+
+          if (guess === drawnColor) {
+            window.slotsPendingWin *= 2;
+            playSlotsSound('gambleWin');
+            showNotification(`🎯 ¡Tarjeta ${drawnColor === 'yellow' ? 'Amarilla' : 'Roja'}! Premio duplicado.`, "success");
+
+            document.getElementById("slots-gamble-risked").textContent = `Riesgo: ${window.slotsPendingWin} Fichas`;
+            document.getElementById("slots-gamble-potential").textContent = `Si aciertas: +${window.slotsPendingWin * 2}`;
+            
+            // No need to reset text content to avoid wiping icon layout
+
+            // Permitir volver a apostar tras 1.5s
+            setTimeout(() => {
+              const panel = document.getElementById("slots-gamble-panel");
+              if (panel && !panel.classList.contains("opacity-50") && window.slotsPendingWin > 0) {
+                cardReveal.className = "w-8 h-12 bg-slate-900 border border-dashed border-slate-700 rounded flex items-center justify-center text-xs font-black text-slate-500 shadow-inner flex-shrink-0";
+                cardReveal.textContent = "?";
+                if (btnYellow) btnYellow.disabled = false;
+                if (btnRed) btnRed.disabled = false;
+              }
+            }, 1800);
+
+          } else {
+            window.slotsPendingWin = 0;
+            playSlotsSound('gambleLose');
+            showNotification("❌ ¡Has fallado! Has perdido el premio de esta tirada.", "error");
+
+            setTimeout(() => {
+              window.closeGambleOverlay();
+            }, 1500);
+          }
+        }, 1000);
+      };
+
+      window.closeGambleOverlay = function() {
+        const gamblePanel = document.getElementById("slots-gamble-panel");
+        if (gamblePanel) {
+          gamblePanel.classList.add("opacity-50", "pointer-events-none");
+          document.getElementById("slots-gamble-risked").textContent = "Riesgo: 0 Fichas";
+          document.getElementById("slots-gamble-potential").textContent = "Doble o Nada";
+        }
+
+        const cardReveal = document.getElementById("slots-gamble-card-reveal");
+        if (cardReveal) {
+          cardReveal.className = "w-8 h-12 bg-slate-900 border border-dashed border-slate-700 rounded flex items-center justify-center text-xs font-black text-slate-500 shadow-inner flex-shrink-0";
+          cardReveal.textContent = "?";
+        }
+
+        const btnYellow = document.getElementById("slots-btn-gamble-yellow");
+        const btnRed = document.getElementById("slots-btn-gamble-red");
+        if (btnYellow) btnYellow.disabled = false;
+        if (btnRed) btnRed.disabled = false;
+
+        const collectBtn = document.getElementById("slots-btn-collect");
+        if (collectBtn) {
+          collectBtn.disabled = true;
+          collectBtn.classList.add('opacity-40', 'pointer-events-none');
+          collectBtn.classList.remove('active-collect');
+        }
+
+        clearWinHighlights();
+        setSlotsInterfaceLocked(false);
+        window.isSlotsSpinning = false;
+        checkContinueAutoSpin();
+      };
+
+      // Cobro y actualización atómica definitiva
+      window.collectSlotsWin = async function() {
+        if (window.slotsPendingWin <= 0) return;
+
+        const winVal = window.slotsPendingWin;
+        window.slotsPendingWin = 0;
+
+        const userRef = doc(db, "users", currentUser.uid);
+        try {
+          await updateDoc(userRef, {
+            casino_chips: firebase.firestore.FieldValue.increment(winVal)
+          });
+          currentUserProfile.casino_chips = (currentUserProfile.casino_chips || 0) + winVal;
+          window.localCasinoChips = currentUserProfile.casino_chips;
+          window.syncSlotsUIBalances();
+          showNotification(`🎉 ¡Se han añadido +${winVal} Fichas a tu saldo!`, "success");
+          addLedToHistory('win', `Ganado: ${winVal}`);
+        } catch (err) {
+          console.error(err);
+          showNotification("Error al registrar ganancias en base de datos.", "error");
+        }
+
+        window.closeGambleOverlay();
+      };
+
+      // Giros automáticos
+      window.setAutoSpinCount = function(count) {
+        if (window.isSlotsSpinning && count > 0) return;
+
+        window.slotsAutoSpinCount = count;
+
+        const btns = {
+          0: document.getElementById("slots-auto-off"),
+          5: document.getElementById("slots-auto-5"),
+          10: document.getElementById("slots-auto-10"),
+          25: document.getElementById("slots-auto-25")
+        };
+
+        Object.keys(btns).forEach(k => {
+          const btn = btns[k];
+          if (btn) {
+            btn.className = "py-1.5 rounded bg-slate-950 border border-white/10 hover:bg-slate-800 text-white cursor-pointer transition active:scale-90 duration-100";
+          }
+        });
+
+        const activeBtn = btns[count];
+        if (activeBtn) {
+          activeBtn.className = "py-1.5 rounded bg-amber-500 text-slate-950 font-black cursor-pointer shadow active:scale-90 duration-100";
+        }
+
+        const info = document.getElementById("slots-auto-spin-info");
+        const infoRem = document.getElementById("slots-auto-spin-rem");
+
+        if (count > 0) {
+          if (info) info.classList.remove("hidden");
+          if (infoRem) infoRem.textContent = count;
+
+          if (!window.isSlotsSpinning && window.slotsPendingWin === 0) {
+            spinSlots();
+          }
+        } else {
+          if (info) info.classList.add("hidden");
+        }
+      };
+
+      function checkContinueAutoSpin() {
+        if (window.slotsAutoSpinCount > 0) {
+          window.slotsAutoSpinCount--;
+          const infoRem = document.getElementById("slots-auto-spin-rem");
+          if (infoRem) infoRem.textContent = window.slotsAutoSpinCount;
+
+          if (window.slotsAutoSpinCount > 0) {
+            setTimeout(() => {
+              spinSlots();
+            }, 1200);
+          } else {
+            window.setAutoSpinCount(0);
+          }
+        }
+      }
+
+      // LEDs historial
+      function addLedToHistory(type, titleText) {
+        const historyContainer = document.getElementById("slots-history-leds");
+        if (!historyContainer) return;
+
+        if (historyContainer.textContent.includes("Sin tiradas")) {
+          historyContainer.innerHTML = "";
+        }
+
+        let ledClass = "";
+        let letter = "";
+        if (type === 'win') {
+          ledClass = "bg-emerald-500 shadow-[0_0_8px_#10b981]";
+          letter = "G";
+        } else if (type === 'loss') {
+          ledClass = "bg-red-500 shadow-[0_0_8px_#ef4444]";
+          letter = "X";
+        } else if (type === 'free') {
+          ledClass = "slots-led-free";
+          letter = "T";
+        } else if (type === 'penalty') {
+          ledClass = "slots-led-penalty";
+          letter = "P";
+        }
+
+        const ledHtml = `<div class="w-5 h-5 rounded-full flex items-center justify-center text-[8.5px] font-black text-slate-950 ${ledClass}" title="${titleText}">${letter}</div>`;
+        historyContainer.insertAdjacentHTML("afterbegin", ledHtml);
+
+        const leds = historyContainer.getElementsByTagName("div");
+        if (leds.length > 8) {
+          leds[leds.length - 1].remove();
+        }
+      }
+
+      function setSlotsInterfaceLocked(locked) {
+        const inputs = [
+          document.getElementById("slots-convert-input")
+        ];
+
+        const buttons = [
+          document.getElementById("slots-btn-spin"),
+          document.getElementById("slots-auto-off"),
+          document.getElementById("slots-auto-5"),
+          document.getElementById("slots-auto-10"),
+          document.getElementById("slots-auto-25"),
+          document.getElementById("slots-chip-10"),
+          document.getElementById("slots-chip-50"),
+          document.getElementById("slots-chip-100"),
+          document.getElementById("slots-chip-500")
+        ];
+
+        inputs.forEach(el => { if (el) el.disabled = locked; });
+        buttons.forEach(el => {
+          if (el) {
+            el.disabled = locked;
+            if (locked) {
+              el.classList.add("opacity-50", "pointer-events-none");
+            } else {
+              el.classList.remove("opacity-50", "pointer-events-none");
+            }
+          }
+        });
+      }
+
+      // Inicializar marquesina y controles
+      updateSlotsControlsDisplay();
+      window.initMarqueeBulbs();
+      
+      // =========================================================================
 
     </script>
 
