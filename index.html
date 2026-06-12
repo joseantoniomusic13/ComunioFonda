@@ -183,6 +183,14 @@
             <span id="nav-fonda-coins" class="text-xs md:text-sm font-extrabold text-purple-400">0 FC</span>
           </div>
 
+          <!-- Casino Chips Badge -->
+          <div
+            class="glass-panel px-3 py-1.5 rounded-xl border border-amber-500/25 bg-amber-950/15 flex items-center gap-2"
+            title="Tus Fichas de Casino">
+            <span class="text-xs md:text-sm">🎡</span>
+            <span id="nav-casino-chips" class="text-xs md:text-sm font-extrabold text-amber-400">0 Fichas</span>
+          </div>
+
           <!-- Puntos Badge -->
           <div class="glass-panel px-3 py-1.5 rounded-xl border border-gold/25 bg-gold/5 flex items-center gap-2">
             <i data-lucide="star" class="w-4 h-4 text-gold animate-pulse"></i>
@@ -1971,7 +1979,12 @@
                 🎰 Slots
               </button>
             </div>
-            <div class="text-[9px] font-black text-amber-400/80 tracking-widest uppercase select-none">🎰 CASINO FONDA FANEGAS</div>
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+              <span class="text-[9px] font-black text-amber-400/80 tracking-widest uppercase select-none hidden md:inline">🎰 CASINO FONDA FANEGAS</span>
+              <button onclick="openCasinoConverterModal()" class="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-150 cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/10">
+                <i data-lucide="wallet" class="w-3.5 h-3.5"></i> Cajero Conversor
+              </button>
+            </div>
           </div>
 
           <!-- Vista: Lobby del Casino -->
@@ -2064,9 +2077,6 @@
                   </div>
                 </div>
                 <div class="flex gap-2 w-full sm:w-auto">
-                  <button onclick="openCasinoConverterModal()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-100 flex items-center justify-center gap-1 cursor-pointer">
-                    <i data-lucide="wallet" class="w-3.5 h-3.5"></i> Cajero Conversor
-                  </button>
                   <button onclick="clearCasinoBets()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-purple-900/10 hover:bg-purple-900/40 border border-purple-500/20 text-purple-300 hover:text-white font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-100 flex items-center justify-center gap-1 cursor-pointer">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Limpiar Apuestas
                   </button>
@@ -2336,13 +2346,6 @@
                       <div class="p-2 bg-slate-950/60 rounded-xl border border-amber-500/25 shadow-inner">
                         <span class="text-[8px] text-yellow-500 font-bold block">FICHAS CASINO</span>
                         <span id="slots-wallet-chips" class="text-sm font-black text-yellow-400" style="text-shadow: 0 0 5px rgba(251,191,36,0.3);">0</span>
-                      </div>
-                    </div>
-                    <div class="flex gap-1.5 pt-1.5 border-t border-[#854d0e]/20">
-                      <input type="number" id="slots-convert-input" min="1" placeholder="Monto" class="w-1/2 rounded-lg px-2.5 py-1 text-center text-xs font-bold text-white bg-slate-950 border border-slate-700/80 focus:outline-none focus:border-amber-500">
-                      <div class="flex gap-1 w-1/2">
-                        <button onclick="executeSlotsBuy()" class="flex-1 py-1 rounded-lg text-white font-extrabold text-[8.5px] uppercase tracking-wider bg-emerald-700 hover:bg-emerald-600 active:scale-95 transition cursor-pointer">Comprar</button>
-                        <button onclick="executeSlotsSell()" class="flex-1 py-1 rounded-lg text-purple-300 font-extrabold text-[8.5px] uppercase tracking-wider bg-purple-950 border border-purple-800/30 hover:bg-purple-900/40 active:scale-95 transition cursor-pointer">Retirar</button>
                       </div>
                     </div>
                   </div>
@@ -4673,6 +4676,7 @@
       const navBudget = document.getElementById("nav-budget");
       const navPoints = document.getElementById("nav-points");
       const navFondaCoins = document.getElementById("nav-fonda-coins");
+      const navCasinoChips = document.getElementById("nav-casino-chips");
 
       const widgetLeagueName = document.getElementById("widget-league-name");
       const widgetLeagueCode = document.getElementById("widget-league-code");
@@ -4871,11 +4875,7 @@
               if (playerChipsBal) playerChipsBal.textContent = currentUserProfile.casino_chips || 0;
 
               if (!window.isCasinoSpinning && !window.isSlotsSpinning) {
-                window.localCasinoChips = currentUserProfile.casino_chips || 0;
-                const localChipsDisp = document.getElementById("casino-local-chips-display");
-                if (localChipsDisp) localChipsDisp.textContent = window.localCasinoChips;
-                if (window.renderCasinoActiveBets) window.renderCasinoActiveBets();
-                if (window.syncSlotsUIBalances) window.syncSlotsUIBalances();
+                if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
               }
 
               if (window.checkDailySpinWheelAvailability) {
@@ -7328,6 +7328,10 @@
           const fc = currentUserProfile.fonda_coins || 0;
           navFondaCoins.textContent = `${fc.toLocaleString()} FC`;
         }
+        if (navCasinoChips) {
+          const chips = currentUserProfile.casino_chips || 0;
+          navCasinoChips.textContent = `${chips.toLocaleString()} Fichas`;
+        }
       }
 
       // --- RENDERIZADO DEL PANEL DE ESTADÍSTICAS DE MÁNAGER (CON GRÁFICOS Y GAMIFICACIÓN) ---
@@ -8869,7 +8873,10 @@
                 const u = docSnap.data();
                 const opt = document.createElement("option");
                 opt.value = u.uid || docSnap.id;
-                opt.textContent = `${u.nombre_usuario} - (${u.nombre_equipo || "Sin equipo"})`;
+                const presMillions = ((u.presupuesto_actual || 0) / 1000000).toFixed(1);
+                const fcCoins = u.fonda_coins || 0;
+                const casinoChips = u.casino_chips || 0;
+                opt.textContent = `${u.nombre_usuario} - (${u.nombre_equipo || "Sin equipo"}) | $:${presMillions}M | FC:${fcCoins} | Fichas:${casinoChips}`;
                 selectUser.appendChild(opt);
               });
 
@@ -20465,6 +20472,7 @@
             console.error(err);
           } finally {
             window.isCasinoSpinning = false;
+            if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
             btnSpin.disabled = false;
             btnSpin.innerHTML = `<i data-lucide="play" class="w-5 h-5 text-slate-950"></i> ¡GIRAR RULETA!`;
             if (typeof lucide !== "undefined") lucide.createIcons();
@@ -20547,6 +20555,181 @@
           bulb.style.boxShadow = "0 0 6px #facc15";
           
           bulbsContainer.appendChild(bulb);
+        }
+      };
+
+      // Sincronizar Fichas Locales del Casino con el Perfil de Firebase
+      window.syncCasinoLocalChipsWithProfile = function() {
+        if (!currentUserProfile) return;
+        window.localCasinoChips = currentUserProfile.casino_chips || 0;
+        const localChipsDisp = document.getElementById("casino-local-chips-display");
+        if (localChipsDisp) localChipsDisp.textContent = window.localCasinoChips;
+        if (window.renderCasinoActiveBets) window.renderCasinoActiveBets();
+        if (window.syncSlotsUIBalances) window.syncSlotsUIBalances();
+        updateHeaderAndDashboardStats();
+      };
+
+      // --- MODAL DE CONVERSIÓN DEL CASINO (CAJERO CONVERSOR) ---
+      window.switchCasinoConverterMode = function(mode) {
+        const tabBuy = document.getElementById("btn-conv-tab-buy");
+        const tabSell = document.getElementById("btn-conv-tab-sell");
+        const buyView = document.getElementById("casino-converter-buy-view");
+        const sellView = document.getElementById("casino-converter-sell-view");
+
+        if (!tabBuy || !tabSell || !buyView || !sellView) return;
+
+        if (mode === 'buy') {
+          tabBuy.className = "flex-1 pb-2 font-black text-[10px] uppercase tracking-wider border-b-2 border-emerald-500 text-emerald-400 transition cursor-pointer text-center";
+          tabSell.className = "flex-1 pb-2 font-black text-[10px] uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition cursor-pointer text-center";
+          buyView.classList.remove("hidden");
+          sellView.classList.add("hidden");
+        } else {
+          tabBuy.className = "flex-1 pb-2 font-black text-[10px] uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition cursor-pointer text-center";
+          tabSell.className = "flex-1 pb-2 font-black text-[10px] uppercase tracking-wider border-b-2 border-purple-500 text-purple-400 transition cursor-pointer text-center";
+          buyView.classList.add("hidden");
+          sellView.classList.remove("hidden");
+        }
+      };
+
+      window.updateCasinoBuyConversion = function() {
+        const input = document.getElementById("casino-conv-buy-input");
+        const output = document.getElementById("casino-conv-buy-output");
+        if (!input || !output) return;
+        const val = parseInt(input.value) || 0;
+        output.value = (val * 100).toLocaleString() + " Fichas";
+      };
+
+      window.updateCasinoSellConversion = function() {
+        const input = document.getElementById("casino-conv-sell-input");
+        const output = document.getElementById("casino-conv-sell-output");
+        if (!input || !output) return;
+        const val = parseInt(input.value) || 0;
+        output.value = (val / 100).toLocaleString() + " Fc";
+      };
+
+      window.openCasinoConverterModal = function() {
+        const modal = document.getElementById("casino-converter-modal");
+        if (!modal) return;
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        
+        // Reset contents
+        const buyInput = document.getElementById("casino-conv-buy-input");
+        const buyOutput = document.getElementById("casino-conv-buy-output");
+        const sellInput = document.getElementById("casino-conv-sell-input");
+        const sellOutput = document.getElementById("casino-conv-sell-output");
+
+        if (buyInput) buyInput.value = "";
+        if (buyOutput) buyOutput.value = "";
+        if (sellInput) sellInput.value = "";
+        if (sellOutput) sellOutput.value = "";
+
+        window.switchCasinoConverterMode('buy');
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      };
+
+      window.closeCasinoConverterModal = function() {
+        const modal = document.getElementById("casino-converter-modal");
+        if (modal) {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        }
+      };
+
+      window.executeCasinoBuyConversion = async function() {
+        if (!currentUser || !currentUserProfile) {
+          showNotification("Inicia sesión para convertir monedas.", "warning");
+          return;
+        }
+
+        if (window.isCasinoSpinning || window.isSlotsSpinning || window.slotsPendingWin > 0) {
+          showNotification("No puedes cambiar saldo mientras hay una jugada o premio pendiente en curso.", "warning");
+          return;
+        }
+
+        const input = document.getElementById("casino-conv-buy-input");
+        if (!input) return;
+        const amountFC = parseInt(input.value);
+        if (isNaN(amountFC) || amountFC <= 0) {
+          showNotification("Introduce una cantidad de FC válida (mayor que 0).", "warning");
+          return;
+        }
+
+        const currentFC = currentUserProfile.fonda_coins || 0;
+        if (amountFC > currentFC) {
+          showNotification("No tienes suficientes Fonda Coins (FC).", "error");
+          return;
+        }
+
+        const userRef = doc(db, "users", currentUser.uid);
+        const newFC = currentFC - amountFC;
+        const chipsToReceive = amountFC * 100;
+        const newChips = (currentUserProfile.casino_chips || 0) + chipsToReceive;
+
+        try {
+          await updateDoc(userRef, {
+            fonda_coins: newFC,
+            casino_chips: newChips
+          });
+          currentUserProfile.fonda_coins = newFC;
+          currentUserProfile.casino_chips = newChips;
+          showNotification(`✅ Has convertido ${amountFC} FC en ${chipsToReceive} Fichas de Casino.`, "success");
+          window.closeCasinoConverterModal();
+          if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
+        } catch (err) {
+          console.error(err);
+          showNotification("Error al procesar la conversión.", "error");
+        }
+      };
+
+      window.executeCasinoSellConversion = async function() {
+        if (!currentUser || !currentUserProfile) {
+          showNotification("Inicia sesión para canjear fichas.", "warning");
+          return;
+        }
+
+        if (window.isCasinoSpinning || window.isSlotsSpinning || window.slotsPendingWin > 0) {
+          showNotification("No puedes cambiar saldo mientras hay una jugada en curso o premio pendiente.", "warning");
+          return;
+        }
+
+        const input = document.getElementById("casino-conv-sell-input");
+        if (!input) return;
+        const amountChips = parseInt(input.value);
+        if (isNaN(amountChips) || amountChips <= 0) {
+          showNotification("Introduce una cantidad de Fichas válida (mayor que 0).", "warning");
+          return;
+        }
+
+        if (amountChips % 100 !== 0) {
+          showNotification("El monto a retirar debe ser múltiplo de 100 Fichas.", "warning");
+          return;
+        }
+
+        const databaseChips = currentUserProfile.casino_chips || 0;
+        if (amountChips > databaseChips) {
+          showNotification("No tienes tantas fichas en tu cuenta.", "error");
+          return;
+        }
+
+        const userRef = doc(db, "users", currentUser.uid);
+        const newChips = databaseChips - amountChips;
+        const fcToReceive = amountChips / 100;
+        const newFC = (currentUserProfile.fonda_coins || 0) + fcToReceive;
+
+        try {
+          await updateDoc(userRef, {
+            fonda_coins: newFC,
+            casino_chips: newChips
+          });
+          currentUserProfile.fonda_coins = newFC;
+          currentUserProfile.casino_chips = newChips;
+          showNotification(`✅ Has canjeado ${amountChips} Fichas de Casino por ${fcToReceive} FC.`, "success");
+          window.closeCasinoConverterModal();
+          if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
+        } catch (err) {
+          console.error(err);
+          showNotification("Error al procesar el retiro.", "error");
         }
       };
 
@@ -20650,86 +20833,7 @@
         }
       };
 
-      // Cajero: Comprar Fichas
-      window.executeSlotsBuy = async function() {
-        if (window.isSlotsSpinning) return;
-        if (!currentUser || !currentUserProfile) return;
 
-        const input = document.getElementById("slots-convert-input");
-        if (!input) return;
-        const amountFC = parseInt(input.value);
-        if (isNaN(amountFC) || amountFC <= 0) {
-          showNotification("Introduce una cantidad válida de FC a convertir (mayor que 0).", "warning");
-          return;
-        }
-
-        const currentFC = currentUserProfile.fonda_coins || 0;
-        if (amountFC > currentFC) {
-          showNotification("No tienes suficientes Fonda Coins (FC).", "error");
-          return;
-        }
-
-        const userRef = doc(db, "users", currentUser.uid);
-        const newFC = currentFC - amountFC;
-        const chipsToReceive = amountFC * 100;
-        const newChips = (currentUserProfile.casino_chips || 0) + chipsToReceive;
-
-        try {
-          await updateDoc(userRef, {
-            fonda_coins: newFC,
-            casino_chips: newChips
-          });
-          showNotification(`✅ Cajero: Has convertido ${amountFC} FC en ${chipsToReceive} Fichas.`, "success");
-          input.value = "";
-          window.syncSlotsUIBalances();
-        } catch (err) {
-          console.error(err);
-          showNotification("Error en la transacción del cajero.", "error");
-        }
-      };
-
-      // Cajero: Canjear Fichas por FC
-      window.executeSlotsSell = async function() {
-        if (window.isSlotsSpinning) return;
-        if (!currentUser || !currentUserProfile) return;
-
-        const input = document.getElementById("slots-convert-input");
-        if (!input) return;
-        const amountChips = parseInt(input.value);
-        if (isNaN(amountChips) || amountChips <= 0) {
-          showNotification("Introduce una cantidad válida de Fichas a retirar (mayor que 0).", "warning");
-          return;
-        }
-
-        if (amountChips % 100 !== 0) {
-          showNotification("El monto a retirar debe ser múltiplo de 100 Fichas.", "warning");
-          return;
-        }
-
-        const databaseChips = currentUserProfile.casino_chips || 0;
-        if (amountChips > databaseChips) {
-          showNotification("No tienes tantas fichas en tu cuenta.", "error");
-          return;
-        }
-
-        const userRef = doc(db, "users", currentUser.uid);
-        const newChips = databaseChips - amountChips;
-        const fcToReceive = amountChips / 100;
-        const newFC = (currentUserProfile.fonda_coins || 0) + fcToReceive;
-
-        try {
-          await updateDoc(userRef, {
-            fonda_coins: newFC,
-            casino_chips: newChips
-          });
-          showNotification(`✅ Cajero: Has retirado ${amountChips} Fichas por ${fcToReceive} FC.`, "success");
-          input.value = "";
-          window.syncSlotsUIBalances();
-        } catch (err) {
-          console.error(err);
-          showNotification("Error en la transacción del cajero.", "error");
-        }
-      };
 
       // Selección de Ficha Directa
       window.selectSlotsChip = function(value) {
@@ -20949,12 +21053,13 @@
             });
             currentUserProfile.casino_chips -= cost;
             window.localCasinoChips = currentUserProfile.casino_chips;
-            window.syncSlotsUIBalances();
+            if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
           } catch (e) {
             console.error(e);
             showNotification("Error de red al procesar el descuento de la tirada.", "error");
             setSlotsInterfaceLocked(false);
             window.isSlotsSpinning = false;
+            if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
             return;
           }
         }
@@ -21223,7 +21328,7 @@
             });
             currentUserProfile.casino_chips = Math.max(0, (currentUserProfile.casino_chips || 0) - penaltyVal);
             window.localCasinoChips = currentUserProfile.casino_chips;
-            window.syncSlotsUIBalances();
+            if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
           } catch (err) {
             console.error(err);
           }
@@ -21366,7 +21471,7 @@
           });
           currentUserProfile.casino_chips = (currentUserProfile.casino_chips || 0) + winVal;
           window.localCasinoChips = currentUserProfile.casino_chips;
-          window.syncSlotsUIBalances();
+          if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
           showNotification(`🎉 ¡Se han añadido +${winVal} Fichas a tu saldo!`, "success");
           addLedToHistory('win', `Ganado: ${winVal}`);
         } catch (err) {
@@ -21468,9 +21573,7 @@
       }
 
       function setSlotsInterfaceLocked(locked) {
-        const inputs = [
-          document.getElementById("slots-convert-input")
-        ];
+        const inputs = [];
 
         const buttons = [
           document.getElementById("slots-btn-spin"),
