@@ -2105,8 +2105,11 @@
                   </div>
                 </div>
                 <div class="flex gap-2 w-full sm:w-auto">
-                  <button onclick="clearCasinoBets()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-purple-900/10 hover:bg-purple-900/40 border border-purple-500/20 text-purple-300 hover:text-white font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-100 flex items-center justify-center gap-1 cursor-pointer">
+                  <button onclick="clearCasinoBets()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-purple-900/10 hover:bg-purple-900/40 border border-purple-500/20 text-purple-300 hover:text-white font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-100 flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Limpiar Apuestas
+                  </button>
+                  <button id="casino-btn-repeat" onclick="repeatCasinoBets()" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/30 border border-amber-500/20 text-amber-400 hover:text-white font-black text-[10px] uppercase tracking-wider transition active:scale-95 duration-100 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                    🔁 Repetir Apuesta
                   </button>
                 </div>
               </div>
@@ -20000,7 +20003,10 @@
       // ==================== FONDA CASINO: RULETA EUROPEA =======================
       // =========================================================================
       window.localCasinoChips = 0;
-      window.currentCasinoBets = {};
+      let currentBets = {}; // Apuestas de la ronda en curso
+      let previousBets = {}; // Caché para almacenar la jugada anterior
+      window.currentCasinoBets = currentBets;
+      window.previousBets = previousBets;
       window.currentCasinoChipValue = 1;
       window.isCasinoSpinning = false;
       window.casinoRotation = 0;
@@ -20061,7 +20067,7 @@
         const displayVal = document.getElementById("casino-local-chips-display");
         if (displayVal) displayVal.textContent = window.localCasinoChips;
 
-        window.currentCasinoBets[spotId] = (window.currentCasinoBets[spotId] || 0) + window.currentCasinoChipValue;
+        currentBets[spotId] = (currentBets[spotId] || 0) + window.currentCasinoChipValue;
 
         window.renderCasinoActiveBets();
       };
@@ -20070,16 +20076,16 @@
         document.querySelectorAll(".casino-chip-overlay").forEach(el => el.remove());
 
         let totalPlaced = 0;
-        for (const [spotId, amount] of Object.entries(window.currentCasinoBets)) {
+        for (const [spotId, amount] of Object.entries(currentBets)) {
           if (amount <= 0) continue;
           totalPlaced += amount;
 
           const cell = document.getElementById(`casino-spot-${spotId}`);
           if (cell) {
             const chip = document.createElement("div");
-            chip.className = "casino-chip-overlay absolute inset-0 flex items-center justify-center pointer-events-none z-10";
+            chip.className = "casino-chip-overlay absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10 w-6 h-6 flex items-center justify-center";
             chip.innerHTML = `
-              <div class="w-6 h-6 rounded-full bg-amber-500 border border-white flex items-center justify-center text-[7.5px] font-black text-slate-950 shadow shadow-black/85">
+              <div class="w-6 h-6 rounded-full bg-amber-500 border border-white flex items-center justify-center text-[7.5px] font-black text-slate-950 shadow shadow-black/85 shrink-0">
                 ${amount}
               </div>
             `;
@@ -20097,13 +20103,106 @@
 
       window.clearCasinoBets = function() {
         if (window.isCasinoSpinning) return;
-        for (const amount of Object.values(window.currentCasinoBets)) {
+        for (const amount of Object.values(currentBets)) {
           window.localCasinoChips += amount;
         }
-        window.currentCasinoBets = {};
+        currentBets = {};
+        window.currentCasinoBets = currentBets;
         const displayVal = document.getElementById("casino-local-chips-display");
         if (displayVal) displayVal.textContent = window.localCasinoChips;
         window.renderCasinoActiveBets();
+      };
+
+      // Inicializador de Hitboxes Absolutas para apuestas especiales (Split, Corner, Street)
+      window.initCasinoHitboxes = function() {
+        if (window.casinoHitboxesInitialized) return;
+        window.casinoHitboxesInitialized = true;
+
+        for (let n = 1; n <= 36; n++) {
+          const cell = document.getElementById(`casino-spot-num_${n}`);
+          if (!cell) continue;
+
+          const col = Math.ceil(n / 3);
+          const row = n % 3 === 0 ? 1 : n % 3 === 2 ? 2 : 3;
+
+          // 1. Splits verticales (línea divisoria inferior de la celda, para filas 1 y 2)
+          if (row === 1 || row === 2) {
+            createHitbox(cell, 'split', `${n-1},${n}`, `split_${n-1}_${n}`, 'absolute top-full left-0 w-full h-[4px] -translate-y-1/2 z-20 cursor-pointer transition duration-150 bg-transparent hover:bg-yellow-500/25');
+          }
+
+          // 2. Splits horizontales (línea divisoria derecha para columnas < 12)
+          if (col < 12) {
+            const nextNum = n + 3;
+            createHitbox(cell, 'split', `${n},${nextNum}`, `split_${n}_${nextNum}`, 'absolute top-0 left-full w-[4px] h-full -translate-x-1/2 z-20 cursor-pointer transition duration-150 bg-transparent hover:bg-yellow-500/25');
+          }
+
+          // 3. Corners (cruce de 4 celdas, esquinas inferiores derechas para filas 1 y 2 de columnas < 12)
+          if ((row === 1 || row === 2) && col < 12) {
+            const numbers = `${n-1},${n},${n+2},${n+3}`;
+            const id = `corner_${n-1}_${n}_${n+2}_${n+3}`;
+            createHitbox(cell, 'corner', numbers, id, 'absolute top-full left-full -translate-x-1/2 -translate-y-1/2 w-4 h-4 z-30 cursor-pointer transition duration-150 bg-transparent hover:bg-yellow-500/45');
+          }
+
+          // 4. Streets (línea base de la columna en fila 3)
+          if (row === 3) {
+            createHitbox(cell, 'street', `${n},${n+1},${n+2}`, `street_${n}_${n+1}_${n+2}`, 'absolute top-full left-0 w-full h-[4px] -translate-y-1/2 z-20 cursor-pointer transition duration-150 bg-transparent hover:bg-yellow-500/35');
+          }
+        }
+      };
+
+      function createHitbox(parentCell, type, numbers, id, classes) {
+        const hitbox = document.createElement('div');
+        hitbox.id = `casino-spot-${id}`;
+        hitbox.className = classes;
+        hitbox.setAttribute('data-bet-type', type);
+        hitbox.setAttribute('data-numbers', numbers);
+        hitbox.onclick = function(e) {
+          e.stopPropagation();
+          window.addCasinoBetSpot(id);
+        };
+        parentCell.appendChild(hitbox);
+      }
+
+      // Repetir Apuesta de la ronda anterior
+      window.repeatCasinoBets = function() {
+        if (window.isCasinoSpinning) return;
+
+        const betKeys = Object.keys(previousBets);
+        if (betKeys.length === 0) {
+          showNotification("👉 No hay apuestas anteriores registradas.", "warning");
+          return;
+        }
+
+        let totalCost = 0;
+        for (const amt of Object.values(previousBets)) {
+          totalCost += amt;
+        }
+
+        if (totalCost <= 0) {
+          showNotification("👉 No hay apuestas anteriores válidas.", "warning");
+          return;
+        }
+
+        // Limpiar tapete devolviendo las fichas al saldo local
+        window.clearCasinoBets();
+
+        // Verificar saldo suficiente
+        if (window.localCasinoChips < totalCost) {
+          showNotification("🪙 No tienes suficientes fichas para repetir esta apuesta.", "error");
+          return;
+        }
+
+        // Descontar saldo y clonar
+        window.localCasinoChips -= totalCost;
+        const displayVal = document.getElementById("casino-local-chips-display");
+        if (displayVal) displayVal.textContent = window.localCasinoChips;
+
+        currentBets = JSON.parse(JSON.stringify(previousBets));
+        window.currentCasinoBets = currentBets;
+
+        // Redibujar fichas
+        window.renderCasinoActiveBets();
+        showNotification("🔁 Apuestas repetidas con éxito.", "success");
       };
 
       window.openCasinoConverterModal = function() {
@@ -20425,6 +20524,19 @@
       window.evaluateCasinoBet = function(spotId, amount, winnerNum) {
         if (spotId === "num_" + winnerNum) return amount * 36;
         
+        if (spotId.startsWith("split_")) {
+          const parts = spotId.split("_").slice(1).map(Number);
+          return parts.includes(winnerNum) ? amount * 18 : 0;
+        }
+        if (spotId.startsWith("street_")) {
+          const parts = spotId.split("_").slice(1).map(Number);
+          return parts.includes(winnerNum) ? amount * 12 : 0;
+        }
+        if (spotId.startsWith("corner_")) {
+          const parts = spotId.split("_").slice(1).map(Number);
+          return parts.includes(winnerNum) ? amount * 9 : 0;
+        }
+
         if (spotId === "color_red") {
           const reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
           return reds.includes(winnerNum) ? amount * 2 : 0;
@@ -20471,7 +20583,7 @@
 
         let totalBetPlaced = 0;
         const betsCopy = {};
-        for (const [spotId, amount] of Object.entries(window.currentCasinoBets)) {
+        for (const [spotId, amount] of Object.entries(currentBets)) {
           if (amount > 0) {
             totalBetPlaced += amount;
             betsCopy[spotId] = amount;
@@ -20483,30 +20595,47 @@
           return;
         }
 
-        const currentChipsInDB = currentUserProfile.casino_chips || 0;
+        // 1. Guardar copia exacta de apuestas actuales en previousBets antes de limpiar o enviar a Firestore
+        previousBets = JSON.parse(JSON.stringify(currentBets));
+        window.previousBets = previousBets;
+
         window.isCasinoSpinning = true;
         window.closeCasinoResultModal();
 
         const btnSpin = document.getElementById("casino-btn-spin");
         btnSpin.disabled = true;
         btnSpin.innerHTML = `<i data-lucide="loader" class="w-5 h-5 animate-spin text-slate-950"></i> Lanzando Bola...`;
+
+        // Bloquear botón de repetir apuesta
+        const btnRepeat = document.getElementById("casino-btn-repeat");
+        if (btnRepeat) btnRepeat.disabled = true;
+
         if (typeof lucide !== "undefined") lucide.createIcons();
 
         const userRef = doc(db, "users", currentUser.uid);
-        const remainingChips = currentChipsInDB - totalBetPlaced;
 
         try {
-          await updateDoc(userRef, { casino_chips: remainingChips });
-          window.localCasinoChips = remainingChips;
-          document.getElementById("casino-local-chips-display").textContent = remainingChips;
+          // 2. Resta atómica en Firestore para casino_chips
+          await updateDoc(userRef, {
+            casino_chips: firebase.firestore.FieldValue.increment(-totalBetPlaced)
+          });
+          
+          window.localCasinoChips = (currentUserProfile.casino_chips || 0) - totalBetPlaced;
+          currentUserProfile.casino_chips = window.localCasinoChips;
+          
+          document.getElementById("casino-local-chips-display").textContent = window.localCasinoChips;
           const playerChipsBal = document.getElementById("player-chips-balance");
-          if (playerChipsBal) playerChipsBal.textContent = remainingChips;
+          if (playerChipsBal) playerChipsBal.textContent = window.localCasinoChips;
         } catch (err) {
           console.error(err);
           showNotification("Error de red. No se pudo realizar la tirada.", "error");
           window.isCasinoSpinning = false;
           btnSpin.disabled = false;
           btnSpin.innerHTML = `<i data-lucide="play" class="w-5 h-5 text-slate-950"></i> ¡GIRAR RULETA!`;
+          
+          const btnRepeat = document.getElementById("casino-btn-repeat");
+          if (btnRepeat) btnRepeat.disabled = false;
+
           if (typeof lucide !== "undefined") lucide.createIcons();
           return;
         }
@@ -20647,7 +20776,8 @@
               display.textContent = `${winnerNumber} (${colorLabel})`;
             }
 
-            window.currentCasinoBets = {};
+            currentBets = {};
+            window.currentCasinoBets = currentBets;
             window.renderCasinoActiveBets();
 
             const modal       = document.getElementById("casino-result-modal");
@@ -20690,6 +20820,8 @@
             if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
             btnSpin.disabled = false;
             btnSpin.innerHTML = `<i data-lucide="play" class="w-5 h-5 text-slate-950"></i> ¡GIRAR RULETA!`;
+            const btnRepeat = document.getElementById("casino-btn-repeat");
+            if (btnRepeat) btnRepeat.disabled = false;
             if (typeof lucide !== "undefined") lucide.createIcons();
           }
         }
@@ -20993,6 +21125,8 @@
           btnLobby.className = inactiveClass;
           btnRoulette.className = activeClass;
           btnSlots.className = inactiveClass;
+
+          if (window.initCasinoHitboxes) window.initCasinoHitboxes();
 
           if (typeof lucide !== "undefined") lucide.createIcons();
           setTimeout(() => {
