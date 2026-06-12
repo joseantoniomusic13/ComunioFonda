@@ -2259,6 +2259,25 @@
                   </div>
                 </div>
 
+                <!-- Panel de Información y Reglas Rápidas de Slots -->
+                <div class="w-full p-4 rounded-2xl glass-panel border border-[#c27a15]/30 bg-gradient-to-r from-amber-950/20 via-slate-900/90 to-amber-950/25 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mb-3 shadow-lg">
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">💡</span>
+                    <div class="space-y-0.5">
+                      <h4 class="font-extrabold text-white uppercase tracking-wider text-[11px] font-montserrat">¿Cómo funciona la Fonda Slots?</h4>
+                      <p class="text-[10.5px] text-slate-400 leading-relaxed">
+                        Eliges tu <strong>Apuesta por Línea</strong> y cuántas <strong>Líneas</strong> jugar (1 a 5). El costo de cada giro será <code>Apuesta × Líneas</code>.
+                        Cada línea que coincida te pagará: <code>Apuesta × Multiplicador del símbolo</code>. Si aciertas múltiples líneas, se <strong>suman</strong> todos los premios.
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap gap-2 text-[10px] font-bold text-center justify-center">
+                    <span class="px-2 py-1 rounded bg-yellow-500/10 border border-yellow-500/20 text-yellow-300">👑 Corona: ×20</span>
+                    <span class="px-2 py-1 rounded bg-slate-200/10 border border-slate-200/20 text-slate-200">⚽ Balón: ×10</span>
+                    <span class="px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-blue-300">🧤 Guante: ×5</span>
+                  </div>
+                </div>
+
                 <!-- Chasis de Rodillos 3x3 -->
                 <div id="slots-reel-cabinet" class="w-full relative rounded-2xl transition-all duration-300">
                   <!-- Win Flash Overlay -->
@@ -2320,7 +2339,7 @@
                     <div class="flex flex-wrap items-center justify-center md:justify-start gap-5">
                       <!-- Fichas de apuesta -->
                       <div class="flex items-center gap-2.5">
-                        <span class="text-[9px] font-black uppercase tracking-widest text-[#fbbf24] font-montserrat">FICHAS</span>
+                        <span class="text-[9px] font-black uppercase tracking-widest text-[#fbbf24] font-montserrat text-center block leading-tight">APUESTA<br>POR LÍNEA</span>
                         <div class="flex gap-2 p-2 rounded-xl bg-slate-950/90 border border-slate-700/50">
                           <button id="slots-chip-10" onclick="selectSlotsChip(10)" class="casino-token-btn slots-chip-active" style="--chip-color: radial-gradient(circle at 35% 35%, #60a5fa 0%, #1d4ed8 75%, #1e3a8a 100%);"><span>10</span></button>
                           <button id="slots-chip-50" onclick="selectSlotsChip(50)" class="casino-token-btn" style="--chip-color: radial-gradient(circle at 35% 35%, #34d399 0%, #047857 75%, #064e3b 100%);"><span>50</span></button>
@@ -2329,10 +2348,21 @@
                         </div>
                       </div>
 
+                      <!-- Selector de Líneas Activas -->
+                      <div class="flex items-center gap-2.5">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-[#fbbf24] font-montserrat text-center block leading-tight">LÍNEAS<br>JUGADAS</span>
+                        <div class="flex items-center gap-1 p-1 bg-slate-950/90 border border-slate-700/50 rounded-xl">
+                          <button id="slots-lines-sub" onclick="changeSlotsLines(-1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-sm flex items-center justify-center transition cursor-pointer select-none border border-slate-700/30">-</button>
+                          <span id="slots-display-lines" class="text-xs font-black text-white px-2.5 min-w-[24px] text-center">5</span>
+                          <button id="slots-lines-add" onclick="changeSlotsLines(1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-extrabold text-sm flex items-center justify-center transition cursor-pointer select-none border border-slate-700/30">+</button>
+                        </div>
+                      </div>
+
                       <!-- Costo de tirada total -->
-                      <div class="flex flex-col text-center rounded-xl px-4 py-2.5 bg-slate-950/80 border border-slate-800 min-w-[90px]">
-                        <span class="text-[7.5px] text-slate-500 uppercase font-black tracking-wider">COSTO TIRADA</span>
-                        <span id="slots-display-total-bet" class="text-sm font-black text-yellow-400 mt-0.5" style="text-shadow: 0 0 5px rgba(251,191,36,0.3);">10</span>
+                      <div class="flex flex-col text-center rounded-xl px-4 py-2 bg-slate-950/80 border border-slate-800 min-w-[125px]">
+                        <span class="text-[7.5px] text-slate-500 uppercase font-black tracking-wider">APUESTA TOTAL</span>
+                        <span id="slots-display-total-bet" class="text-sm font-black text-yellow-400 mt-0.5" style="text-shadow: 0 0 5px rgba(251,191,36,0.3);">50</span>
+                        <span id="slots-display-lines-badge" class="text-[6.5px] text-emerald-400 font-black tracking-widest mt-0.5">🎰 5 LÍNEAS ACTIVAS</span>
                       </div>
                     </div>
 
@@ -16331,9 +16361,9 @@
       }
 
       const PACK_CONFIG = {
-        bronze: { price: 2, probs: { comun: 80, medio: 18, estrella: 2 }, tokenDrop: 0.001, wildcardChance: 0.5 },
-        plata: { price: 3, probs: { comun: 60, medio: 30, estrella: 10 }, tokenDrop: 0.002, wildcardChance: 1.0 },
-        gold: { price: 4, probs: { comun: 40, medio: 40, estrella: 20 }, tokenDrop: 0.005, wildcardChance: 2.0 }
+        bronze: { price: 2, probs: { comun: 80, medio: 18, estrella: 2 }, tokenDrop: 0.0001, wildcardChance: 0.5 },
+        plata: { price: 3, probs: { comun: 60, medio: 30, estrella: 10 }, tokenDrop: 0.0002, wildcardChance: 1.0 },
+        gold: { price: 4, probs: { comun: 40, medio: 40, estrella: 20 }, tokenDrop: 0.0005, wildcardChance: 2.0 }
       };
 
       // Roll Token de Fidelidad drop for a single card slot
@@ -20948,24 +20978,33 @@
       };
 
       window.changeSlotsLines = function(delta) {
-        // Bloqueado a 5 líneas por requerimiento del usuario
+        if (window.isSlotsSpinning || window.slotsPendingWin > 0) return;
+        const newLines = window.slotsActiveLines + delta;
+        if (newLines >= 1 && newLines <= 5) {
+          window.slotsActiveLines = newLines;
+          updateSlotsControlsDisplay();
+        }
       };
 
       window.toggleActiveLines = function(lineNumber) {
-        // Bloqueado a 5 líneas por requerimiento del usuario
+        // No necesario
       };
 
       function updateSlotsControlsDisplay() {
         const displayLines = document.getElementById("slots-display-lines");
         const displayTotal = document.getElementById("slots-display-total-bet");
         const displayFree = document.getElementById("slots-display-free-spins");
+        const displayLinesBadge = document.getElementById("slots-display-lines-badge");
 
         if (displayLines) displayLines.textContent = window.slotsActiveLines;
         
         const isFree = window.slotsFreeSpins > 0;
         if (displayTotal) {
-          // El costo es simple: igual al valor de la ficha (slotsLineBet), no slotsLineBet * 5
-          displayTotal.textContent = isFree ? "0 (FREE)" : window.slotsLineBet;
+          // El costo es real: apuesta por línea * líneas activas
+          displayTotal.textContent = isFree ? "0 (FREE)" : (window.slotsLineBet * window.slotsActiveLines);
+        }
+        if (displayLinesBadge) {
+          displayLinesBadge.textContent = `🎰 ${window.slotsActiveLines} LÍNEA${window.slotsActiveLines > 1 ? 'S' : ''} ACTIVA${window.slotsActiveLines > 1 ? 'S' : ''}`;
         }
         if (displayFree) {
           displayFree.textContent = isFree ? `${window.slotsFreeSpins}/${window.slotsFreeSpinsTotal}` : "0 / 0";
@@ -21090,15 +21129,15 @@
         }
       }
 
-      // Generación de símbolos con pesos
+      // Generación de símbolos con pesos balanceados
       function getRandomSymbol() {
         const r = Math.random();
-        if (r < 0.28) return '🧤';
-        if (r < 0.52) return '⚽';
-        if (r < 0.70) return '👑';
-        if (r < 0.85) return '🟥';
-        if (r < 0.93) return '🃏';
-        return '🏆';
+        if (r < 0.25) return '🧤';
+        if (r < 0.47) return '⚽';
+        if (r < 0.63) return '👑';
+        if (r < 0.85) return '🟥'; // Tarjeta Roja (Penalización)
+        if (r < 0.93) return '🃏'; // Comodín (Wild)
+        return '🏆'; // Scatter (Free Spins)
       }
 
       function getCurrentReelSymbols() {
@@ -21127,38 +21166,48 @@
           return;
         }
 
-        // Auto-cobrar saldo pendiente si no lo hicieron antes de girar
+        // BLOQUEO INMEDIATO Y SÍNCRONO PARA PREVENIR DOBLE CLICK Y CARRERAS DE PROMESAS
+        window.isSlotsSpinning = true;
+        setSlotsInterfaceLocked(true);
+        clearWinHighlights();
+
+        // Auto-cobrar saldo pendiente si no lo hicieron antes de girar para consolidar fichas
         if (window.slotsPendingWin > 0) {
-          await collectSlotsWin();
+          try {
+            await collectSlotsWin();
+          } catch (e) {
+            console.error("Error al auto-cobrar antes del giro:", e);
+          }
         }
 
         const isFree = window.slotsFreeSpins > 0;
-        // Costo de tirada es simple: igual al valor de la ficha (slotsLineBet)
-        const totalBet = window.slotsLineBet;
+        // Costo de tirada es real: apuesta por línea (slotsLineBet) * líneas activas
+        const totalBet = window.slotsLineBet * window.slotsActiveLines;
         const cost = isFree ? 0 : totalBet;
 
         const currentChips = currentUserProfile.casino_chips || 0;
         if (currentChips < cost) {
           showNotification("Saldo de fichas insuficiente para realizar la tirada.", "error");
           window.setAutoSpinCount(0);
+          setSlotsInterfaceLocked(false);
+          window.isSlotsSpinning = false;
           return;
         }
-
-        // Bloqueo y limpieza visual
-        setSlotsInterfaceLocked(true);
-        window.isSlotsSpinning = true;
-        clearWinHighlights();
 
         // Descontar saldo inmediatamente en Firestore de forma atómica
         const userRef = doc(db, "users", currentUser.uid);
         if (cost > 0) {
           try {
+            // Actualizar visualmente de inmediato para dar feedback instantáneo sin mutar el perfil global
+            const tempVal = Math.max(0, (currentUserProfile.casino_chips || 0) - cost);
+            const localChipsDisp = document.getElementById("casino-local-chips-display");
+            if (localChipsDisp) localChipsDisp.textContent = tempVal.toLocaleString();
+            const walletChipsBal = document.getElementById("slots-wallet-chips");
+            if (walletChipsBal) walletChipsBal.textContent = tempVal.toLocaleString();
+
             await updateDoc(userRef, {
               casino_chips: firebase.firestore.FieldValue.increment(-cost)
             });
-            currentUserProfile.casino_chips -= cost;
-            window.localCasinoChips = currentUserProfile.casino_chips;
-            if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
           } catch (e) {
             console.error(e);
             showNotification("Error de red al procesar el descuento de la tirada.", "error");
@@ -21428,12 +21477,16 @@
 
           const userRef = doc(db, "users", currentUser.uid);
           try {
+            // Actualizar visualmente de inmediato para dar feedback instantáneo sin mutar el perfil global
+            const tempVal = Math.max(0, (currentUserProfile.casino_chips || 0) - penaltyVal);
+            const localChipsDisp = document.getElementById("casino-local-chips-display");
+            if (localChipsDisp) localChipsDisp.textContent = tempVal.toLocaleString();
+            const walletChipsBal = document.getElementById("slots-wallet-chips");
+            if (walletChipsBal) walletChipsBal.textContent = tempVal.toLocaleString();
+
             await updateDoc(userRef, {
               casino_chips: firebase.firestore.FieldValue.increment(-penaltyVal)
             });
-            currentUserProfile.casino_chips = Math.max(0, (currentUserProfile.casino_chips || 0) - penaltyVal);
-            window.localCasinoChips = currentUserProfile.casino_chips;
-            if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
           } catch (err) {
             console.error(err);
           }
@@ -21441,6 +21494,7 @@
           addLedToHistory('penalty', `Penalización Roja: -${penaltyVal}`);
           setSlotsInterfaceLocked(false);
           window.isSlotsSpinning = false;
+          if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
           checkContinueAutoSpin();
 
         } else {
@@ -21559,6 +21613,7 @@
         clearWinHighlights();
         setSlotsInterfaceLocked(false);
         window.isSlotsSpinning = false;
+        if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
         checkContinueAutoSpin();
       };
 
@@ -21571,12 +21626,16 @@
 
         const userRef = doc(db, "users", currentUser.uid);
         try {
+          // Actualizar visualmente de inmediato para dar feedback instantáneo sin mutar el perfil global
+          const tempVal = (currentUserProfile.casino_chips || 0) + winVal;
+          const localChipsDisp = document.getElementById("casino-local-chips-display");
+          if (localChipsDisp) localChipsDisp.textContent = tempVal.toLocaleString();
+          const walletChipsBal = document.getElementById("slots-wallet-chips");
+          if (walletChipsBal) walletChipsBal.textContent = tempVal.toLocaleString();
+
           await updateDoc(userRef, {
             casino_chips: firebase.firestore.FieldValue.increment(winVal)
           });
-          currentUserProfile.casino_chips = (currentUserProfile.casino_chips || 0) + winVal;
-          window.localCasinoChips = currentUserProfile.casino_chips;
-          if (window.syncCasinoLocalChipsWithProfile) window.syncCasinoLocalChipsWithProfile();
           showNotification(`🎉 ¡Se han añadido +${winVal} Fichas a tu saldo!`, "success");
           addLedToHistory('win', `Ganado: ${winVal}`);
         } catch (err) {
@@ -21689,7 +21748,9 @@
           document.getElementById("slots-chip-10"),
           document.getElementById("slots-chip-50"),
           document.getElementById("slots-chip-100"),
-          document.getElementById("slots-chip-500")
+          document.getElementById("slots-chip-500"),
+          document.getElementById("slots-lines-sub"),
+          document.getElementById("slots-lines-add")
         ];
 
         inputs.forEach(el => { if (el) el.disabled = locked; });
