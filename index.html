@@ -6808,183 +6808,128 @@
           const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
           const playerName = player?.nombre || playerId;
 
-          if (ownerTokens <= 0) {
-            // --- CLAUSULAZO DIRECTO (Sin Tokens de Fidelidad) ---
-            const ownerTeamRef = doc(db, "user_teams", `${ownerUid}_${leagueCode}`);
-            const ownerTeam = ownerTeamSnap.data();
-            const buyerUid = currentUser.uid;
-            const buyerTeamRef = doc(db, "user_teams", getTeamDocId());
-            const buyerTeam = currentUserTeam;
+          // --- CLAUSULAZO DIRECTO (Inmediato) ---
+          const ownerTeamRef = doc(db, "user_teams", `${ownerUid}_${leagueCode}`);
+          const ownerTeam = ownerTeamSnap.data();
+          const buyerUid = currentUser.uid;
+          const buyerTeamRef = doc(db, "user_teams", getTeamDocId());
+          const buyerTeam = currentUserTeam;
 
-            const posPlural = player?.posicion === "portero" ? "portero" :
-              player?.posicion === "defensa" ? "defensas" :
-              player?.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
+          const posPlural = player?.posicion === "portero" ? "portero" :
+            player?.posicion === "defensa" ? "defensas" :
+            player?.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
 
-            const newOwnerIds = (ownerTeam.jugadores_ids || []).filter(id => id !== playerId);
-            const newBuyerIds = [...(buyerTeam.jugadores_ids || []), playerId];
+          const newOwnerIds = (ownerTeam.jugadores_ids || []).filter(id => id !== playerId);
+          const newBuyerIds = [...(buyerTeam.jugadores_ids || []), playerId];
 
-            const ownerTit = { ...ownerTeam.alineacion?.titulares };
-            const ownerSup = { ...ownerTeam.alineacion?.suplentes };
-            if (ownerTit[posPlural]) ownerTit[posPlural] = ownerTit[posPlural].filter(id => id !== playerId);
-            if (ownerSup[posPlural]) ownerSup[posPlural] = ownerSup[posPlural].filter(id => id !== playerId);
+          const ownerTit = { ...ownerTeam.alineacion?.titulares };
+          const ownerSup = { ...ownerTeam.alineacion?.suplentes };
+          if (ownerTit[posPlural]) ownerTit[posPlural] = ownerTit[posPlural].filter(id => id !== playerId);
+          if (ownerSup[posPlural]) ownerSup[posPlural] = ownerSup[posPlural].filter(id => id !== playerId);
 
-            // Descontar presupuesto al comprador
-            const userRef = doc(db, "users", buyerUid);
-            const nuevoBudgetComprador = currentUserProfile.presupuesto_actual - clausulaAmount;
-            await updateDoc(userRef, { presupuesto_actual: nuevoBudgetComprador });
-            currentUserProfile.presupuesto_actual = nuevoBudgetComprador;
+          // Descontar presupuesto al comprador
+          const userRef = doc(db, "users", buyerUid);
+          const nuevoBudgetComprador = currentUserProfile.presupuesto_actual - clausulaAmount;
+          await updateDoc(userRef, { presupuesto_actual: nuevoBudgetComprador });
+          currentUserProfile.presupuesto_actual = nuevoBudgetComprador;
 
-            // Sumar presupuesto al vendedor
-            const nuevoBudgetVendedor = (ownerProfile.presupuesto_actual || 0) + clausulaAmount;
-            await updateDoc(ownerRef, { presupuesto_actual: nuevoBudgetVendedor });
+          // Sumar presupuesto al vendedor
+          const nuevoBudgetVendedor = (ownerProfile.presupuesto_actual || 0) + clausulaAmount;
+          await updateDoc(ownerRef, { presupuesto_actual: nuevoBudgetVendedor });
 
-            // Actualizar plantilla del vendedor (limpiando consumibles y adquisición)
-            const prevFechasOwner = { ...(ownerTeam.fechas_adquisicion || {}) };
-            delete prevFechasOwner[playerId];
-            const prevClausulasOwner = { ...(ownerTeam.clausulas || {}) };
-            delete prevClausulasOwner[playerId];
-            const prevBlindadosOwner = { ...(ownerTeam.blindados || {}) };
-            delete prevBlindadosOwner[playerId];
-            const prevSeguroOwner = { ...(ownerTeam.seguro_24h || {}) };
-            delete prevSeguroOwner[playerId];
-            const prevMotivacionOwner = { ...(ownerTeam.motivacion_plus || {}) };
-            delete prevMotivacionOwner[playerId];
+          // Actualizar plantilla del vendedor (limpiando consumibles y adquisición)
+          const prevFechasOwner = { ...(ownerTeam.fechas_adquisicion || {}) };
+          delete prevFechasOwner[playerId];
+          const prevClausulasOwner = { ...(ownerTeam.clausulas || {}) };
+          delete prevClausulasOwner[playerId];
+          const prevBlindadosOwner = { ...(ownerTeam.blindados || {}) };
+          delete prevBlindadosOwner[playerId];
+          const prevSeguroOwner = { ...(ownerTeam.seguro_24h || {}) };
+          delete prevSeguroOwner[playerId];
+          const prevMotivacionOwner = { ...(ownerTeam.motivacion_plus || {}) };
+          delete prevMotivacionOwner[playerId];
 
-            await updateDoc(ownerTeamRef, {
-              jugadores_ids: newOwnerIds,
-              alineacion: { titulares: ownerTit, suplentes: ownerSup },
-              players: buildPlayersArrayFromAlineacion(ownerTit, ownerSup, newOwnerIds),
-              fechas_adquisicion: prevFechasOwner,
-              clausulas: prevClausulasOwner,
-              blindados: prevBlindadosOwner,
-              seguro_24h: prevSeguroOwner,
-              motivacion_plus: prevMotivacionOwner
-            });
+          await updateDoc(ownerTeamRef, {
+            jugadores_ids: newOwnerIds,
+            alineacion: { titulares: ownerTit, suplentes: ownerSup },
+            players: buildPlayersArrayFromAlineacion(ownerTit, ownerSup, newOwnerIds),
+            fechas_adquisicion: prevFechasOwner,
+            clausulas: prevClausulasOwner,
+            blindados: prevBlindadosOwner,
+            seguro_24h: prevSeguroOwner,
+            motivacion_plus: prevMotivacionOwner
+          });
 
-            // Actualizar plantilla del comprador (cláusula inicial = 100% de lo pagado)
-            const prevFechasBuyer = buyerTeam.fechas_adquisicion || {};
-            const prevClausulasBuyer = buyerTeam.clausulas || {};
-            await updateDoc(buyerTeamRef, {
-              jugadores_ids: newBuyerIds,
-              players: buildPlayersArrayFromAlineacion(buyerTeam.alineacion?.titulares || {}, buyerTeam.alineacion?.suplentes || {}, newBuyerIds),
-              fechas_adquisicion: { ...prevFechasBuyer, [playerId]: Date.now() },
-              clausulas: { ...prevClausulasBuyer, [playerId]: clausulaAmount }
-            });
+          // Actualizar plantilla del comprador (cláusula inicial = 100% de lo pagado)
+          const prevFechasBuyer = buyerTeam.fechas_adquisicion || {};
+          const prevClausulasBuyer = buyerTeam.clausulas || {};
+          await updateDoc(buyerTeamRef, {
+            jugadores_ids: newBuyerIds,
+            players: buildPlayersArrayFromAlineacion(buyerTeam.alineacion?.titulares || {}, buyerTeam.alineacion?.suplentes || {}, newBuyerIds),
+            fechas_adquisicion: { ...prevFechasBuyer, [playerId]: Date.now() },
+            clausulas: { ...prevClausulasBuyer, [playerId]: clausulaAmount }
+          });
 
-            // Actualizar memoria local del comprador
-            buyerTeam.jugadores_ids = newBuyerIds;
-            if (!buyerTeam.clausulas) buyerTeam.clausulas = {};
-            buyerTeam.clausulas[playerId] = clausulaAmount;
-            if (!buyerTeam.fechas_adquisicion) buyerTeam.fechas_adquisicion = {};
-            buyerTeam.fechas_adquisicion[playerId] = Date.now();
+          // Actualizar memoria local del comprador
+          buyerTeam.jugadores_ids = newBuyerIds;
+          if (!buyerTeam.clausulas) buyerTeam.clausulas = {};
+          buyerTeam.clausulas[playerId] = clausulaAmount;
+          if (!buyerTeam.fechas_adquisicion) buyerTeam.fechas_adquisicion = {};
+          buyerTeam.fechas_adquisicion[playerId] = Date.now();
 
-            // Avanzar misiones y logros
-            const hasProfitCZL = player && clausulaAmount > player.precio;
-            if (hasProfitCZL && window.advanceMissionForUser) {
-              window.advanceMissionForUser(ownerUid, "weekly_tiburon", 1);
-            }
-            if (player && player.precio >= 30000000 && window.completeHitoForUser) {
-              window.completeHitoForUser(buyerUid, "galactico", 50, "Galáctico", `Fichar a un megacrack como ${player.nombre} con valor de catálogo >= 30M$`);
-            }
-
-            // Quitar de mercado secundario si estaba publicado
-            const secondaryMarket = leagueData.secondary_market || [];
-            const updatedSecondary = secondaryMarket.filter(x => x.id !== playerId);
-
-            // Registrar clausulazo directo finalizado en la liga
-            const directClausulazo = {
-              id: `czl_dir_${Date.now()}_${buyerUid}`, playerId, ownerUid,
-              buyerUid, buyerName: currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario,
-              clausulaAmount, playerName, timestamp: Date.now(), status: "completed"
-            };
-            const pendingList = leagueData.pending_clausulazos || [];
-            pendingList.push(directClausulazo);
-
-            const incidencias = leagueData.incidencias || [];
-            incidencias.unshift(`✅ [CLAUSULAZO DIRECTO] Traspaso definitivo de ${playerName} ejecutado por cláusula (${(clausulaAmount / 1e6).toFixed(2)}M$).`);
-            await updateDoc(leagueRef, { pending_clausulazos: pendingList, incidencias, secondary_market: updatedSecondary });
-
-            // Enviar notificaciones de buzón
-            try {
-              await db.collection("users").doc(ownerUid).collection("mailbox").add({
-                id: `czl_dir_owner_${Date.now()}`, type: "transfer_confirmed",
-                title: `🚨 ¡Jugador Vendido: ${playerName}!`,
-                description: `El mánager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha pagado la cláusula de rescisión de ${playerName} por ${(clausulaAmount / 1e6).toFixed(1)}M$. Al no tener Tokens de Fidelidad, el traspaso ha sido directo.`,
-                amount: clausulaAmount, playerId, claimed: false, createdAt: Date.now()
-              });
-            } catch (e) { console.error("Error direct owner mailbox:", e); }
-
-            try {
-              await db.collection("users").doc(buyerUid).collection("mailbox").add({
-                id: `czl_dir_buyer_${Date.now()}`, type: "clausulazo_success",
-                title: `✅ ¡Traspaso completado: ${playerName}!`,
-                description: `Has adquirido a ${playerName} por clausulazo directo. El jugador ya está en tu plantilla.`,
-                amount: clausulaAmount, playerId, claimed: false, createdAt: Date.now()
-              });
-            } catch (e) { console.error("Error direct buyer mailbox:", e); }
-
-            // Chat de liga
-            window.sendSystemLeagueChatMessage(leagueCode, `✅ [CLAUSULAZO DIRECTO] ¡${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha comprado a ${playerName} pagando su cláusula de ${(clausulaAmount / 1e6).toFixed(1)}M$! Al no tener el dueño Tokens de Fidelidad, el traspaso ha sido inmediato.`);
-
-            showNotification(`⚡ ¡Clausulazo directo completado! ${playerName} ya está en tu plantilla.`, "success");
-            closeClausulazoModal();
-            updateHeaderAndDashboardStats();
-            if (window.renderSquadGrid) window.renderSquadGrid();
-            if (window.renderMarketTable) window.renderMarketTable();
-            return;
+          // Avanzar misiones y logros
+          const hasProfitCZL = player && clausulaAmount > player.precio;
+          if (hasProfitCZL && window.advanceMissionForUser) {
+            window.advanceMissionForUser(ownerUid, "weekly_tiburon", 1);
+          }
+          if (player && player.precio >= 30000000 && window.completeHitoForUser) {
+            window.completeHitoForUser(buyerUid, "galactico", 50, "Galáctico", `Fichar a un megacrack como ${player.nombre} con valor de catálogo >= 30M$`);
           }
 
-          // --- CLAUSULAZO PENDIENTE (El dueño sí tiene Tokens de Fidelidad) ---
-          const clausulazoId = `czl_${Date.now()}_${currentUser.uid}`;
-          const pendingClausulazo = {
-            id: clausulazoId, playerId, ownerUid,
-            buyerUid: currentUser.uid,
-            buyerName: currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario,
-            clausulaAmount, playerName,
-            timestamp: Date.now(), status: "pending"
+          // Quitar de mercado secundario si estaba publicado
+          const secondaryMarket = leagueData.secondary_market || [];
+          const updatedSecondary = secondaryMarket.filter(x => x.id !== playerId);
+
+          // Registrar clausulazo directo finalizado en la liga
+          const directClausulazo = {
+            id: `czl_dir_${Date.now()}_${buyerUid}`, playerId, ownerUid,
+            buyerUid, buyerName: currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario,
+            clausulaAmount, playerName, timestamp: Date.now(), status: "completed"
           };
-
           const pendingList = leagueData.pending_clausulazos || [];
-          pendingList.push(pendingClausulazo);
+          pendingList.push(directClausulazo);
 
-          // Descontar presupuesto temporalmente al comprador
-          const userRef = doc(db, "users", currentUser.uid);
-          await updateDoc(userRef, { presupuesto_actual: currentUserProfile.presupuesto_actual - clausulaAmount });
-          currentUserProfile.presupuesto_actual -= clausulaAmount;
-
-          // Guardar en liga
           const incidencias = leagueData.incidencias || [];
-          incidencias.unshift(`⚡ [CLAUSULAZO] ${currentUserProfile.nombre_equipo} ha activado el clausulazo de ${player?.nombre} (${(clausulaAmount / 1e6).toFixed(2)}M$). El dueño tiene tiempo para activar su Token de Fidelidad.`);
-          await updateDoc(leagueRef, { pending_clausulazos: pendingList, incidencias });
+          incidencias.unshift(`✅ [CLAUSULAZO] Traspaso definitivo de ${playerName} ejecutado por cláusula (${(clausulaAmount / 1e6).toFixed(2)}M$).`);
+          await updateDoc(leagueRef, { pending_clausulazos: pendingList, incidencias, secondary_market: updatedSecondary });
 
-          // Notificación en buzón del dueño
+          // Enviar notificaciones de buzón
           try {
-            await db.collection("users").doc(ownerUid).collection("mailbox").doc(clausulazoId).set({
-              id: clausulazoId, type: "clausulazo_alert",
-              title: `🚨 ¡Clausulazo sobre ${player?.nombre || playerId}!`,
-              description: `El mánager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha pagado la cláusula de rescisión de ${player?.nombre || playerId} por ${(clausulaAmount / 1e6).toFixed(1)}M$. Tienes 1 hora para usar un Token de Fidelidad o se consumará el traspaso.`,
-              amount: clausulaAmount, playerId, clausulazoId, leagueCode,
-              buyerName: currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario,
-              claimed: false, createdAt: Date.now()
+            await db.collection("users").doc(ownerUid).collection("mailbox").add({
+              id: `czl_dir_owner_${Date.now()}`, type: "transfer_confirmed",
+              title: `🚨 ¡Jugador Vendido: ${playerName}!`,
+              description: `El mánager ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha pagado la cláusula de rescisión de ${playerName} por ${(clausulaAmount / 1e6).toFixed(1)}M$. El traspaso ha sido directo e inmediato.`,
+              amount: clausulaAmount, playerId, claimed: false, createdAt: Date.now()
             });
-          } catch (e) { console.error("Error sending mailbox alert:", e); }
+          } catch (e) { console.error("Error direct owner mailbox:", e); }
 
-          // Log en el chat de liga
-          window.sendSystemLeagueChatMessage(leagueCode, `⚡ [CLAUSULAZO] ¡${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha activado el clausulazo sobre ${player?.nombre || playerId} por ${(clausulaAmount / 1e6).toFixed(1)}M$! El dueño tiene 1 hora para reaccionar.`);
+          try {
+            await db.collection("users").doc(buyerUid).collection("mailbox").add({
+              id: `czl_dir_buyer_${Date.now()}`, type: "clausulazo_success",
+              title: `✅ ¡Traspaso completado: ${playerName}!`,
+              description: `Has adquirido a ${playerName} por clausulazo. El jugador ya está en tu plantilla.`,
+              amount: clausulaAmount, playerId, claimed: false, createdAt: Date.now()
+            });
+          } catch (e) { console.error("Error direct buyer mailbox:", e); }
 
-          showNotification(`⚡ ¡Clausulazo enviado! El dueño tiene 1 hora para usar un Token de Fidelidad.`, "success");
+          // Chat de liga
+          window.sendSystemLeagueChatMessage(leagueCode, `✅ [CLAUSULAZO] ¡${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} ha comprado a ${playerName} pagando su cláusula de ${(clausulaAmount / 1e6).toFixed(1)}M$! El traspaso ha sido inmediato.`);
+
+          showNotification(`⚡ ¡Clausulazo completado! ${playerName} ya está en tu plantilla.`, "success");
           closeClausulazoModal();
           updateHeaderAndDashboardStats();
-
-          // Auto-ejecución si el dueño no cancela en 1 hora
-          setTimeout(async () => {
-            try {
-              const freshLeagueSnap = await getDoc(leagueRef);
-              const freshData = freshLeagueSnap.data();
-              const stillPending = (freshData.pending_clausulazos || []).find(c => c.id === clausulazoId && c.status === "pending");
-              if (stillPending) { await finalizeClausulazo(clausulazoId, leagueCode); }
-            } catch (e) { console.error("Auto-finalize error:", e); }
-          }, 3600000);
+          if (window.renderSquadGrid) window.renderSquadGrid();
+          if (window.renderMarketTable) window.renderMarketTable();
         } catch (err) {
           console.error("Error executing clausulazo:", err);
           showNotification("Error al ejecutar el clausulazo.", "error");
@@ -10141,7 +10086,8 @@
             if (!player) return;
 
             // Clausula calculation
-            const isShielded = blindados[id] || false;
+            const seguroUntil = (teamData.seguro_24h || {})[id] || 0;
+            const isShielded = (blindados[id] || false) || (seguroUntil > Date.now());
             const currentClause = clausulas[id] || player.precio;
             const formattedClause = (currentClause / 1000000).toFixed(1);
 
@@ -10242,7 +10188,8 @@
         </div>`;
 
           cat.list.forEach(player => {
-            const isShielded = blindados[player.id] || false;
+            const seguroUntil = (teamData.seguro_24h || {})[player.id] || 0;
+            const isShielded = (blindados[player.id] || false) || (seguroUntil > Date.now());
             const currentClause = clausulas[player.id] || player.precio;
             const formattedClause = (currentClause / 1000000).toFixed(1);
 
