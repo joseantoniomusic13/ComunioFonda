@@ -709,6 +709,34 @@
                 </div>
               </div>
 
+              <!-- Otorgar Consumibles (Tokens, Seguros, Motivación) -->
+              <div class="space-y-2 border-t border-white/5 pt-4">
+                <label class="block text-xs font-bold uppercase tracking-wider text-indigo-400 font-extrabold">Otorgar Consumibles / Cartas Especiales</label>
+                <div class="space-y-2.5">
+                  <div class="grid grid-cols-2 gap-2">
+                    <div>
+                      <label for="admin-consumable-type" class="block text-[9px] text-slate-400 font-bold uppercase mb-1">Consumible</label>
+                      <select id="admin-consumable-type" disabled
+                        class="glass-input w-full px-3 py-2.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-amber-500/20 disabled:opacity-40">
+                        <option value="tokens_fidelidad">🛡️ Token de Fidelidad</option>
+                        <option value="seguro_24h_count">🔒 Seguro de Plantilla 24h</option>
+                        <option value="motivacion_plus_count">⚡ Motivación Plus (+2 Pts)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="admin-consumable-amount" class="block text-[9px] text-slate-400 font-bold uppercase mb-1">Cantidad</label>
+                      <input type="number" id="admin-consumable-amount" min="1" value="1" disabled
+                        class="glass-input w-full px-3 py-2.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-amber-500/20 disabled:opacity-40">
+                    </div>
+                  </div>
+
+                  <button id="btn-admin-give-consumable" disabled
+                    class="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-black py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-indigo-500/10 disabled:opacity-40 disabled:cursor-not-allowed">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-amber-300 animate-pulse"></i> Otorgar Consumible
+                  </button>
+                </div>
+              </div>
+
               <!-- Otorgar / Quitar Jugadores -->
               <div class="space-y-2 border-t border-white/5 pt-4">
                 <label for="admin-player-mod"
@@ -8936,6 +8964,14 @@
         const inputRewAmount = document.getElementById("admin-reward-amount");
         if (inputRewAmount) inputRewAmount.disabled = disabled;
 
+        // CONTROLES DE CONSUMIBLES
+        const btnGiveConsumable = document.getElementById("btn-admin-give-consumable");
+        if (btnGiveConsumable) btnGiveConsumable.disabled = disabled;
+        const inputConsType = document.getElementById("admin-consumable-type");
+        if (inputConsType) inputConsType.disabled = disabled;
+        const inputConsAmount = document.getElementById("admin-consumable-amount");
+        if (inputConsAmount) inputConsAmount.disabled = disabled;
+
         document.getElementById("btn-admin-give-player").disabled = disabled;
         document.getElementById("btn-admin-take-player").disabled = disabled;
         document.getElementById("admin-player-mod").disabled = disabled;
@@ -9287,6 +9323,75 @@
           } finally {
             btnSendReward.disabled = false;
             btnSendReward.innerHTML = `<i data-lucide="send" class="w-3.5 h-3.5"></i> Enviar Recompensa al Buzón`;
+            if (typeof lucide !== "undefined") lucide.createIcons();
+          }
+        });
+      }
+
+      // Admin: Otorgar Consumible Especial (Tokens, Seguros, Motivación)
+      const btnGiveConsumable = document.getElementById("btn-admin-give-consumable");
+      if (btnGiveConsumable) {
+        btnGiveConsumable.addEventListener("click", async () => {
+          if (!adminSelectedUserId) {
+            showNotification("Debes seleccionar un mánager primero.", "error");
+            return;
+          }
+
+          const consumableType = document.getElementById("admin-consumable-type").value;
+          const amount = parseInt(document.getElementById("admin-consumable-amount").value);
+
+          if (isNaN(amount) || amount <= 0) {
+            showNotification("Por favor, introduce una cantidad válida y mayor que 0.", "error");
+            return;
+          }
+
+          btnGiveConsumable.disabled = true;
+          btnGiveConsumable.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Otorgando...`;
+          if (typeof lucide !== "undefined") lucide.createIcons();
+
+          try {
+            const userRef = doc(db, "users", adminSelectedUserId);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              const currentCount = parseInt(userData[consumableType]) || 0;
+              const newCount = currentCount + amount;
+
+              await updateDoc(userRef, {
+                [consumableType]: newCount
+              });
+
+              if (currentUser && currentUser.uid === adminSelectedUserId) {
+                currentUserProfile[consumableType] = newCount;
+                if (window.renderConsumablesGrid) window.renderConsumablesGrid();
+              }
+
+              let consumableLabel = "";
+              if (consumableType === "tokens_fidelidad") consumableLabel = "Token(s) de Fidelidad";
+              else if (consumableType === "seguro_24h_count") consumableLabel = "Seguro(s) de Plantilla 24h";
+              else if (consumableType === "motivacion_plus_count") consumableLabel = "Motivación(es) Plus";
+
+              showNotification(`🎁 Has otorgado +${amount} ${consumableLabel} a @${userData.nombre_usuario} con éxito.`, "success");
+              
+              await db.collection("users").doc(adminSelectedUserId).collection("mailbox").add({
+                type: "system_alert",
+                title: "🎁 ¡Has recibido consumibles del Gran Fondero!",
+                description: `El Gran Fondero te ha otorgado +${amount} ${consumableLabel}. ¡Revisa tu inventario!`,
+                claimed: true,
+                createdAt: new Date().toISOString()
+              });
+
+              if (window.refreshAdminSelectedUserInfo) window.refreshAdminSelectedUserInfo();
+            } else {
+              showNotification("El usuario seleccionado no existe.", "error");
+            }
+          } catch (err) {
+            console.error("Error al otorgar consumible:", err);
+            showNotification("Error de red al procesar la entrega.", "error");
+          } finally {
+            btnGiveConsumable.disabled = false;
+            btnGiveConsumable.innerHTML = `<i data-lucide="sparkles" class="w-4 h-4 text-amber-300"></i> Otorgar Consumible`;
             if (typeof lucide !== "undefined") lucide.createIcons();
           }
         });

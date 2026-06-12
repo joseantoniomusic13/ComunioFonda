@@ -10,6 +10,9 @@ const signOut = window.signOut;
 const doc = window.doc;
 const setDoc = window.setDoc;
 const getDoc = window.getDoc;
+const collection = window.collection;
+const getDocs = window.getDocs;
+const deleteDoc = window.deleteDoc;
 
 // --- SISTEMA DE TOASTS/NOTIFICACIONES PREMIUM ---
 function showNotification(message, type = "success") {
@@ -46,6 +49,71 @@ function showNotification(message, type = "success") {
   }, 4000);
 }
 
+// --- AUTO-RESTAURACIÓN / VINCULACIÓN AUTOMÁTICA DE CUENTAS ---
+async function findExistingProfileByUsername(username) {
+  try {
+    const cleanName = username.toLowerCase().trim();
+    const usersSnap = await getDocs(collection(db, "users"));
+    let foundDoc = null;
+    usersSnap.forEach(d => {
+      const data = d.data();
+      if (data && data.nombre_usuario && data.nombre_usuario.toLowerCase().trim() === cleanName) {
+        foundDoc = { id: d.id, data: data };
+      }
+    });
+    return foundDoc;
+  } catch (err) {
+    console.error("Error buscando perfil existente:", err);
+    return null;
+  }
+}
+
+async function migrateOldProfile(oldUid, newUid, newUsername) {
+  try {
+    const oldUserDocRef = doc(db, "users", oldUid);
+    const newUserDocRef = doc(db, "users", newUid);
+    const oldUserSnap = await getDoc(oldUserDocRef);
+
+    if (oldUserSnap.exists()) {
+      const oldUserData = oldUserSnap.data();
+      oldUserData.uid = newUid;
+      await setDoc(newUserDocRef, oldUserData);
+      await deleteDoc(oldUserDocRef);
+      console.log(`✅ Perfil de usuario migrado de ${oldUid} a ${newUid}`);
+    }
+
+    const oldTeamDocRef = doc(db, "user_teams", oldUid);
+    const newTeamDocRef = doc(db, "user_teams", newUid);
+    const oldTeamSnap = await getDoc(oldTeamDocRef);
+
+    if (oldTeamSnap.exists()) {
+      const oldTeamData = oldTeamSnap.data();
+      oldTeamData.uid = newUid;
+      await setDoc(newTeamDocRef, oldTeamData);
+      await deleteDoc(oldTeamDocRef);
+      console.log(`✅ Plantilla de equipo migrada de ${oldUid} a ${newUid}`);
+    }
+
+    const oldMailboxRef = collection(db, "users", oldUid, "mailbox");
+    const oldMailboxSnap = await getDocs(oldMailboxRef);
+    if (oldMailboxSnap && !oldMailboxSnap.empty) {
+      for (const msgDoc of oldMailboxSnap.docs) {
+        const msgData = msgDoc.data();
+        await setDoc(doc(db, "users", newUid, "mailbox", msgDoc.id), msgData);
+        await deleteDoc(doc(db, "users", oldUid, "mailbox", msgDoc.id));
+      }
+      console.log(`✅ Mensajes del buzón migrados de ${oldUid} a ${newUid}`);
+    }
+
+    showNotification(`¡Tu cuenta y plantilla de '${newUsername}' se han restaurado y vinculado con éxito!`, "success");
+    return true;
+  } catch (err) {
+    console.error("Error durante la migración de cuenta:", err);
+    showNotification("Error al restaurar tu cuenta anterior automáticamente.", "warning");
+    return false;
+  }
+}
+
 // --- REGISTRO DE NUEVO MÁNAGER (CON USERNAME PURO) ---
 async function registerManager(username, password, nombreEquipo, isSystemInit = false) {
   try {
@@ -61,65 +129,63 @@ async function registerManager(username, password, nombreEquipo, isSystemInit = 
     // Mapeo transparente a correo ficticio para Firebase Auth
     const fakeEmail = `${cleanUsername}@comuniomundial.com`;
 
+    // Buscar si ya existe un perfil con este mismo nombre en Firestore
+    const existingProfile = await findExistingProfileByUsername(username);
+
     // 1. Crear usuario en Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, fakeEmail, password);
     const user = userCredential.user;
 
-    // Asignación de rol dinámico
-    const userRole = (cleanUsername === "admin") ? "admin" : "manager";
+    if (existingProfile && existingProfile.id !== user.uid) {
+      console.log(`🔧 [Auto-Restauración] Detectado perfil anterior para '${username}' con UID viejo (${existingProfile.id}). Migrando a nuevo UID (${user.uid})...`);
+      await migrateOldProfile(existingProfile.id, user.uid, username);
+    } else {
+      // Asignación de rol dinámico
+      const userRole = (cleanUsername === "admin") ? "admin" : "manager";
 
-    // 2. Inicializar perfil del usuario en Firestore (users)
-    const userProfileRef = doc(db, "users", user.uid);
-    const initialProfile = {
-      uid: user.uid,
-      nombre_usuario: username,
-      nombre_equipo: nombreEquipo || `${username} FC`,
-      nombres_equipo: {},    // Mapa { codigoLiga: nombreEquipoEnEsaLiga }
-      fecha_registro: new Date().toISOString(),
-      presupuesto_actual: 100000000, // 100M$ inicial
-      presupuesto_club: 100000000, // 100M$ inicial
-      fonda_coins: 10, // 10 FC inicial (escala concentrada)
-      ultimo_login: new Date().toDateString(),
-      puntos_totales: 0,
-      puntos_jornada_actual: 0,
-      ranking_global: 1,
-      rol: userRole,
-      ligas: [],       // Lista de códigos de liga a las que pertenece
-      liga_activa: ""   // Código de la liga seleccionada
-    };
-    await setDoc(userProfileRef, initialProfile);
+      // 2. Inicializar perfil del usuario en Firestore (users)
+      const userProfileRef = doc(db, "users", user.uid);
+      const initialProfile = {
+        uid: user.uid,
+        nombre_usuario: username,
+        nombre_equipo: nombreEquipo || `${username} FC`,
+        nombres_equipo: {},    // Mapa { codigoLiga: nombreEquipoEnEsaLiga }
+        fecha_registro: new Date().toISOString(),
+        presupuesto_actual: 100000000, // 100M$ inicial
+        presupuesto_club: 100000000, // 100M$ inicial
+        fonda_coins: 10, // 10 FC inicial (escala concentrada)
+        ultimo_login: new Date().toDateString(),
+        puntos_totales: 0,
+        puntos_jornada_actual: 0,
+        ranking_global: 1,
+        rol: userRole,
+        ligas: [],       // Lista de códigos de liga a las que pertenece
+        liga_activa: ""   // Código de la liga seleccionada
+      };
+      await setDoc(userProfileRef, initialProfile);
 
-    // 3. Inicializar plantilla y Chips en Firestore (user_teams)
-    const userTeamRef = doc(db, "user_teams", user.uid);
-    const initialTeam = {
-      uid: user.uid,
-      jugadores_ids: [], // Comienza vacío
-      alineacion: {
-        titulares: {
-          portero: [],
-          defensas: [],
-          mediocampistas: [],
-          delanteros: []
+      // 3. Inicializar plantilla y Chips en Firestore (user_teams)
+      const userTeamRef = doc(db, "user_teams", user.uid);
+      const initialTeam = {
+        uid: user.uid,
+        jugadores_ids: [], // Comienza vacío
+        alineacion: {
+          titulares: { portero: [], defensas: [], mediocampistas: [], delanteros: [] },
+          suplentes: { portero: [], defensas: [], mediocampistas: [], delanteros: [] }
         },
-        suplentes: {
-          portero: [],
-          defensas: [],
-          mediocampistas: [],
-          delanteros: []
+        capitan_id: "",
+        cambios_realizados_jornada: 0,
+        chips: {
+          wildcard: { disponible: true, usado_en_jornada: null },
+          jugador_12: { disponible: true, usado_en_jornada: null, jugador_extra_id: null },
+          capitan_maximo: { disponible: true, usado_en_jornada: null },
+          super_banquillo: { disponible: true, usado_en_jornada: null }
         }
-      },
-      capitan_id: "",
-      cambios_realizados_jornada: 0,
-      chips: {
-        wildcard: { disponible: true, usado_en_jornada: null },
-        jugador_12: { disponible: true, usado_en_jornada: null, jugador_extra_id: null },
-        capitan_maximo: { disponible: true, usado_en_jornada: null },
-        super_banquillo: { disponible: true, usado_en_jornada: null } // Potenciador 5
-      }
-    };
-    await setDoc(userTeamRef, initialTeam);
+      };
+      await setDoc(userTeamRef, initialTeam);
+      showNotification(`¡Registro completado con éxito! Bienvenido, ${username}.`);
+    }
 
-    showNotification(`¡Registro completado con éxito! Bienvenido, ${username}.`);
     return { success: true, user };
   } catch (error) {
     console.error("Error en Registro:", error);
