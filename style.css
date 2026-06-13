@@ -2228,6 +2228,16 @@ select option,
   transform: translateY(-2px) scale(1.05);
 }
 
+/* Fichas flotantes sobre el tapete */
+.casino-chip-overlay {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  pointer-events: none !important;
+  z-index: 10;
+}
+
 /* ========================================== */
 /* ============= FONDA CASINO ============= */
 /* ========================================== */
