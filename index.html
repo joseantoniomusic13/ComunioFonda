@@ -19870,8 +19870,8 @@
               porteria_a_cero: statsForCalc.porteria_a_cero
             };
 
-            const pPais = (player.pais || "").trim().toLowerCase();
-            const lPais = localTeam.trim().toLowerCase();
+            const pPais = normalizeCountry(player.pais);
+            const lPais = normalizeCountry(localTeam);
             if (pPais === lPais) {
               localPlayersArr.push(playerData);
             } else {
