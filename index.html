@@ -20283,7 +20283,7 @@
         if (isNaN(val) || val <= 0) {
           output.value = "";
         } else {
-          output.value = (val * 100) + " Fichas";
+          output.value = (val * 1000) + " Fichas";
         }
       };
 
@@ -20295,7 +20295,7 @@
         if (isNaN(val) || val <= 0) {
           output.value = "";
         } else {
-          output.value = Math.floor(val / 100) + " FC";
+          output.value = (val / 1000) + " FC";
         }
       };
 
@@ -20331,7 +20331,7 @@
 
         const userRef = doc(db, "users", currentUser.uid);
         const newFC = currentFC - amountFC;
-        const chipsToReceive = amountFC * 100;
+        const chipsToReceive = amountFC * 1000;
         const newChips = (currentUserProfile.casino_chips || 0) + chipsToReceive;
 
         try {
@@ -20377,7 +20377,7 @@
 
         const userRef = doc(db, "users", currentUser.uid);
         const newChips = databaseChips - amountChips;
-        const fcToReceive = amountChips / 100;
+        const fcToReceive = amountChips / 1000;
         const newFC = (currentUserProfile.fonda_coins || 0) + fcToReceive;
 
         try {
@@ -20972,7 +20972,7 @@
         const output = document.getElementById("casino-conv-buy-output");
         if (!input || !output) return;
         const val = parseInt(input.value) || 0;
-        output.value = (val * 100).toLocaleString() + " Fichas";
+        output.value = (val * 1000).toLocaleString() + " Fichas";
       };
 
       window.updateCasinoSellConversion = function() {
@@ -20980,7 +20980,7 @@
         const output = document.getElementById("casino-conv-sell-output");
         if (!input || !output) return;
         const val = parseInt(input.value) || 0;
-        output.value = (val / 100).toLocaleString() + " Fc";
+        output.value = (val / 1000).toLocaleString() + " Fc";
       };
 
       window.openCasinoConverterModal = function() {
@@ -21039,7 +21039,7 @@
 
         const userRef = doc(db, "users", currentUser.uid);
         const newFC = currentFC - amountFC;
-        const chipsToReceive = amountFC * 100;
+        const chipsToReceive = amountFC * 1000;
         const newChips = (currentUserProfile.casino_chips || 0) + chipsToReceive;
 
         try {
@@ -21090,7 +21090,7 @@
 
         const userRef = doc(db, "users", currentUser.uid);
         const newChips = databaseChips - amountChips;
-        const fcToReceive = amountChips / 100;
+        const fcToReceive = amountChips / 1000;
         const newFC = (currentUserProfile.fonda_coins || 0) + fcToReceive;
 
         try {
@@ -22196,7 +22196,7 @@
         <!-- Rate display -->
         <div class="bg-slate-900/20 px-4 py-2.5 rounded-xl border border-white/5 flex items-center justify-between max-w-xs mx-auto">
           <span class="text-[10px] font-bold text-slate-400">Tasa de conversión actual:</span>
-          <span class="text-[10px] font-black text-white">1 Fc = 100 Chips</span>
+          <span class="text-[10px] font-black text-white">1 Fc = 1000 Chips</span>
         </div>
 
         <!-- Action Button -->
@@ -22239,7 +22239,7 @@
         <!-- Rate display -->
         <div class="bg-slate-900/20 px-4 py-2.5 rounded-xl border border-white/5 flex items-center justify-between max-w-xs mx-auto">
           <span class="text-[10px] font-bold text-slate-400">Tasa de conversión actual:</span>
-          <span class="text-[10px] font-black text-white">100 Chips = 1 Fc</span>
+          <span class="text-[10px] font-black text-white">1000 Chips = 1 Fc</span>
         </div>
 
         <!-- Action Button -->
