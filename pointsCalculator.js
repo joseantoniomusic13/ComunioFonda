@@ -102,7 +102,11 @@ window.calcularPuntosJugador = function(stats = {}, posicion = "delantero", fase
     }
   }
 
-  // ─── 7. FASE ELIMINATORIA: PUNTOS EN DOBLE ──────────────────────────────────
+  // ─── 7. GOLES EN PROPIA (-2 pts por autogol, cualquier posición) ───────────
+  const golesEnPropia = stats.goles_en_propia || 0;
+  puntos -= golesEnPropia * 2;
+
+  // ─── 8. FASE ELIMINATORIA: PUNTOS EN DOBLE ──────────────────────────────────
   // "En la fase eliminatoria, serán dados puntos en doble."
   // No se aplican puntos negativos por posiciones vacías en eliminatorias.
   if (faseEliminatoria) {

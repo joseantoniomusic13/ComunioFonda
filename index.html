@@ -5860,6 +5860,7 @@
         let totalPenaltisParados = 0;
         let totalTarjetasAmarillas = 0;
         let totalTarjetasRojas = 0;
+        let totalGolesEnPropia = 0;
         const puntos_jornadas = {};
 
         matchesSnap.forEach(docSnap => {
@@ -5873,10 +5874,12 @@
             totalPenaltisParados += rating.par || 0;
             totalTarjetasAmarillas += rating.ama || 0;
             totalTarjetasRojas += (rating.roj || rating.ama >= 2) ? 1 : 0;
+            totalGolesEnPropia += rating.gep || 0;
 
             const statsForCalc = {
               valoracion: rating.val || 0.0,
               goles: rating.gol || 0,
+              goles_en_propia: rating.gep || 0,
               asistencias: rating.asi || 0,
               goles_encajados: rating.enc || 0,
               penaltis_parados: rating.par || 0,
@@ -5919,6 +5922,7 @@
           minutos_jugados: totalPartidos * 90,
           partidos: totalPartidos,
           goles: totalGoles,
+          goles_en_propia: totalGolesEnPropia,
           asistencias: totalAsistencias,
           goles_encajados: totalGolesEncajados,
           penaltis_parados: totalPenaltisParados,
@@ -12850,6 +12854,7 @@
           try {
             const val = parseFloat(document.getElementById("sim-modal-valoracion").value) || 0.0;
             const gol = parseInt(document.getElementById("sim-modal-goles").value) || 0;
+            const gep = parseInt(document.getElementById("sim-modal-goles-propia")?.value || 0);
             const asi = parseInt(document.getElementById("sim-modal-asistencias").value) || 0;
             const pen = parseInt(document.getElementById("sim-modal-penaltis-marcados").value) || 0;
             const roj = document.getElementById("sim-modal-roja-directa").checked ? 1 : 0;
@@ -12865,6 +12870,7 @@
             const newStats = {
               valoracion: val,
               goles: gol,
+              goles_en_propia: gep,
               asistencias: asi,
               goles_encajados: enc,
               penaltis_marcados: pen,
@@ -13008,6 +13014,7 @@
 
         document.getElementById("sim-modal-valoracion").value = stats.valoracion !== undefined ? stats.valoracion : 6.5;
         document.getElementById("sim-modal-goles").value = stats.goles || 0;
+        document.getElementById("sim-modal-goles-propia").value = stats.goles_en_propia || 0;
         document.getElementById("sim-modal-asistencias").value = stats.asistencias || 0;
         document.getElementById("sim-modal-penaltis-marcados").value = stats.penaltis_marcados || 0;
         document.getElementById("sim-modal-roja-directa").checked = !!stats.tarjetas_rojas_directas;
@@ -15223,14 +15230,24 @@
             }
             const valVal = prevR ? (prevR.val ?? 0.0).toFixed(1) : "0.0";
             const golVal = prevR ? (prevR.gol ?? 0) : 0;
+            const gepVal = prevR ? (prevR.gep ?? 0) : 0;
             const asiVal = prevR ? (prevR.asi ?? 0) : 0;
             const amaVal = prevR ? (prevR.ama ?? 0) : 0;
             const rojChecked = prevR && prevR.roj ? "checked" : "";
             const encVal = prevR ? (prevR.enc ?? 0) : 0;
             const parVal = prevR ? (prevR.par ?? 0) : 0;
 
-            const gkExtras = isGk ? `
+            const ownGoalExtra = `
             <div class="flex items-center gap-2 pt-2 border-t border-white/5 mt-1">
+              <div class="flex flex-col items-center gap-1 flex-1">
+                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">🛑 Gol Propia</label>
+                <div class="flex items-center gap-1">
+                  <button type="button" onclick="const i=this.nextElementSibling;if(i.value>0)i.stepDown()" class="w-6 h-6 rounded-lg bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 font-black text-sm flex items-center justify-center transition cursor-pointer">−</button>
+                  <input type="number" min="0" max="5" value="${gepVal}" class="player-gep-input w-10 text-center bg-slate-900/80 border border-white/10 rounded-lg py-1 text-sm font-black text-white focus:outline-none focus:border-rose-500/50">
+                  <button type="button" onclick="this.previousElementSibling.stepUp()" class="w-6 h-6 rounded-lg bg-white/5 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 font-black text-sm flex items-center justify-center transition cursor-pointer">+</button>
+                </div>
+              </div>
+              ${isGk ? `
               <div class="flex flex-col items-center gap-1 flex-1">
                 <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Goles Enc.</label>
                 <div class="flex items-center gap-1">
@@ -15247,7 +15264,10 @@
                   <button type="button" onclick="this.previousElementSibling.stepUp()" class="w-6 h-6 rounded-lg bg-white/5 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 font-black text-sm flex items-center justify-center transition cursor-pointer">+</button>
                 </div>
               </div>
-            </div>` : "";
+              ` : `
+              <div class="flex-1"></div>
+              `}
+            </div>`;
 
             return `
             <div class="player-fast-row bg-slate-950/70 border ${borderColor} rounded-2xl p-3 space-y-3 transition" data-player-id="${p.id}">
@@ -15304,7 +15324,7 @@
                   </label>
                 </div>
               </div>
-              ${gkExtras}
+              ${ownGoalExtra}
             </div>
           `;
           };
@@ -15378,14 +15398,15 @@
             const playerId = row.dataset.playerId;
             const val = parseFloat(row.querySelector(".player-val-input").value) || 0.0;
             const gol = parseInt(row.querySelector(".player-gol-input").value) || 0;
+            const gep = parseInt(row.querySelector(".player-gep-input")?.value || 0);
             const asi = parseInt(row.querySelector(".player-asi-input").value) || 0;
             const ama = parseInt(row.querySelector(".player-ama-input").value) || 0;
             const roj = row.querySelector(".player-roj-input").checked;
             const enc = parseInt(row.querySelector(".player-enc-input")?.value || 0);
             const par = parseInt(row.querySelector(".player-par-input")?.value || 0);
 
-            if (val > 0 || gol > 0 || asi > 0 || ama > 0 || roj || enc > 0 || par > 0) {
-              nuevosRatings[playerId] = { val, gol, asi, ama, roj, enc, par };
+            if (val > 0 || gol > 0 || gep > 0 || asi > 0 || ama > 0 || roj || enc > 0 || par > 0) {
+              nuevosRatings[playerId] = { val, gol, gep, asi, ama, roj, enc, par };
               affectedPlayerIds.add(playerId);
             }
           }
@@ -19825,6 +19846,7 @@
             const statsForCalc = {
               valoracion: rating.val || 0.0,
               goles: rating.gol || 0,
+              goles_en_propia: rating.gep || 0,
               asistencias: rating.asi || 0,
               goles_encajados: rating.enc || 0,
               penaltis_parados: rating.par || 0,
@@ -19905,6 +19927,13 @@
                 statsBadgesHTML += `
                   <span class="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-slate-950 text-white font-bold text-[8px]">
                     ⚽ x${p.rating.gol}
+                  </span>
+                `;
+              }
+              if (p.rating.gep > 0) {
+                statsBadgesHTML += `
+                  <span class="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold text-[8px]" title="Goles en propia">
+                    🛑 Autogol x${p.rating.gep}
                   </span>
                 `;
               }
@@ -22042,6 +22071,11 @@
               <div>
                 <span class="text-[10px] text-slate-400 font-bold block mb-1">Goles Marcados</span>
                 <input type="number" id="sim-modal-goles" min="0" max="10" value="0"
+                  class="glass-input w-full px-2 py-1.5 rounded-lg text-xs bg-fonda-950 text-white font-bold border-white/10">
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 font-bold block mb-1">Goles en Propia (-2)</span>
+                <input type="number" id="sim-modal-goles-propia" min="0" max="10" value="0"
                   class="glass-input w-full px-2 py-1.5 rounded-lg text-xs bg-fonda-950 text-white font-bold border-white/10">
               </div>
             </div>
