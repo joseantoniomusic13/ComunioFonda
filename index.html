@@ -5988,6 +5988,8 @@
         if (!player) return;
 
         _ppmCurrentPlayerId = playerId;
+        const ownedIds = (currentUserTeam && currentUserTeam.jugadores_ids) || [];
+        const isOwned = ownedIds.includes(playerId);
 
         const modal = document.getElementById("modal-player-profile");
         modal.classList.remove("hidden");
@@ -6078,7 +6080,10 @@
           estadoBadge.textContent = "🔒 BLOQUEADO (5h antes)";
           estadoBadge.className = "text-[10px] font-black uppercase px-2.5 py-1 rounded bg-rose-600 text-white animate-pulse border border-rose-500 shadow-lg shadow-rose-600/30";
         } else {
-          if (allTit.includes(playerId)) {
+          if (!isOwned) {
+            estadoBadge.textContent = "NO EN PROPIEDAD";
+            estadoBadge.className = "text-[10px] font-black uppercase px-2 py-0.5 rounded bg-slate-500/30 text-slate-400 border border-slate-500/20";
+          } else if (allTit.includes(playerId)) {
             estadoBadge.textContent = "TITULAR";
             estadoBadge.className = "text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400";
           } else if (allSup.includes(playerId)) {
@@ -6168,9 +6173,6 @@
         else blindadoBadge.classList.add("hidden");
 
         // --- Visibilidad según propiedad del jugador y bloqueo ---
-        const ownedIds = currentUserTeam.jugadores_ids || [];
-        const isOwned = ownedIds.includes(playerId);
-
         const accionesSection = document.getElementById("ppm-acciones-section");
         const clausulaUpgradeArea = document.getElementById("ppm-clausula-upgrade-area");
         const consumiblesSection = document.getElementById("ppm-consumibles-section");
@@ -10589,7 +10591,7 @@
             </div>
 
             <!-- Avatar -->
-            <div class="my-3 flex justify-center group-hover:scale-105 transition duration-300">
+            <div onclick="window.openPlayerProfileModal('${player.id}')" class="my-3 flex justify-center group-hover:scale-105 transition duration-300 cursor-pointer pointer-events-auto hover:scale-110">
               ${avatarHTML}
             </div>
 
@@ -10690,7 +10692,9 @@
             tr.innerHTML = `
             <td class="py-3 px-4 font-bold text-slate-200">
               <div class="flex items-center gap-3">
-                ${avatarHTML}
+                <div onclick="window.openPlayerProfileModal('${player.id}')" class="cursor-pointer pointer-events-auto transition hover:scale-110">
+                  ${avatarHTML}
+                </div>
                 <span class="font-extrabold text-slate-100">${player.nombre}</span>
               </div>
             </td>
