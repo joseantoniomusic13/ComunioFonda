@@ -1234,6 +1234,11 @@
                       <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
                       <span id="admin-team-local-title-mob">Local</span>
                     </div>
+                    <div class="relative">
+                      <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-emerald-400/60"></i>
+                      <input type="text" id="admin-local-player-search" placeholder="Buscar jugador local..." 
+                        class="glass-input w-full pl-8 pr-3 py-1.5 rounded-xl text-xs text-white border-emerald-500/20 bg-emerald-950/5 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30">
+                    </div>
                     <div id="admin-players-local-list" class="space-y-2 max-h-[600px] overflow-y-auto pr-1">
                     </div>
                   </div>
@@ -1241,6 +1246,11 @@
                     <div class="md:hidden text-xs font-black text-blue-400 flex items-center gap-2 mb-1">
                       <span class="w-2 h-2 rounded-full bg-blue-400 inline-block"></span>
                       <span id="admin-team-visit-title-mob">Visitante</span>
+                    </div>
+                    <div class="relative">
+                      <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-blue-400/60"></i>
+                      <input type="text" id="admin-visit-player-search" placeholder="Buscar jugador visitante..." 
+                        class="glass-input w-full pl-8 pr-3 py-1.5 rounded-xl text-xs text-white border-blue-500/20 bg-blue-950/5 focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30">
                     </div>
                     <div id="admin-players-visit-list" class="space-y-2 max-h-[600px] overflow-y-auto pr-1">
                     </div>
@@ -15163,11 +15173,45 @@
         }
       });
 
+      // --- BUSCADORES DE JUGADORES (FILTRADO RÁPIDO) ---
+      document.getElementById("admin-local-player-search").addEventListener("input", (e) => {
+        const query = e.target.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const rows = document.querySelectorAll("#admin-players-local-list .player-fast-row");
+        rows.forEach(row => {
+          const name = row.getAttribute("data-player-search") || "";
+          if (name.includes(query)) {
+            row.classList.remove("hidden");
+          } else {
+            row.classList.add("hidden");
+          }
+        });
+      });
+
+      document.getElementById("admin-visit-player-search").addEventListener("input", (e) => {
+        const query = e.target.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const rows = document.querySelectorAll("#admin-players-visit-list .player-fast-row");
+        rows.forEach(row => {
+          const name = row.getAttribute("data-player-search") || "";
+          if (name.includes(query)) {
+            row.classList.remove("hidden");
+          } else {
+            row.classList.add("hidden");
+          }
+        });
+      });
+
       // --- CARGAR LISTADO DE JUGADORES AL SELECCIONAR PARTIDO ---
       document.getElementById("admin-resolve-match-select").addEventListener("change", async (e) => {
         const matchId = e.target.value;
         const panel = document.getElementById("admin-match-players-panel");
         const resolveBtn = document.getElementById("btn-admin-resolve-match");
+
+        // Limpiar buscadores de jugadores
+        const localSearchInput = document.getElementById("admin-local-player-search");
+        const visitSearchInput = document.getElementById("admin-visit-player-search");
+        if (localSearchInput) localSearchInput.value = "";
+        if (visitSearchInput) visitSearchInput.value = "";
+
         if (!matchId) {
           panel.classList.add("hidden");
           return;
@@ -15269,8 +15313,9 @@
               `}
             </div>`;
 
+            const searchName = p.nombre ? p.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
             return `
-            <div class="player-fast-row bg-slate-950/70 border ${borderColor} rounded-2xl p-3 space-y-3 transition" data-player-id="${p.id}">
+            <div class="player-fast-row bg-slate-950/70 border ${borderColor} rounded-2xl p-3 space-y-3 transition" data-player-id="${p.id}" data-player-search="${searchName}">
               <!-- Nombre + posición -->
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2.5 min-w-0">
