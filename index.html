@@ -14853,7 +14853,8 @@
           for (const teamDoc of teamsDocs) {
             const docId = teamDoc.id;
             const team = teamDoc.data;
-            const uid = docId.split("_")[0];
+            const lastUnderscore = docId.lastIndexOf("_");
+            const uid = lastUnderscore !== -1 ? docId.substring(0, lastUnderscore) : docId;
 
             let puntosPorJornada = { ...(team.puntos_por_jornada || {}) };
 

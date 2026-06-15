@@ -305,9 +305,9 @@
     // 2. Equipos de usuario (squads)
     if (collName === "user_teams") {
       if (id) {
-        const p = id.split("_");
-        const userId = p[0];
-        const leagueCode = p.slice(1).join("_");
+        const lastUnderscore = id.lastIndexOf("_");
+        const userId = lastUnderscore !== -1 ? id.substring(0, lastUnderscore) : id;
+        const leagueCode = lastUnderscore !== -1 ? id.substring(lastUnderscore + 1) : "";
         return `leagues/${leagueCode}/users/${userId}/team`;
       }
       return `user_teams`;
@@ -321,9 +321,9 @@
     }
     
     if (!leagueCode && id) {
-      const p = id.split("_");
-      if (p.length > 1) {
-        leagueCode = p[p.length - 1];
+      const lastUnderscore = id.lastIndexOf("_");
+      if (lastUnderscore !== -1) {
+        leagueCode = id.substring(lastUnderscore + 1);
       }
     }
 
