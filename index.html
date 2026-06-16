@@ -14467,6 +14467,7 @@
           .replace("eeuu", "estados unidos")
           .replace("usa", "estados unidos")
           .replace("catar", "qatar")
+          .replace("arabia saudita", "arabia saudi")
           .replace("arabia saudi", "arabia saudita")
           .replace("bosnia-herzegovina", "bosnia y herzegovina")
           .replace("rd congo", "r.d. del congo")
@@ -19533,15 +19534,15 @@
 
       function getCountryFlag(countryName) {
         if (!countryName) return "🏳️";
-        const normalized = normalizeCountry(countryName);
+        const normalized = normalizeCountry(countryName).replace(/ /g, "_");
         const flagMap = {
           "espana": "🇪🇸", "alemania": "🇩🇪", "argentina": "🇦🇷", "brasil": "🇧🇷", "francia": "🇫🇷",
           "inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "italia": "🇮🇹", "portugal": "🇵🇹", "paises_bajos": "🇳🇱",
           "uruguay": "🇺🇾", "belgica": "🇧🇪", "croacia": "🇭🇷", "dinamarca": "🇩🇰", "senegal": "🇸🇳",
           "marruecos": "🇲🇦", "japon": "🇯🇵", "corea_del_sur": "🇰🇷", "estados_unidos": "🇺🇸",
           "mexico": "🇲🇽", "canada": "🇨🇦", "suiza": "🇨🇭", "serbia": "🇷🇸", "polonia": "🇵🇱",
-          "arabia_saudi": "🇸🇦", "ecuador": "🇪🇨", "ghana": "🇬🇭", "camerun": "🇨🇲", "tunez": "🇹🇳",
-          "australia": "🇦🇺", "costa_rica": "🇨🇨", "iran": "🇮🇷", "gales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿"
+          "arabia_saudi": "🇸🇦", "arabia_saudita": "🇸🇦", "ecuador": "🇪🇨", "ghana": "🇬🇭", "camerun": "🇨🇲", "tunez": "🇹🇳",
+          "australia": "🇦🇺", "costa_rica": "🇨🇷", "iran": "🇮🇷", "gales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿"
         };
         return flagMap[normalized] || "🏳️";
       }
