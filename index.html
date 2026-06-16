@@ -3600,39 +3600,65 @@
       <div class="flex-1 overflow-y-auto min-h-[300px]">
 
         <!-- Tab 1: Pitch Táctico -->
-        <div id="rival-tab-content-pitch"
-          class="relative w-full aspect-[4/3] max-w-xl mx-auto rounded-3xl overflow-hidden border border-emerald-500/20 bg-emerald-950/20 shadow-inner flex flex-col justify-between p-4 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/40 via-slate-950 to-slate-950">
-          <!-- Campo de fútbol estilizado -->
-          <div
-            class="absolute inset-0 border border-white/10 m-3 pointer-events-none rounded-2xl flex flex-col justify-between">
-            <div class="h-1/2 border-b border-white/10 flex items-end justify-center">
-              <div class="w-24 h-12 border border-white/10 border-t-0 rounded-b-full"></div>
+        <div id="rival-tab-content-pitch" class="space-y-4">
+          <!-- Campo de fútbol -->
+          <div id="rival-pitch-canvas"
+            class="relative w-full aspect-[4/3] max-w-xl mx-auto rounded-3xl overflow-hidden border border-emerald-500/20 bg-emerald-950/20 shadow-inner flex flex-col justify-between p-4 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/40 via-slate-950 to-slate-950">
+            <!-- Campo de fútbol estilizado -->
+            <div
+              class="absolute inset-0 border border-white/10 m-3 pointer-events-none rounded-2xl flex flex-col justify-between">
+              <div class="h-1/2 border-b border-white/10 flex items-end justify-center">
+                <div class="w-24 h-12 border border-white/10 border-t-0 rounded-b-full"></div>
+              </div>
+              <div class="h-1/2 flex items-start justify-center">
+                <div class="w-24 h-12 border border-white/10 border-b-0 rounded-t-full"></div>
+              </div>
             </div>
-            <div class="h-1/2 flex items-start justify-center">
-              <div class="w-24 h-12 border border-white/10 border-b-0 rounded-t-full"></div>
+            <!-- Área de portería superior/inferior para ambientar -->
+            <div
+              class="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-8 border border-white/10 border-t-0 pointer-events-none">
             </div>
-          </div>
-          <!-- Área de portería superior/inferior para ambientar -->
-          <div
-            class="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-8 border border-white/10 border-t-0 pointer-events-none">
-          </div>
-          <div
-            class="absolute bottom-3 left-1/2 -translate-x-1/2 w-32 h-8 border border-white/10 border-b-0 pointer-events-none">
-          </div>
-          <div
-            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-white/10 rounded-full pointer-events-none">
+            <div
+              class="absolute bottom-3 left-1/2 -translate-x-1/2 w-32 h-8 border border-white/10 border-b-0 pointer-events-none">
+            </div>
+            <div
+              class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-white/10 rounded-full pointer-events-none">
+            </div>
+
+            <!-- Filas de Posición -->
+            <div class="z-10 flex flex-col justify-between h-full gap-4 relative">
+              <!-- Delanteros -->
+              <div id="rival-pitch-delanteros" class="flex justify-around items-center gap-2"></div>
+              <!-- Mediocampistas -->
+              <div id="rival-pitch-mediocampistas" class="flex justify-around items-center gap-2"></div>
+              <!-- Defensas -->
+              <div id="rival-pitch-defensas" class="flex justify-around items-center gap-2"></div>
+              <!-- Portero -->
+              <div id="rival-pitch-portero" class="flex justify-center items-center gap-2"></div>
+            </div>
           </div>
 
-          <!-- Filas de Posición -->
-          <div class="z-10 flex flex-col justify-between h-full gap-4 relative">
-            <!-- Delanteros -->
-            <div id="rival-pitch-delanteros" class="flex justify-around items-center gap-2"></div>
-            <!-- Mediocampistas -->
-            <div id="rival-pitch-mediocampistas" class="flex justify-around items-center gap-2"></div>
-            <!-- Defensas -->
-            <div id="rival-pitch-defensas" class="flex justify-around items-center gap-2"></div>
-            <!-- Portero -->
-            <div id="rival-pitch-portero" class="flex justify-center items-center gap-2"></div>
+          <!-- Banquillo y Reservas del Rival -->
+          <div id="rival-pitch-bench-section" class="max-w-xl mx-auto space-y-4 p-4 rounded-3xl bg-slate-900/20 border border-white/5">
+            <!-- Banquillo -->
+            <div class="space-y-2">
+              <span class="text-[10px] font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i> Banquillo Oficial (Puntúa 50%)
+              </span>
+              <div id="rival-pitch-suplentes" class="flex flex-wrap gap-3 justify-center items-center bg-slate-950/40 p-3 rounded-2xl border border-white/5 min-h-[50px]">
+                <!-- Rellenado dinámicamente -->
+              </div>
+            </div>
+
+            <!-- Reservas -->
+            <div class="space-y-2">
+              <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+                <i data-lucide="users" class="w-3.5 h-3.5 text-slate-400"></i> Reservas Extras (NO Puntúan)
+              </span>
+              <div id="rival-pitch-reservas" class="flex flex-wrap gap-3 justify-center items-center bg-slate-950/40 p-3 rounded-2xl border border-white/5 min-h-[50px]">
+                <!-- Rellenado dinámicamente -->
+              </div>
+            </div>
           </div>
         </div>
 
@@ -10086,8 +10112,90 @@
 
       function renderRivalPitch(teamData, allPlayers) {
         const titulares = teamData.alineacion?.titulares || {};
+        const suplentes = teamData.alineacion?.suplentes || {};
         const blindados = teamData.blindados || {};
         const clausulas = teamData.clausulas || {};
+        const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+
+        const titularIds = [
+          ...(titulares.portero || []),
+          ...(titulares.defensas || []),
+          ...(titulares.mediocampistas || []),
+          ...(titulares.delanteros || [])
+        ];
+        const suplenteIds = [
+          ...(suplentes.portero || []),
+          ...(suplentes.defensas || []),
+          ...(suplentes.mediocampistas || []),
+          ...(suplentes.delanteros || [])
+        ];
+
+        const createPlayerCardNode = (id, player, role) => {
+          // Clausula calculation
+          const seguroUntil = (teamData.seguro_24h || {})[id] || 0;
+          const isShielded = (blindados[id] || false) || (seguroUntil > Date.now());
+          const currentClause = clausulas[id] || player.precio;
+          const formattedClause = (currentClause / 1000000).toFixed(1);
+
+          // Check immunity
+          const acquisition = (teamData.fechas_adquisicion || {})[id] || 0;
+          const immunityPeriod = 7 * 24 * 60 * 60 * 1000;
+          const elapsed = Date.now() - acquisition;
+          const isImmune = acquisition > 0 && elapsed < immunityPeriod;
+          const remainingDays = Math.ceil((immunityPeriod - elapsed) / (24 * 60 * 60 * 1000));
+
+          // Verificar si ha jugado
+          const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
+          const match = lockStatus.partido;
+          const hasPlayed = match && (match.resuelto || (match.kickoff_time && new Date() >= new Date(match.kickoff_time)));
+          const livePts = (player.puntos_jornadas) ? (player.puntos_jornadas[activeJor] || 0) : 0;
+
+          // Calcular puntos aportados
+          const isCaptain = teamData?.capitan_id === id;
+          let contributedPts = 0;
+          if (role === "titular") {
+            contributedPts = isCaptain ? livePts * 2 : livePts;
+          } else if (role === "suplente") {
+            const hasSuperBanquillo = teamData.chips?.super_banquillo?.usado_en_jornada === activeJor;
+            if (hasSuperBanquillo) {
+              contributedPts = livePts;
+            } else {
+              contributedPts = Math.round((livePts / 2) * 10) / 10;
+            }
+          } else {
+            contributedPts = 0;
+          }
+
+          // Avatar and visual elements
+          const avatar = window.getPlayerCardAvatarHTML(id, player, "w-10 h-10", isCaptain);
+          const isClausulazoPending = (currentActiveLeagueData?.pending_clausulazos || []).some(
+            c => c.playerId === id && c.status === "pending"
+          );
+
+          let actionBtn = "";
+          if (isShielded) {
+            actionBtn = `<span class="px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-[7px] text-gold font-extrabold uppercase flex items-center gap-0.5"><i data-lucide="shield-check" class="w-2 h-2"></i> Protegido</span>`;
+          } else if (isImmune) {
+            actionBtn = `<span class="px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/30 text-[7px] text-blue-400 font-extrabold uppercase flex items-center gap-0.5" title="Inmune por adquisición reciente">🛡️ Inmune (${remainingDays}d)</span>`;
+          } else if (isClausulazoPending) {
+            actionBtn = `<span class="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold text-[7px] animate-pulse">⚡ En curso</span>`;
+          } else {
+            actionBtn = `<button onclick="triggerRivalClausulazo('${id}', '${player.nombre.replace(/'/g, "\\'")}', ${currentClause})" class="px-1.5 py-0.5 rounded bg-rose-600 hover:bg-rose-500 active:scale-95 transition text-[7.5px] text-white font-black uppercase cursor-pointer flex items-center gap-0.5 shadow-sm shadow-rose-500/10">⚡ Clausular</button>`;
+          }
+
+          const card = document.createElement("div");
+          card.className = "flex flex-col items-center text-center space-y-0.5 relative group";
+          card.innerHTML = `
+            <div class="relative">
+              ${avatar}
+              <span class="absolute -top-1 -right-1 text-[8px] bg-slate-900 border border-white/10 text-slate-300 font-extrabold px-1 rounded-full">${formattedClause}M</span>
+              ${hasPlayed ? `<div class="absolute -bottom-1 -left-1 w-4 h-4 bg-yellow-400 text-slate-950 rounded-full flex items-center justify-center text-[8.5px] font-black border border-slate-950/20 shadow shadow-yellow-500/40">${contributedPts}</div>` : ''}
+            </div>
+            <p class="text-[8px] font-black text-slate-100 truncate max-w-[65px]">${player.nombre.split(" ").pop()}</p>
+            <div class="mt-0.5">${actionBtn}</div>
+          `;
+          return card;
+        };
 
         const renderPos = (posKey, containerId) => {
           const container = document.getElementById(containerId);
@@ -10103,59 +10211,7 @@
           ids.forEach(id => {
             const player = allPlayers.find(p => p.id === id);
             if (!player) return;
-
-            // Clausula calculation
-            const seguroUntil = (teamData.seguro_24h || {})[id] || 0;
-            const isShielded = (blindados[id] || false) || (seguroUntil > Date.now());
-            const currentClause = clausulas[id] || player.precio;
-            const formattedClause = (currentClause / 1000000).toFixed(1);
-
-            // Check immunity
-            const acquisition = (teamData.fechas_adquisicion || {})[id] || 0;
-            const immunityPeriod = 7 * 24 * 60 * 60 * 1000;
-            const elapsed = Date.now() - acquisition;
-            const isImmune = acquisition > 0 && elapsed < immunityPeriod;
-            const remainingDays = Math.ceil((immunityPeriod - elapsed) / (24 * 60 * 60 * 1000));
-
-            // Verificar si ha jugado
-            const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
-            const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
-            const match = lockStatus.partido;
-            const hasPlayed = match && (match.resuelto || (match.kickoff_time && new Date() >= new Date(match.kickoff_time)));
-            const livePts = (player.puntos_jornadas) ? (player.puntos_jornadas[activeJor] || 0) : 0;
-
-            // Si es capitán del rival, recibe el doble
-            const isCaptain = teamData?.capitan_id === id;
-            const contributedPts = isCaptain ? livePts * 2 : livePts;
-
-            // Avatar and visual elements
-            const avatar = window.getPlayerCardAvatarHTML(id, player, "w-10 h-10", false);
-            const isClausulazoPending = (currentActiveLeagueData?.pending_clausulazos || []).some(
-              c => c.playerId === id && c.status === "pending"
-            );
-
-            let actionBtn = "";
-            if (isShielded) {
-              actionBtn = `<span class="px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-[7px] text-gold font-extrabold uppercase flex items-center gap-0.5"><i data-lucide="shield-check" class="w-2 h-2"></i> Protegido</span>`;
-            } else if (isImmune) {
-              actionBtn = `<span class="px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/30 text-[7px] text-blue-400 font-extrabold uppercase flex items-center gap-0.5" title="Inmune por adquisición reciente">🛡️ Inmune (${remainingDays}d)</span>`;
-            } else if (isClausulazoPending) {
-              actionBtn = `<span class="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold text-[7px] animate-pulse">⚡ En curso</span>`;
-            } else {
-              actionBtn = `<button onclick="triggerRivalClausulazo('${id}', '${player.nombre.replace(/'/g, "\\'")}', ${currentClause})" class="px-1.5 py-0.5 rounded bg-rose-600 hover:bg-rose-500 active:scale-95 transition text-[7.5px] text-white font-black uppercase cursor-pointer flex items-center gap-0.5 shadow-sm shadow-rose-500/10">⚡ Clausular</button>`;
-            }
-
-            const card = document.createElement("div");
-            card.className = "flex flex-col items-center text-center space-y-0.5 relative group";
-            card.innerHTML = `
-            <div class="relative">
-              ${avatar}
-              <span class="absolute -top-1 -right-1 text-[8px] bg-slate-900 border border-white/10 text-slate-300 font-extrabold px-1 rounded-full">${formattedClause}M</span>
-              ${hasPlayed ? `<div class="absolute -bottom-1 -left-1 w-4 h-4 bg-yellow-400 text-slate-950 rounded-full flex items-center justify-center text-[8.5px] font-black border border-slate-950/20 shadow shadow-yellow-500/40">${contributedPts}</div>` : ''}
-            </div>
-            <p class="text-[8px] font-black text-slate-100 truncate max-w-[65px]">${player.nombre.split(" ").pop()}</p>
-            <div class="mt-0.5">${actionBtn}</div>
-          `;
+            const card = createPlayerCardNode(id, player, "titular");
             container.appendChild(card);
           });
         };
@@ -10164,6 +10220,37 @@
         renderPos("defensas", "rival-pitch-defensas");
         renderPos("mediocampistas", "rival-pitch-mediocampistas");
         renderPos("delanteros", "rival-pitch-delanteros");
+
+        // Rellenar suplentes
+        const suplentesContainer = document.getElementById("rival-pitch-suplentes");
+        if (suplentesContainer) {
+          suplentesContainer.innerHTML = "";
+          if (suplenteIds.length === 0) {
+            suplentesContainer.innerHTML = `<span class="text-[9.5px] text-slate-500 italic">No hay suplentes en banquillo</span>`;
+          } else {
+            suplenteIds.forEach(id => {
+              const player = allPlayers.find(p => p.id === id);
+              if (!player) return;
+              const card = createPlayerCardNode(id, player, "suplente");
+              suplentesContainer.appendChild(card);
+            });
+          }
+        }
+
+        // Rellenar reservas
+        const reservasContainer = document.getElementById("rival-pitch-reservas");
+        if (reservasContainer) {
+          reservasContainer.innerHTML = "";
+          const reservaPlayers = allPlayers.filter(p => !titularIds.includes(p.id) && !suplenteIds.includes(p.id));
+          if (reservaPlayers.length === 0) {
+            reservasContainer.innerHTML = `<span class="text-[9.5px] text-slate-500 italic">No hay reservas fuera de convocatoria</span>`;
+          } else {
+            reservaPlayers.forEach(player => {
+              const card = createPlayerCardNode(player.id, player, "reserva");
+              reservasContainer.appendChild(card);
+            });
+          }
+        }
 
         lucide.createIcons();
       }
@@ -11138,11 +11225,6 @@
               <div class="card-captain-crown">
                 <i data-lucide="crown" style="width:9px;height:9px;color:#fcd34d"></i>
               </div>` : ''}
-
-            <!-- ② Badge de puntos (esquina sup-der, absoluta) -->
-            <div class="card-score-badge${zeroBadge ? ' zero-pts' : ''}${!zeroBadge ? ' pulse-badge' : ''}">
-              ${displayPts}${isCaptain && !zeroBadge ? '<span style="font-size:5px;opacity:.75">×2</span>' : ''}
-            </div>
 
             <!-- ③ Zona foto (en el flujo normal – ocupa todo el cuerpo) -->
             <div class="card-photo-zone">
