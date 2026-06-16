@@ -1781,38 +1781,45 @@
 
         <!-- Tarjeta del Simulador en Vivo -->
         <div class="glass-panel p-6 rounded-3xl border border-white/5 space-y-6">
-          <div class="text-left space-y-1">
-            <h3 class="text-2xl font-black text-white flex items-center gap-2">
-              <i data-lucide="gamepad-2" class="w-6 h-6 text-gold animate-pulse"></i> Simulador de Jornada en Vivo
-            </h3>
-            <p class="text-slate-400 text-xs">
-              Actúa como el árbitro oficial del Mundial 2026. Modifica las incidencias reales de un futbolista y observa
-              cómo se recalculan los puntos globales del mánager al instante.
-            </p>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/5 pb-4">
+            <div class="text-left space-y-1">
+              <h3 class="text-2xl font-black text-white flex items-center gap-2">
+                <i data-lucide="gamepad-2" class="w-6 h-6 text-gold animate-pulse"></i> Simulador de Jornada en Vivo
+              </h3>
+              <p class="text-slate-400 text-xs">
+                Actúa como el árbitro oficial del Mundial 2026. Modifica las incidencias reales de un futbolista y observa
+                cómo se recalculan los puntos globales del mánager al instante.
+              </p>
+            </div>
+            <button id="btn-toggle-simulator" onclick="toggleSimulator()" class="px-4 py-2 rounded-xl text-xs font-black bg-gold/15 hover:bg-gold/25 border border-gold/30 text-gold transition flex items-center gap-2 cursor-pointer whitespace-nowrap self-start sm:self-center">
+              <i data-lucide="eye-off" class="w-4 h-4"></i> Ocultar Simulador
+            </button>
           </div>
 
-          <!-- Controles de Incidencias en Tablero Visual -->
-          <div class="space-y-4 bg-fonda-900/60 p-5 rounded-2xl border border-white/5">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/5 pb-3">
-              <div>
-                <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Seleccionar Selección /
-                  País o Buscar</label>
-                <p class="text-[10px] text-slate-500 font-bold mt-0.5">Escoge un país o busca directamente a cualquier
-                  futbolista globalmente</p>
+          <div id="simulator-body" class="space-y-4">
+            <!-- Controles de Incidencias en Tablero Visual -->
+            <div class="space-y-4 bg-fonda-900/60 p-5 rounded-2xl border border-white/5">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/5 pb-3">
+                <div>
+                  <label class="block text-xs font-black uppercase tracking-wider text-slate-400">Seleccionar Selección /
+                    País o Buscar</label>
+                  <p class="text-[10px] text-slate-500 font-bold mt-0.5">Escoge un país o busca directamente a cualquier
+                    futbolista globalmente</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  <input type="text" id="sim-player-search" placeholder="🔍 Buscar jugador por nombre..."
+                    class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white border-white/10 w-full sm:w-64" />
+                  <select id="sim-country-select"
+                    class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20 w-full sm:w-64 cursor-pointer">
+                    <!-- Se cargará por JS -->
+                  </select>
+                </div>
               </div>
-              <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                <input type="text" id="sim-player-search" placeholder="🔍 Buscar jugador por nombre..."
-                  class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white border-white/10 w-full sm:w-64" />
-                <select id="sim-country-select"
-                  class="glass-input px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20 w-full sm:w-64 cursor-pointer">
-                  <!-- Se cargará por JS -->
-                </select>
-              </div>
-            </div>
 
-            <div>
-              <div id="sim-players-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 pt-2">
-                <!-- Tarjetas de jugadores cargadas dinámicamente -->
+              <div>
+                <div id="sim-players-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3 pt-2">
+                  <!-- Tarjetas de jugadores cargadas dinámicamente -->
+                </div>
               </div>
             </div>
           </div>
@@ -1821,29 +1828,93 @@
 
         <!-- Listado de Puntos Totales en Vivo -->
         <div class="glass-panel rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
-          <div class="p-5 border-b border-white/5">
+          <div class="p-5 border-b border-white/5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h4 class="text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="star" class="w-4 h-4 text-gold"></i> Tabla de Puntuaciones en Vivo del Mundial
+              <i data-lucide="star" class="w-4 h-4 text-gold animate-pulse"></i> Tabla de Puntuaciones en Vivo del Mundial
             </h4>
+            <button id="btn-toggle-standings" onclick="toggleStandings()" class="px-4 py-2 rounded-xl text-xs font-black bg-gold/15 hover:bg-gold/25 border border-gold/30 text-gold transition flex items-center gap-2 cursor-pointer whitespace-nowrap self-start sm:self-center">
+              <i data-lucide="eye-off" class="w-4 h-4"></i> Ocultar Tabla
+            </button>
           </div>
-          <div class="overflow-x-auto text-xs md:text-sm">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr
-                  class="bg-fonda-900 border-b border-white/5 text-[10px] uppercase font-bold tracking-widest text-slate-500">
-                  <th class="py-4 px-6">Jugador</th>
-                  <th class="py-4 px-6">Posición</th>
-                  <th class="py-4 px-6 text-center">Goles</th>
-                  <th class="py-4 px-6 text-center">Asistencias</th>
-                  <th class="py-4 px-6 text-center">Tarjetas</th>
-                  <th class="py-4 px-6 text-center font-black text-amber-400">Pts Jornada</th>
-                  <th class="py-4 px-6 text-center font-black text-gold">Pts Totales</th>
-                </tr>
-              </thead>
-              <tbody id="stats-table-body" class="divide-y divide-white/5 text-slate-200">
-                <!-- Se rellena por JS -->
-              </tbody>
-            </table>
+          
+          <div id="standings-body">
+            <div class="p-5 bg-fonda-950/20 border-b border-white/5 flex flex-wrap gap-4 items-center justify-between">
+              <div class="flex flex-wrap gap-3 items-center flex-1 min-w-[280px]">
+                <!-- Buscador por nombre -->
+                <div class="relative w-full sm:w-64">
+                  <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                  <input type="text" id="stats-filter-name" placeholder="Buscar por nombre..." oninput="handleStatsFilterChange()"
+                    class="glass-input pl-9 pr-3 py-2 w-full rounded-xl text-xs text-white border-white/10 bg-fonda-950/40 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition">
+                </div>
+
+                <!-- Selector de Equipo -->
+                <div class="w-full sm:w-48">
+                  <select id="stats-filter-team" onchange="handleStatsFilterChange()"
+                    class="glass-input px-3 py-2 w-full rounded-xl text-xs bg-fonda-950/40 text-slate-300 font-bold border-white/10 focus:border-gold/50 cursor-pointer">
+                    <option value="">Todos los Equipos</option>
+                  </select>
+                </div>
+
+                <!-- Selector de Posición -->
+                <div class="w-full sm:w-44">
+                  <select id="stats-filter-position" onchange="handleStatsFilterChange()"
+                    class="glass-input px-3 py-2 w-full rounded-xl text-xs bg-fonda-950/40 text-slate-300 font-bold border-white/10 focus:border-gold/50 cursor-pointer">
+                    <option value="">Todas las Posiciones</option>
+                    <option value="gk">Portero (POR)</option>
+                    <option value="df">Defensa (DF)</option>
+                    <option value="mf">Centrocampista (MC)</option>
+                    <option value="fw">Delantero (DL)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Toggles Rápidos -->
+              <div class="flex flex-wrap gap-2 text-[11px]">
+                <!-- Puntos + -->
+                <button id="stats-filter-pts-pos" onclick="toggleQuickFilter('pts-pos')" 
+                  class="px-3 py-2 rounded-xl border border-white/5 bg-white/5 text-slate-300 hover:text-white transition cursor-pointer font-bold flex items-center gap-1.5">
+                  <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-emerald-400"></i> Puntos +
+                </button>
+
+                <!-- Puntos - -->
+                <button id="stats-filter-pts-neg" onclick="toggleQuickFilter('pts-neg')" 
+                  class="px-3 py-2 rounded-xl border border-white/5 bg-white/5 text-slate-300 hover:text-white transition cursor-pointer font-bold flex items-center gap-1.5">
+                  <i data-lucide="minus-circle" class="w-3.5 h-3.5 text-rose-400"></i> Puntos -
+                </button>
+
+                <!-- Goles -->
+                <button id="stats-filter-goals" onclick="toggleQuickFilter('goals')" 
+                  class="px-3 py-2 rounded-xl border border-white/5 bg-white/5 text-slate-300 hover:text-white transition cursor-pointer font-bold flex items-center gap-1.5">
+                  <i data-lucide="award" class="w-3.5 h-3.5 text-gold"></i> Con Goles
+                </button>
+
+                <!-- Asistencias -->
+                <button id="stats-filter-assists" onclick="toggleQuickFilter('assists')" 
+                  class="px-3 py-2 rounded-xl border border-white/5 bg-white/5 text-slate-300 hover:text-white transition cursor-pointer font-bold flex items-center gap-1.5">
+                  <i data-lucide="handshake" class="w-3.5 h-3.5 text-cyan-400"></i> Con Asistencias
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto text-xs md:text-sm">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr
+                    class="bg-fonda-900 border-b border-white/5 text-[10px] uppercase font-bold tracking-widest text-slate-500">
+                    <th class="py-4 px-6">Jugador</th>
+                    <th class="py-4 px-6">Posición</th>
+                    <th class="py-4 px-6 text-center">Goles</th>
+                    <th class="py-4 px-6 text-center">Asistencias</th>
+                    <th class="py-4 px-6 text-center">Tarjetas</th>
+                    <th class="py-4 px-6 text-center font-black text-amber-400">Pts Jornada</th>
+                    <th class="py-4 px-6 text-center font-black text-gold">Pts Totales</th>
+                  </tr>
+                </thead>
+                <tbody id="stats-table-body" class="divide-y divide-white/5 text-slate-200">
+                  <!-- Se rellena por JS -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -4587,10 +4658,36 @@
           if (simCard) {
             if (currentUserProfile && currentUserProfile.rol === "admin") {
               simCard.classList.remove("hidden");
+              const body = document.getElementById("simulator-body");
+              const btn = document.getElementById("btn-toggle-simulator");
+              if (body && btn) {
+                const isHidden = localStorage.getItem("simulator_hidden") === "true";
+                if (isHidden) {
+                  body.style.display = "none";
+                  btn.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i> Mostrar Simulador';
+                } else {
+                  body.style.display = "block";
+                  btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i> Ocultar Simulador';
+                }
+              }
             } else {
               simCard.classList.add("hidden");
             }
           }
+
+          const standingsBody = document.getElementById("standings-body");
+          const btnStandings = document.getElementById("btn-toggle-standings");
+          if (standingsBody && btnStandings) {
+            const isStandingsHidden = localStorage.getItem("standings_hidden") === "true";
+            if (isStandingsHidden) {
+              standingsBody.style.display = "none";
+              btnStandings.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i> Mostrar Tabla';
+            } else {
+              standingsBody.style.display = "block";
+              btnStandings.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i> Ocultar Tabla';
+            }
+          }
+
           initSimulatorBoard();
           renderStatsTable();
         } else if (tabId === "calendar") {
@@ -7963,13 +8060,15 @@
         console.log(`🔔 [Notification Broker] Disparando alerta reactiva: "${title}" - "${message}"`);
         const toast = document.createElement("div");
         // Posicionado abajo a la derecha de forma premium con bordes HSL tailoreados
-        toast.className = "fixed bottom-5 right-5 z-[10000] p-4 rounded-2xl glass-panel border border-amber-500/30 bg-slate-950/95 text-white shadow-2xl flex gap-3 items-start animate-fade-in max-w-sm duration-300 pointer-events-auto cursor-pointer hover:border-amber-500/60 transition";
+        toast.className = "fixed bottom-5 right-5 z-[10000] p-4 rounded-2xl glass-panel border border-amber-500/30 bg-slate-950/95 text-white shadow-2xl flex gap-3 items-start animate-fade-in max-w-sm duration-300 pointer-events-auto cursor-pointer hover:border-gold/50 transition";
 
         const iconMarkup = iconType === "message"
           ? `<div class="p-2 bg-emerald-500/10 rounded-xl text-emerald-400 border border-emerald-500/20"><i data-lucide="message-square" class="w-4 h-4"></i></div>`
           : iconType === "market"
             ? `<div class="p-2 bg-purple-500/10 rounded-xl text-purple-400 border border-purple-500/20"><i data-lucide="trending-up" class="w-4 h-4"></i></div>`
-            : `<div class="p-2 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20"><i data-lucide="bell" class="w-4 h-4 animate-bounce"></i></div>`;
+            : iconType === "squad"
+              ? `<div class="p-2 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20"><i data-lucide="crown" class="w-4 h-4 text-gold animate-bounce"></i></div>`
+              : `<div class="p-2 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20"><i data-lucide="bell" class="w-4 h-4 animate-bounce"></i></div>`;
 
         toast.innerHTML = `
         ${iconMarkup}
@@ -7981,6 +8080,14 @@
           <i data-lucide="x" class="w-3.5 h-3.5"></i>
         </button>
       `;
+
+        // Al hacer clic en la alerta, redirige a la pestaña "Mi Plantilla" (squad)
+        toast.addEventListener("click", (e) => {
+          if (e.target.closest("button")) return;
+          if (typeof switchDashboardTab === "function") {
+            switchDashboardTab("squad");
+          }
+        });
 
         document.body.appendChild(toast);
         lucide.createIcons();
@@ -8269,9 +8376,37 @@
 
         // Escucha en tiempo real del documento de la liga activa
         let previousSecondaryMarket = null;
+        let previousJornada = null;
         unsubscribeActiveLeague = onSnapshot(doc(db, "leagues", leagueCode), async (leagueSnap) => {
           if (leagueSnap.exists()) {
             const lData = leagueSnap.data();
+            const currentJornada = lData.jornada_activa || "Jornada 1";
+
+            if (currentUser) {
+              const lastSeenJornadaKey = `last_seen_jornada_${currentUser.uid}_${leagueCode}`;
+              const lastSeenJornada = localStorage.getItem(lastSeenJornadaKey);
+
+              // 1. Detección en tiempo real
+              if (previousJornada && previousJornada !== currentJornada) {
+                triggerSystemAlert(
+                  `¡Cambio de Jornada!`,
+                  `Ha comenzado la ${currentJornada}. Haz clic aquí para ajustar tu plantilla y cambiar el capitán.`,
+                  "squad"
+                );
+              }
+              // 2. Detección al iniciar sesión
+              else if (lastSeenJornada && lastSeenJornada !== currentJornada) {
+                setTimeout(() => {
+                  triggerSystemAlert(
+                    `¡Nueva Jornada Activa!`,
+                    `Ha comenzado la ${currentJornada}. Ajusta tu capitán y tu plantilla ahora.`,
+                    "squad"
+                  );
+                }, 1500);
+              }
+              localStorage.setItem(lastSeenJornadaKey, currentJornada);
+            }
+            previousJornada = currentJornada;
 
             if (previousSecondaryMarket && currentUser) {
               const currentMyOffers = (lData.secondary_market || []).filter(x => x.owner_uid === currentUser.uid);
@@ -8650,6 +8785,108 @@
         }
       }
 
+      // --- FILTROS Y CONTROLES DE PUNTOS EN VIVO ---
+      let statsFilterName = "";
+      let statsFilterTeam = "";
+      let statsFilterPosition = "";
+      let statsFilterPtsPos = false;
+      let statsFilterPtsNeg = false;
+      let statsFilterGoals = false;
+      let statsFilterAssists = false;
+
+      window.handleStatsFilterChange = function() {
+        const nameInput = document.getElementById("stats-filter-name");
+        const teamSelect = document.getElementById("stats-filter-team");
+        const posSelect = document.getElementById("stats-filter-position");
+
+        if (nameInput) statsFilterName = nameInput.value.trim();
+        if (teamSelect) statsFilterTeam = teamSelect.value;
+        if (posSelect) statsFilterPosition = posSelect.value;
+
+        renderStatsTable();
+      };
+
+      window.toggleQuickFilter = function(filterType) {
+        if (filterType === 'pts-pos') {
+          statsFilterPtsPos = !statsFilterPtsPos;
+          const btn = document.getElementById("stats-filter-pts-pos");
+          if (btn) {
+            if (statsFilterPtsPos) {
+              btn.className = "px-3 py-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-bold flex items-center gap-1.5 transition cursor-pointer";
+            } else {
+              btn.className = "px-3 py-2 rounded-xl border border-white/5 bg-white/5 text-slate-300 hover:text-white font-bold flex items-center gap-1.5 transition cursor-pointer";
+            }
+          }
+        } else if (filterType === 'pts-neg') {
+          statsFilterPtsNeg = !statsFilterPtsNeg;
+          const btn = document.getElementById("stats-filter-pts-neg");
+          if (btn) {
+            if (statsFilterPtsNeg) {
+              btn.className = "px-3 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 font-bold flex items-center gap-1.5 transition cursor-pointer";
+            } else {
+              btn.className = "px-3 py-2 rounded-xl border border-white/5 bg-white/5 text-slate-300 hover:text-white font-bold flex items-center gap-1.5 transition cursor-pointer";
+            }
+          }
+        } else if (filterType === 'goals') {
+          statsFilterGoals = !statsFilterGoals;
+          const btn = document.getElementById("stats-filter-goals");
+          if (btn) {
+            if (statsFilterGoals) {
+              btn.className = "px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-500/10 text-gold font-bold flex items-center gap-1.5 transition cursor-pointer";
+            } else {
+              btn.className = "px-3 py-2 rounded-xl border border-white/5 bg-white/5 text-slate-300 hover:text-white font-bold flex items-center gap-1.5 transition cursor-pointer";
+            }
+          }
+        } else if (filterType === 'assists') {
+          statsFilterAssists = !statsFilterAssists;
+          const btn = document.getElementById("stats-filter-assists");
+          if (btn) {
+            if (statsFilterAssists) {
+              btn.className = "px-3 py-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 font-bold flex items-center gap-1.5 transition cursor-pointer";
+            } else {
+              btn.className = "px-3 py-2 rounded-xl border border-white/5 bg-white/5 text-slate-300 hover:text-white font-bold flex items-center gap-1.5 transition cursor-pointer";
+            }
+          }
+        }
+        renderStatsTable();
+      };
+
+      window.toggleSimulator = function() {
+        const body = document.getElementById("simulator-body");
+        const btn = document.getElementById("btn-toggle-simulator");
+        if (!body || !btn) return;
+
+        const isCurrentlyHidden = body.style.display === "none";
+        if (isCurrentlyHidden) {
+          body.style.display = "block";
+          localStorage.setItem("simulator_hidden", "false");
+          btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i> Ocultar Simulador';
+        } else {
+          body.style.display = "none";
+          localStorage.setItem("simulator_hidden", "true");
+          btn.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i> Mostrar Simulador';
+        }
+        lucide.createIcons();
+      };
+
+      window.toggleStandings = function() {
+        const body = document.getElementById("standings-body");
+        const btn = document.getElementById("btn-toggle-standings");
+        if (!body || !btn) return;
+
+        const isCurrentlyHidden = body.style.display === "none";
+        if (isCurrentlyHidden) {
+          body.style.display = "block";
+          localStorage.setItem("standings_hidden", "false");
+          btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i> Ocultar Tabla';
+        } else {
+          body.style.display = "none";
+          localStorage.setItem("standings_hidden", "true");
+          btn.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i> Mostrar Tabla';
+        }
+        lucide.createIcons();
+      };
+
       function renderStatsTable() {
         const tbody = document.getElementById("stats-table-body");
         if (!tbody) return;
@@ -8663,8 +8900,77 @@
         // Obtener la jornada activa
         const jornadaActiva = currentActiveLeagueData?.jornada_activa || "Jornada 1";
 
+        // Rellenar selector de equipos si no está inicializado
+        const teamSelect = document.getElementById("stats-filter-team");
+        if (teamSelect && teamSelect.options.length <= 1) {
+          const uniqueTeams = new Set();
+          firestorePlayersList.forEach(p => {
+            const teamName = p.equipo || p.pais;
+            if (teamName) uniqueTeams.add(teamName);
+          });
+          const sortedTeams = Array.from(uniqueTeams).sort();
+          sortedTeams.forEach(t => {
+            const opt = document.createElement("option");
+            opt.value = t;
+            opt.textContent = t;
+            teamSelect.appendChild(opt);
+          });
+        }
+
+        // Filtrar lista
+        let filteredPlayers = firestorePlayersList.filter(p => {
+          // Filtro por nombre
+          if (statsFilterName) {
+            const nameSearch = statsFilterName.toLowerCase();
+            const playerName = (p.nombre || "").toLowerCase();
+            if (!playerName.includes(nameSearch)) return false;
+          }
+
+          // Filtro por equipo
+          if (statsFilterTeam) {
+            const pTeam = p.equipo || p.pais || "";
+            if (pTeam.toLowerCase() !== statsFilterTeam.toLowerCase()) return false;
+          }
+
+          // Filtro por posición
+          if (statsFilterPosition) {
+            if (p.posicion !== statsFilterPosition) return false;
+          }
+
+          const pts = p.puntos_jornadas?.[jornadaActiva] || 0;
+
+          // Filtro puntos +
+          if (statsFilterPtsPos) {
+            if (pts <= 0) return false;
+          }
+
+          // Filtro puntos -
+          if (statsFilterPtsNeg) {
+            if (pts >= 0) return false;
+          }
+
+          // Filtro goles
+          if (statsFilterGoals) {
+            const goals = p.stats?.goles || 0;
+            if (goals <= 0) return false;
+          }
+
+          // Filtro asistencias
+          if (statsFilterAssists) {
+            const assists = p.stats?.asistencias || 0;
+            if (assists <= 0) return false;
+          }
+
+          return true;
+        });
+
+        if (filteredPlayers.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-500 font-bold">No se encontraron futbolistas con los filtros seleccionados.</td></tr>`;
+          return;
+        }
+
         // Ordenar por puntos en la jornada activa (descendente), luego por goles y nombre
-        const sorted = [...firestorePlayersList].sort((a, b) => {
+        const sorted = [...filteredPlayers].sort((a, b) => {
           const ptsA = a.puntos_jornadas?.[jornadaActiva] || 0;
           const ptsB = b.puntos_jornadas?.[jornadaActiva] || 0;
           if (ptsB !== ptsA) return ptsB - ptsA;
@@ -14574,7 +14880,25 @@
         }
         if (!kickoff) return { isLocked: false, deadline: null, partido };
         
-        const deadline = new Date(new Date(kickoff).getTime() - (5 * 60 * 60 * 1000));
+        let lockoutMinutes = 5 * 60; // 5 horas por defecto
+
+        // 1. Primer partido de la Jornada 2 (República Checa vs Sudáfrica)
+        const isFirstMatchJornada2 = (partido.fase === "Jornada 2") && 
+          ((normalizeCountry(partido.local || partido.equipo_local) === "republica checa" && normalizeCountry(partido.visitante || partido.equipo_visitante) === "sudafrica") ||
+           (normalizeCountry(partido.local || partido.equipo_local) === "sudafrica" && normalizeCountry(partido.visitante || partido.equipo_visitante) === "republica checa"));
+
+        // 2. Primeros partidos de la Jornada 3 (Bosnia-Herzegovina vs Catar, Suiza vs Canadá)
+        const isFirstMatchJornada3 = (partido.fase === "Jornada 3") && 
+          (((normalizeCountry(partido.local || partido.equipo_local) === "bosnia y herzegovina" || normalizeCountry(partido.local || partido.equipo_local) === "bosnia-herzegovina") && normalizeCountry(partido.visitante || partido.equipo_visitante) === "qatar") ||
+           (normalizeCountry(partido.local || partido.equipo_local) === "qatar" && (normalizeCountry(partido.visitante || partido.equipo_visitante) === "bosnia y herzegovina" || normalizeCountry(partido.visitante || partido.equipo_visitante) === "bosnia-herzegovina")) ||
+           (normalizeCountry(partido.local || partido.equipo_local) === "suiza" && normalizeCountry(partido.visitante || partido.equipo_visitante) === "canada") ||
+           (normalizeCountry(partido.local || partido.equipo_local) === "canada" && normalizeCountry(partido.visitante || partido.equipo_visitante) === "suiza"));
+
+        if (isFirstMatchJornada2 || isFirstMatchJornada3) {
+          lockoutMinutes = 30; // 30 minutos
+        }
+
+        const deadline = new Date(new Date(kickoff).getTime() - (lockoutMinutes * 60 * 1000));
         return { isLocked: new Date() >= deadline, deadline, partido };
       }
 
