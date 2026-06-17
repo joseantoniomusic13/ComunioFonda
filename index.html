@@ -1351,7 +1351,17 @@
 
         <!-- El Campo Táctico -->
         <div class="w-full lg:w-2/3 flex flex-col gap-6">
-          <div class="text-left space-y-1">
+          <div class="text-left space-y-3">
+            <!-- Selector de Alineación (Actual vs Siguiente) -->
+            <div class="flex items-center gap-1.5 p-1 bg-slate-900/80 rounded-xl border border-white/5 w-fit shadow-inner">
+              <button id="btn-lineup-view-actual" class="px-4 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer bg-slate-800 text-white shadow border border-white/5">
+                Alineación Actual
+              </button>
+              <button id="btn-lineup-view-siguiente" class="px-4 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-850">
+                Siguiente Jornada 📅
+              </button>
+            </div>
+
             <div class="flex justify-between items-start flex-wrap gap-2">
               <div>
                 <h3 class="text-2xl font-black text-white flex items-center gap-2 flex-wrap">
@@ -4419,6 +4429,7 @@
       let currentUserTeam = null;
       let firestorePlayersList = []; // Lista de jugadores obtenidos desde Firestore con sus estadísticas
       let activeDashboardTab = "squad"; // "squad", "market" o "stats"
+      let activeLineupView = "actual";  // "actual" o "siguiente" (para preparar alineación futura)
       let marketPositionFilter = "all";
       let swapActiveSourceId = null;
       let currentActiveLeagueData = null;
@@ -4836,7 +4847,44 @@
       // Iniciar temporizador
       initMarketTimer();
 
+      // Vincular botones de cambio de vista de alineación (Actual vs Siguiente)
+      const btnViewActual = document.getElementById("btn-lineup-view-actual");
+      const btnViewSiguiente = document.getElementById("btn-lineup-view-siguiente");
+      if (btnViewActual && btnViewSiguiente) {
+        btnViewActual.addEventListener("click", () => {
+          activeLineupView = "actual";
+          btnViewActual.className = "px-4 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer bg-slate-800 text-white shadow border border-white/5";
+          btnViewSiguiente.className = "px-4 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-850";
+          renderSquadAndPitch();
+        });
 
+        btnViewSiguiente.addEventListener("click", async () => {
+          activeLineupView = "siguiente";
+          btnViewSiguiente.className = "px-4 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer bg-purple-600 text-white shadow border border-purple-500/20";
+          btnViewActual.className = "px-4 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-850";
+
+          // Si siguiente_alineacion no existe en el equipo, inicializarla copiando la actual
+          if (currentUserTeam && !currentUserTeam.siguiente_alineacion) {
+            try {
+              const teamRef = doc(db, "user_teams", getTeamDocId());
+              const initialNext = {
+                titulares: JSON.parse(JSON.stringify(currentUserTeam.alineacion?.titulares || { portero: [], defensas: [], mediocampistas: [], delanteros: [] })),
+                suplentes: JSON.parse(JSON.stringify(currentUserTeam.alineacion?.suplentes || { portero: [], defensas: [], mediocampistas: [], delanteros: [] })),
+                capitan_id: currentUserTeam.capitan_id || "",
+                formacion: currentUserTeam.formacion || "4-4-2"
+              };
+              await updateDoc(teamRef, {
+                siguiente_alineacion: initialNext
+              });
+              currentUserTeam.siguiente_alineacion = initialNext;
+              showNotification("📅 Siguiente alineación inicializada como copia de la actual.", "info");
+            } catch (err) {
+              console.error("Error al inicializar siguiente alineación:", err);
+            }
+          }
+          renderSquadAndPitch();
+        });
+      }
 
       // Vinculación del selector de Formación Táctica
       document.getElementById("squad-formation-select").addEventListener("change", (e) => {
@@ -4847,7 +4895,7 @@
       const btnSaveLineupMission = document.getElementById("btn-save-lineup-mission");
       if (btnSaveLineupMission) {
         btnSaveLineupMission.addEventListener("click", async () => {
-          if (areLineupsLocked()) {
+          if (activeLineupView === "actual" && areLineupsLocked()) {
             showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
             return;
           }
@@ -11574,7 +11622,7 @@
         console.log("⚽ [Fonda Engine] Iniciando renderSquadAndPitch()...");
         const lockBanner = document.getElementById("squad-lock-banner");
         if (lockBanner) {
-          if (areLineupsLocked()) {
+          if (activeLineupView === "actual" && areLineupsLocked()) {
             lockBanner.classList.remove("hidden");
           } else {
             lockBanner.classList.add("hidden");
@@ -11658,54 +11706,18 @@
           };
         }
 
-        let ownedIds = [];
+        let ownedIds = currentUserTeam.jugadores_ids || [];
         let titulares = { portero: [], defensas: [], mediocampistas: [], delanteros: [] };
         let suplentes = { portero: [], defensas: [], mediocampistas: [], delanteros: [] };
-        const capitanId = currentUserTeam.capitan_id || "";
+        let capitanId = "";
+        let activeFormation = currentUserTeam.formacion || "4-4-2";
 
-        // --- PARSER DUAL DE DATOS: Mapea esquema clásico de IDs o el nuevo esquema de objetos "players" de Subastas ---
-        if (currentUserTeam.players && Array.isArray(currentUserTeam.players)) {
-          console.log(`💡 [Fonda Engine] Detectado nuevo esquema de subastas: Array de objetos 'players' (${currentUserTeam.players.length} jugadores).`);
-
-          currentUserTeam.players.forEach((playerObj, idx) => {
-            console.log(`   [Jugador ${idx + 1}] ID: ${playerObj.id}, Nombre: ${playerObj.nombre}, Posición: ${playerObj.posicion}, Titular: ${playerObj.isTitular}`);
-
-            if (!playerObj.id) return;
-            ownedIds.push(playerObj.id);
-
-            // Normalizar posición a nomenclatura del frontend
-            let pos = (playerObj.posicion || playerObj.pos || "").toLowerCase();
-            let normalizedPos = "portero";
-            if (/df|def/i.test(pos)) normalizedPos = "defensa";
-            else if (/mc|med/i.test(pos)) normalizedPos = "mediocampista";
-            else if (/dl|del/i.test(pos)) normalizedPos = "delantero";
-
-            const posPlural = normalizedPos === "portero" ? "portero" :
-              normalizedPos === "defensa" ? "defensas" :
-                normalizedPos === "mediocampista" ? "mediocampistas" : "delanteros";
-
-            // Determinar estado de titularidad
-            const isTit = playerObj.isTitular === true || playerObj.titular === true || playerObj.estado === "titular";
-
-            // Determinar si es suplente (con fallback para datos heredados)
-            const isSup = ('isSuplente' in playerObj)
-              ? (playerObj.isSuplente === true)
-              : (currentUserTeam.alineacion?.suplentes?.[posPlural]?.includes(playerObj.id) || false);
-
-            if (isTit) {
-              if (!titulares[posPlural]) titulares[posPlural] = [];
-              titulares[posPlural].push(playerObj.id);
-            } else if (isSup) {
-              if (!suplentes[posPlural]) suplentes[posPlural] = [];
-              suplentes[posPlural].push(playerObj.id);
-            }
-          });
-        } else {
-          console.log("💡 [Fonda Engine] Usando esquema clásico de IDs vinculados en 'jugadores_ids' y 'alineacion'.");
-          ownedIds = currentUserTeam.jugadores_ids || [];
-
-          const rawTitulares = currentUserTeam.alineacion?.titulares || {};
-          const rawSuplentes = currentUserTeam.alineacion?.suplentes || {};
+        if (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion) {
+          console.log("💡 [Fonda Engine] Leyendo la alineación preparada para la SIGUIENTE jornada.");
+          const rawTitulares = currentUserTeam.siguiente_alineacion.titulares || {};
+          const rawSuplentes = currentUserTeam.siguiente_alineacion.suplentes || {};
+          capitanId = currentUserTeam.siguiente_alineacion.capitan_id || "";
+          activeFormation = currentUserTeam.siguiente_alineacion.formacion || "4-4-2";
 
           titulares = {
             portero: rawTitulares.portero || [],
@@ -11720,6 +11732,83 @@
             mediocampistas: rawSuplentes.mediocampistas || [],
             delanteros: rawSuplentes.delanteros || []
           };
+        } else {
+          capitanId = currentUserTeam.capitan_id || "";
+          // --- PARSER DUAL DE DATOS: Mapea esquema clásico de IDs o el nuevo esquema de objetos "players" de Subastas ---
+          if (currentUserTeam.players && Array.isArray(currentUserTeam.players)) {
+            console.log(`💡 [Fonda Engine] Detectado nuevo esquema de subastas: Array de objetos 'players' (${currentUserTeam.players.length} jugadores).`);
+
+            currentUserTeam.players.forEach((playerObj, idx) => {
+              if (!playerObj.id) return;
+              // Si no está en ownedIds por algún motivo de sincronización, lo agregamos
+              if (!ownedIds.includes(playerObj.id)) {
+                ownedIds.push(playerObj.id);
+              }
+
+              // Normalizar posición a nomenclatura del frontend
+              let pos = (playerObj.posicion || playerObj.pos || "").toLowerCase();
+              let normalizedPos = "portero";
+              if (/df|def/i.test(pos)) normalizedPos = "defensa";
+              else if (/mc|med/i.test(pos)) normalizedPos = "mediocampista";
+              else if (/dl|del/i.test(pos)) normalizedPos = "delantero";
+
+              const posPlural = normalizedPos === "portero" ? "portero" :
+                normalizedPos === "defensa" ? "defensas" :
+                  normalizedPos === "mediocampista" ? "mediocampistas" : "delanteros";
+
+              // Determinar estado de titularidad
+              const isTit = playerObj.isTitular === true || playerObj.titular === true || playerObj.estado === "titular";
+
+              // Determinar si es suplente (con fallback para datos heredados)
+              const isSup = ('isSuplente' in playerObj)
+                ? (playerObj.isSuplente === true)
+                : (currentUserTeam.alineacion?.suplentes?.[posPlural]?.includes(playerObj.id) || false);
+
+              if (isTit) {
+                if (!titulares[posPlural]) titulares[posPlural] = [];
+                titulares[posPlural].push(playerObj.id);
+              } else if (isSup) {
+                if (!suplentes[posPlural]) suplentes[posPlural] = [];
+                suplentes[posPlural].push(playerObj.id);
+              }
+            });
+          } else {
+            console.log("💡 [Fonda Engine] Usando esquema clásico de IDs vinculados en 'jugadores_ids' y 'alineacion'.");
+            const rawTitulares = currentUserTeam.alineacion?.titulares || {};
+            const rawSuplentes = currentUserTeam.alineacion?.suplentes || {};
+
+            titulares = {
+              portero: rawTitulares.portero || [],
+              defensas: rawTitulares.defensas || [],
+              mediocampistas: rawTitulares.mediocampistas || [],
+              delanteros: rawTitulares.delanteros || []
+            };
+
+            suplentes = {
+              portero: rawSuplentes.portero || [],
+              defensas: rawSuplentes.defensas || [],
+              mediocampistas: rawSuplentes.mediocampistas || [],
+              delanteros: rawSuplentes.delanteros || []
+            };
+          }
+        }
+
+        // --- FILTRO DE SEGURIDAD (SANITIZACIÓN DE PROPIEDAD) ---
+        // Elimina automáticamente de la alineación a cualquier jugador vendido/fichado por otro
+        const filterOwned = (list) => (list || []).filter(id => ownedIds.includes(id));
+        
+        titulares.portero = filterOwned(titulares.portero);
+        titulares.defensas = filterOwned(titulares.defensas);
+        titulares.mediocampistas = filterOwned(titulares.mediocampistas);
+        titulares.delanteros = filterOwned(titulares.delanteros);
+
+        suplentes.portero = filterOwned(suplentes.portero);
+        suplentes.defensas = filterOwned(suplentes.defensas);
+        suplentes.mediocampistas = filterOwned(suplentes.mediocampistas);
+        suplentes.delanteros = filterOwned(suplentes.delanteros);
+
+        if (capitanId && !ownedIds.includes(capitanId)) {
+          capitanId = "";
         }
 
         console.log("🎯 [Fonda Engine] Clasificación de Plantilla Mapeada:");
@@ -11731,11 +11820,15 @@
 
         const squadJornadaBadge = document.getElementById("squad-jornada-badge");
         if (squadJornadaBadge && currentActiveLeagueData) {
-          squadJornadaBadge.textContent = currentActiveLeagueData.jornada_activa || "Jornada 1";
+          if (activeLineupView === "siguiente") {
+            const nextJorNum = parseInt((currentActiveLeagueData.jornada_activa || "Jornada 1").replace(/\D/g, "")) + 1;
+            squadJornadaBadge.textContent = `Jornada ${nextJorNum} (Próxima)`;
+          } else {
+            squadJornadaBadge.textContent = currentActiveLeagueData.jornada_activa || "Jornada 1";
+          }
         }
 
         // Obtener formación táctica activa
-        const activeFormation = currentUserTeam.formacion || "4-4-2";
         document.getElementById("squad-formation-select").value = activeFormation;
 
         let dfSlots = 4;
@@ -12049,19 +12142,24 @@
 
       // Seleccionar Capitán
       async function setCaptain(playerId) {
-        if (areLineupsLocked()) {
+        const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
+        if (activeLineupView === "actual" && areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
         if (!currentUser || !currentUserTeam) return;
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
-        if (activeJor === "Jornada 1" && currentUserTeam.capitan_id) {
+        if (activeLineupView === "actual" && activeJor === "Jornada 1" && currentUserTeam.capitan_id) {
           showNotification("🚫 En la Jornada 1, una vez elegido tu capitán ya no se puede cambiar hasta que comience la Jornada 2.", "error");
           return;
         }
 
-        const titulares = currentUserTeam.alineacion.titulares || {};
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
+        const titulares = sourceAl.titulares || {};
         const esTitular = [
           ...(titulares.portero || []),
           ...(titulares.defensas || []),
@@ -12076,7 +12174,17 @@
 
         try {
           const teamRef = doc(db, "user_teams", getTeamDocId());
-          await updateDoc(teamRef, { capitan_id: playerId });
+          if (activeLineupView === "siguiente") {
+            const nextAl = currentUserTeam.siguiente_alineacion || {};
+            nextAl.capitan_id = playerId;
+            await updateDoc(teamRef, {
+              siguiente_alineacion: nextAl
+            });
+            currentUserTeam.siguiente_alineacion = nextAl;
+          } else {
+            await updateDoc(teamRef, { capitan_id: playerId });
+            currentUserTeam.capitan_id = playerId;
+          }
 
           const player = PLAYERS_POOL.find(p => p.id === playerId);
           showNotification(`👑 ${player.nombre} es tu nuevo Capitán (puntuará x2).`);
@@ -12089,7 +12197,7 @@
       // Intercambiar Titular <-> Suplente <-> Reserva (Alineaciones)
       async function handleSquadCardClick(playerId) {
         const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
-        if (areLineupsLocked() && !isSystemAdmin) {
+        if (activeLineupView === "actual" && areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -12100,7 +12208,7 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
-        if (lockStatus.isLocked && !isSystemAdmin) {
+        if (activeLineupView === "actual" && lockStatus.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${player.nombre} está bloqueado por kickoff de su partido.`, "error");
           return;
         }
@@ -12121,18 +12229,22 @@
 
         const sourcePlayer = PLAYERS_POOL.find(p => p.id === swapActiveSourceId);
 
-        // Determinar si alguno es titular
+        // Cargar alineación correcta según vista activa
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
         const titulares = {
-          portero: [...(currentUserTeam.alineacion?.titulares?.portero || [])],
-          defensas: [...(currentUserTeam.alineacion?.titulares?.defensas || [])],
-          mediocampistas: [...(currentUserTeam.alineacion?.titulares?.mediocampistas || [])],
-          delanteros: [...(currentUserTeam.alineacion?.titulares?.delanteros || [])]
+          portero: [...(sourceAl.titulares?.portero || [])],
+          defensas: [...(sourceAl.titulares?.defensas || [])],
+          mediocampistas: [...(sourceAl.titulares?.mediocampistas || [])],
+          delanteros: [...(sourceAl.titulares?.delanteros || [])]
         };
         const suplentes = {
-          portero: [...(currentUserTeam.alineacion?.suplentes?.portero || [])],
-          defensas: [...(currentUserTeam.alineacion?.suplentes?.defensas || [])],
-          mediocampistas: [...(currentUserTeam.alineacion?.suplentes?.mediocampistas || [])],
-          delanteros: [...(currentUserTeam.alineacion?.suplentes?.delanteros || [])]
+          portero: [...(sourceAl.suplentes?.portero || [])],
+          defensas: [...(sourceAl.suplentes?.defensas || [])],
+          mediocampistas: [...(sourceAl.suplentes?.mediocampistas || [])],
+          delanteros: [...(sourceAl.suplentes?.delanteros || [])]
         };
 
         const titularesIds = [
@@ -12216,7 +12328,7 @@
             }
           }
 
-          let capitanId = currentUserTeam.capitan_id;
+          let capitanId = activeLineupView === "siguiente" ? (sourceAl.capitan_id || "") : (currentUserTeam.capitan_id || "");
           const nuevosTitularesIds = [
             ...(titulares.portero || []),
             ...(titulares.defensas || []),
@@ -12232,11 +12344,25 @@
           const finalSuplentes = constrenirSuplentes(suplentes);
 
           const teamRef = doc(db, "user_teams", getTeamDocId());
-          await updateDoc(teamRef, {
-            alineacion: { titulares, suplentes: finalSuplentes },
-            capitan_id: capitanId,
-            players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
-          });
+          if (activeLineupView === "siguiente") {
+            const nextAl = currentUserTeam.siguiente_alineacion || {};
+            nextAl.titulares = titulares;
+            nextAl.suplentes = finalSuplentes;
+            nextAl.capitan_id = capitanId;
+            await updateDoc(teamRef, {
+              siguiente_alineacion: nextAl
+            });
+            currentUserTeam.siguiente_alineacion = nextAl;
+          } else {
+            await updateDoc(teamRef, {
+              alineacion: { titulares, suplentes: finalSuplentes },
+              capitan_id: capitanId,
+              players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
+            });
+            currentUserTeam.alineacion = { titulares, suplentes: finalSuplentes };
+            currentUserTeam.capitan_id = capitanId;
+            currentUserTeam.players = buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids);
+          }
 
           showNotification(`Intercambio realizado entre ${sourcePlayer.nombre} y ${player.nombre}.`);
         } catch (err) {
@@ -12251,7 +12377,7 @@
       // Permitir drop en ranuras vacías de suplentes oficiales (Máx 4)
       async function handleDropOnEmptyBanquilloSlot(draggedId) {
         const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
-        if (areLineupsLocked() && !isSystemAdmin) {
+        if (activeLineupView === "actual" && areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -12261,13 +12387,27 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
-        if (lockStatus.isLocked && !isSystemAdmin) {
+        if (activeLineupView === "actual" && lockStatus.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${player.nombre} está bloqueado por kickoff de su partido.`, "error");
           return;
         }
 
-        const titulares = { ...currentUserTeam.alineacion.titulares };
-        const suplentes = { ...currentUserTeam.alineacion.suplentes };
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
+        const titulares = {
+          portero: [...(sourceAl.titulares?.portero || [])],
+          defensas: [...(sourceAl.titulares?.defensas || [])],
+          mediocampistas: [...(sourceAl.titulares?.mediocampistas || [])],
+          delanteros: [...(sourceAl.titulares?.delanteros || [])]
+        };
+        const suplentes = {
+          portero: [...(sourceAl.suplentes?.portero || [])],
+          defensas: [...(sourceAl.suplentes?.defensas || [])],
+          mediocampistas: [...(sourceAl.suplentes?.mediocampistas || [])],
+          delanteros: [...(sourceAl.suplentes?.delanteros || [])]
+        };
 
         const posPlural = player.posicion === "portero" ? "portero" :
           player.posicion === "defensa" ? "defensas" :
@@ -12300,7 +12440,7 @@
         suplentes[posPlural] = listSuplentes;
 
         // Sincronizar Capitán
-        let capitanId = currentUserTeam.capitan_id || "";
+        let capitanId = activeLineupView === "siguiente" ? (sourceAl.capitan_id || "") : (currentUserTeam.capitan_id || "");
         const nuevosTitulares = [
           ...(titulares.portero || []),
           ...(titulares.defensas || []),
@@ -12315,11 +12455,25 @@
 
         try {
           const teamRef = doc(db, "user_teams", getTeamDocId());
-          await updateDoc(teamRef, {
-            alineacion: { titulares, suplentes: finalSuplentes },
-            capitan_id: capitanId,
-            players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
-          });
+          if (activeLineupView === "siguiente") {
+            const nextAl = currentUserTeam.siguiente_alineacion || {};
+            nextAl.titulares = titulares;
+            nextAl.suplentes = finalSuplentes;
+            nextAl.capitan_id = capitanId;
+            await updateDoc(teamRef, {
+              siguiente_alineacion: nextAl
+            });
+            currentUserTeam.siguiente_alineacion = nextAl;
+          } else {
+            await updateDoc(teamRef, {
+              alineacion: { titulares, suplentes: finalSuplentes },
+              capitan_id: capitanId,
+              players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
+            });
+            currentUserTeam.alineacion = { titulares, suplentes: finalSuplentes };
+            currentUserTeam.capitan_id = capitanId;
+            currentUserTeam.players = buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids);
+          }
           showNotification(`Movid@ ${player.nombre} al Banquillo Oficial.`);
         } catch (err) {
           console.error(err);
@@ -12331,7 +12485,7 @@
       // Permitir drop en el contenedor de reservas para quitar del campo/banquillo
       async function handleMoveToReservas(draggedId) {
         const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
-        if (areLineupsLocked() && !isSystemAdmin) {
+        if (activeLineupView === "actual" && areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -12341,22 +12495,26 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
-        if (lockStatus.isLocked && !isSystemAdmin) {
+        if (activeLineupView === "actual" && lockStatus.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${player.nombre} está bloqueado por kickoff de su partido. Cierre: ${lockStatus.deadline.toLocaleTimeString()}`, "error");
           return;
         }
 
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
         const titulares = {
-          portero: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'portero'),
-          defensas: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'defensas'),
-          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'mediocampistas'),
-          delanteros: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'delanteros')
+          portero: getSquadPositionList(sourceAl.titulares, 'portero'),
+          defensas: getSquadPositionList(sourceAl.titulares, 'defensas'),
+          mediocampistas: getSquadPositionList(sourceAl.titulares, 'mediocampistas'),
+          delanteros: getSquadPositionList(sourceAl.titulares, 'delanteros')
         };
         const suplentes = {
-          portero: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'portero'),
-          defensas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'defensas'),
-          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'mediocampistas'),
-          delanteros: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'delanteros')
+          portero: getSquadPositionList(sourceAl.suplentes, 'portero'),
+          defensas: getSquadPositionList(sourceAl.suplentes, 'defensas'),
+          mediocampistas: getSquadPositionList(sourceAl.suplentes, 'mediocampistas'),
+          delanteros: getSquadPositionList(sourceAl.suplentes, 'delanteros')
         };
 
         const posPlural = player.posicion === "portero" ? "portero" :
@@ -12365,49 +12523,62 @@
 
         // Quitar de titulares
         let listTitulares = [...(titulares[posPlural] || [])];
-        const idxTit = listTitulares.indexOf(draggedId);
-        if (idxTit !== -1) listTitulares.splice(idxTit, 1);
+              if (idxTit !== -1) listTitulares.splice(idxTit, 1);
 
-        // Quitar de suplentes
-        let listSuplentes = [...(suplentes[posPlural] || [])];
-        const idxSup = listSuplentes.indexOf(draggedId);
-        if (idxSup !== -1) listSuplentes.splice(idxSup, 1);
+              // Quitar de suplentes
+              let listSuplentes = [...(suplentes[posPlural] || [])];
+              const idxSup = listSuplentes.indexOf(draggedId);
+              if (idxSup !== -1) listSuplentes.splice(idxSup, 1);
 
-        titulares[posPlural] = listTitulares;
-        suplentes[posPlural] = listSuplentes;
+              titulares[posPlural] = listTitulares;
+              suplentes[posPlural] = listSuplentes;
 
-        // Sincronizar Capitán
-        let capitanId = currentUserTeam.capitan_id || "";
-        const nuevosTitulares = [
-          ...(titulares.portero || []),
-          ...(titulares.defensas || []),
-          ...(titulares.mediocampistas || []),
-          ...(titulares.delanteros || [])
-        ];
-        if (capitanId && !nuevosTitulares.includes(capitanId)) {
-          capitanId = "";
-        }
+              // Sincronizar Capitán
+              let capitanId = activeLineupView === "siguiente" ? (sourceAl.capitan_id || "") : (currentUserTeam.capitan_id || "");
+              const nuevosTitulares = [
+                ...(titulares.portero || []),
+                ...(titulares.defensas || []),
+                ...(titulares.mediocampistas || []),
+                ...(titulares.delanteros || [])
+              ];
+              if (capitanId && !nuevosTitulares.includes(capitanId)) {
+                capitanId = "";
+              }
 
-        const finalSuplentes = constrenirSuplentes(suplentes);
+              const finalSuplentes = constrenirSuplentes(suplentes);
 
-        try {
-          const teamRef = doc(db, "user_teams", getTeamDocId());
-          await updateDoc(teamRef, {
-            alineacion: { titulares, suplentes: finalSuplentes },
-            capitan_id: capitanId,
-            players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
-          });
-          showNotification(`Movid@ ${player.nombre} a las Reservas (dejará de puntuar).`);
-        } catch (err) {
-          console.error(err);
-        } finally {
-          renderSquadAndPitch();
-        }
-      }
+              try {
+                const teamRef = doc(db, "user_teams", getTeamDocId());
+                if (activeLineupView === "siguiente") {
+                  const nextAl = currentUserTeam.siguiente_alineacion || {};
+                  nextAl.titulares = titulares;
+                  nextAl.suplentes = finalSuplentes;
+                  nextAl.capitan_id = capitanId;
+                  await updateDoc(teamRef, {
+                    siguiente_alineacion: nextAl
+                  });
+                  currentUserTeam.siguiente_alineacion = nextAl;
+                } else {
+                  await updateDoc(teamRef, {
+                    alineacion: { titulares, suplentes: finalSuplentes },
+                    capitan_id: capitanId,
+                    players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
+                  });
+                  currentUserTeam.alineacion = { titulares, suplentes: finalSuplentes };
+                  currentUserTeam.capitan_id = capitanId;
+                  currentUserTeam.players = buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids);
+                }
+                showNotification(`Movid@ ${player.nombre} a las Reservas (dejará de puntuar).`);
+              } catch (err) {
+                console.error(err);
+              } finally {
+                renderSquadAndPitch();
+              }
+            }
 
       async function handleMoveToTitulares(playerId) {
         const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
-        if (areLineupsLocked() && !isSystemAdmin) {
+        if (activeLineupView === "actual" && areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -12417,22 +12588,26 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
-        if (lockStatus.isLocked && !isSystemAdmin) {
+        if (activeLineupView === "actual" && lockStatus.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${player.nombre} está bloqueado por kickoff de su partido. Cierre: ${lockStatus.deadline.toLocaleTimeString()}`, "error");
           return;
         }
 
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
         const titulares = {
-          portero: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'portero'),
-          defensas: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'defensas'),
-          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'mediocampistas'),
-          delanteros: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'delanteros')
+          portero: getSquadPositionList(sourceAl.titulares, 'portero'),
+          defensas: getSquadPositionList(sourceAl.titulares, 'defensas'),
+          mediocampistas: getSquadPositionList(sourceAl.titulares, 'mediocampistas'),
+          delanteros: getSquadPositionList(sourceAl.titulares, 'delanteros')
         };
         const suplentes = {
-          portero: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'portero'),
-          defensas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'defensas'),
-          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'mediocampistas'),
-          delanteros: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'delanteros')
+          portero: getSquadPositionList(sourceAl.suplentes, 'portero'),
+          defensas: getSquadPositionList(sourceAl.suplentes, 'defensas'),
+          mediocampistas: getSquadPositionList(sourceAl.suplentes, 'mediocampistas'),
+          delanteros: getSquadPositionList(sourceAl.suplentes, 'delanteros')
         };
 
         const posPlural = player.posicion === "portero" ? "portero" :
@@ -12440,7 +12615,10 @@
           player.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
 
         // Obtener slots por posición de la formación táctica
-        const activeFormation = currentUserTeam.formacion || "4-4-2";
+        const activeFormation = activeLineupView === "siguiente"
+          ? (sourceAl.formacion || "4-4-2")
+          : (currentUserTeam.formacion || "4-4-2");
+
         let dfSlots = 4, mfSlots = 4, fwSlots = 2;
         if (activeFormation === "4-3-3") { dfSlots = 4; mfSlots = 3; fwSlots = 3; }
         else if (activeFormation === "3-5-2") { dfSlots = 3; mfSlots = 5; fwSlots = 2; }
@@ -12488,10 +12666,22 @@
 
         try {
           const teamRef = doc(db, "user_teams", getTeamDocId());
-          await updateDoc(teamRef, {
-            alineacion: { titulares, suplentes: finalSuplentes },
-            players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
-          });
+          if (activeLineupView === "siguiente") {
+            const nextAl = currentUserTeam.siguiente_alineacion || {};
+            nextAl.titulares = titulares;
+            nextAl.suplentes = finalSuplentes;
+            await updateDoc(teamRef, {
+              siguiente_alineacion: nextAl
+            });
+            currentUserTeam.siguiente_alineacion = nextAl;
+          } else {
+            await updateDoc(teamRef, {
+              alineacion: { titulares, suplentes: finalSuplentes },
+              players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
+            });
+            currentUserTeam.alineacion = { titulares, suplentes: finalSuplentes };
+            currentUserTeam.players = buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids);
+          }
           showNotification(`Movid@ ${player.nombre} al Once Inicial (Titular).`, "success");
         } catch (err) {
           console.error(err);
@@ -12503,7 +12693,7 @@
 
       async function handleMoveToBanquillo(playerId) {
         const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
-        if (areLineupsLocked() && !isSystemAdmin) {
+        if (activeLineupView === "actual" && areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -12513,22 +12703,26 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
-        if (lockStatus.isLocked && !isSystemAdmin) {
+        if (activeLineupView === "actual" && lockStatus.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${player.nombre} está bloqueado por kickoff de su partido. Cierre: ${lockStatus.deadline.toLocaleTimeString()}`, "error");
           return;
         }
 
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
         const titulares = {
-          portero: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'portero'),
-          defensas: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'defensas'),
-          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'mediocampistas'),
-          delanteros: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'delanteros')
+          portero: getSquadPositionList(sourceAl.titulares, 'portero'),
+          defensas: getSquadPositionList(sourceAl.titulares, 'defensas'),
+          mediocampistas: getSquadPositionList(sourceAl.titulares, 'mediocampistas'),
+          delanteros: getSquadPositionList(sourceAl.titulares, 'delanteros')
         };
         const suplentes = {
-          portero: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'portero'),
-          defensas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'defensas'),
-          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'mediocampistas'),
-          delanteros: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'delanteros')
+          portero: getSquadPositionList(sourceAl.suplentes, 'portero'),
+          defensas: getSquadPositionList(sourceAl.suplentes, 'defensas'),
+          mediocampistas: getSquadPositionList(sourceAl.suplentes, 'mediocampistas'),
+          delanteros: getSquadPositionList(sourceAl.suplentes, 'delanteros')
         };
 
         const posPlural = player.posicion === "portero" ? "portero" :
@@ -12566,7 +12760,7 @@
         suplentes[posPlural] = listSuplentes;
 
         // Sincronizar Capitán (si era capitán, deja de serlo al ir al banquillo)
-        let capitanId = currentUserTeam.capitan_id || "";
+        let capitanId = activeLineupView === "siguiente" ? (sourceAl.capitan_id || "") : (currentUserTeam.capitan_id || "");
         if (capitanId === playerId) {
           capitanId = "";
         }
@@ -12575,11 +12769,25 @@
 
         try {
           const teamRef = doc(db, "user_teams", getTeamDocId());
-          await updateDoc(teamRef, {
-            alineacion: { titulares, suplentes: finalSuplentes },
-            capitan_id: capitanId,
-            players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
-          });
+          if (activeLineupView === "siguiente") {
+            const nextAl = currentUserTeam.siguiente_alineacion || {};
+            nextAl.titulares = titulares;
+            nextAl.suplentes = finalSuplentes;
+            nextAl.capitan_id = capitanId;
+            await updateDoc(teamRef, {
+              siguiente_alineacion: nextAl
+            });
+            currentUserTeam.siguiente_alineacion = nextAl;
+          } else {
+            await updateDoc(teamRef, {
+              alineacion: { titulares, suplentes: finalSuplentes },
+              capitan_id: capitanId,
+              players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
+            });
+            currentUserTeam.alineacion = { titulares, suplentes: finalSuplentes };
+            currentUserTeam.capitan_id = capitanId;
+            currentUserTeam.players = buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids);
+          }
           showNotification(`Movid@ ${player.nombre} al Banquillo Oficial.`, "success");
         } catch (err) {
           console.error(err);
@@ -12592,7 +12800,7 @@
       // --- INTERCAMBIAR JUGADOR DE RESERVAS CON UNO DEL BANQUILLO OFICIAL ---
       window.openBenchSwapSelector = function (reservePlayerId) {
         const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
-        if (areLineupsLocked() && !isSystemAdmin) {
+        if (activeLineupView === "actual" && areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -12613,11 +12821,15 @@
 
         listContainer.innerHTML = "";
 
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
         const suplentes = {
-          portero: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'portero'),
-          defensas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'defensas'),
-          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'mediocampistas'),
-          delanteros: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'delanteros')
+          portero: getSquadPositionList(sourceAl.suplentes, 'portero'),
+          defensas: getSquadPositionList(sourceAl.suplentes, 'defensas'),
+          mediocampistas: getSquadPositionList(sourceAl.suplentes, 'mediocampistas'),
+          delanteros: getSquadPositionList(sourceAl.suplentes, 'delanteros')
         };
 
         const totalSuplentesIds = [
@@ -12669,7 +12881,7 @@
 
       async function executeBenchSwap(reserveId, benchId) {
         const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
-        if (areLineupsLocked() && !isSystemAdmin) {
+        if (activeLineupView === "actual" && areLineupsLocked() && !isSystemAdmin) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -12681,27 +12893,31 @@
 
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
         const lockReserve = checkPlayerLockStatus(reservePlayer, window.matchesListGlobal || [], activeJor);
-        if (lockReserve.isLocked && !isSystemAdmin) {
+        if (activeLineupView === "actual" && lockReserve.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${reservePlayer.nombre} está bloqueado por kickoff de su partido.`, "error");
           return;
         }
         const lockBench = checkPlayerLockStatus(benchPlayer, window.matchesListGlobal || [], activeJor);
-        if (lockBench.isLocked && !isSystemAdmin) {
+        if (activeLineupView === "actual" && lockBench.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${benchPlayer.nombre} está bloqueado por kickoff de su partido.`, "error");
           return;
         }
 
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
         const titulares = {
-          portero: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'portero'),
-          defensas: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'defensas'),
-          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'mediocampistas'),
-          delanteros: getSquadPositionList(currentUserTeam.alineacion?.titulares, 'delanteros')
+          portero: getSquadPositionList(sourceAl.titulares, 'portero'),
+          defensas: getSquadPositionList(sourceAl.titulares, 'defensas'),
+          mediocampistas: getSquadPositionList(sourceAl.titulares, 'mediocampistas'),
+          delanteros: getSquadPositionList(sourceAl.titulares, 'delanteros')
         };
         const suplentes = {
-          portero: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'portero'),
-          defensas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'defensas'),
-          mediocampistas: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'mediocampistas'),
-          delanteros: getSquadPositionList(currentUserTeam.alineacion?.suplentes, 'delanteros')
+          portero: getSquadPositionList(sourceAl.suplentes, 'portero'),
+          defensas: getSquadPositionList(sourceAl.suplentes, 'defensas'),
+          mediocampistas: getSquadPositionList(sourceAl.suplentes, 'mediocampistas'),
+          delanteros: getSquadPositionList(sourceAl.suplentes, 'delanteros')
         };
 
         const posPluralReserve = reservePlayer.posicion === "portero" ? "portero" :
@@ -12715,20 +12931,34 @@
         suplentes[posPluralBench] = suplentes[posPluralBench].filter(id => id !== benchId);
         suplentes[posPluralReserve].push(reserveId);
 
-        let capitanId = currentUserTeam.capitan_id || "";
+        let capitanId = activeLineupView === "siguiente" ? (sourceAl.capitan_id || "") : (currentUserTeam.capitan_id || "");
         if (capitanId === benchId || capitanId === reserveId) {
-          capitanId = ""; 
+          capitanId = "";
         }
 
         const finalSuplentes = constrenirSuplentes(suplentes);
 
         try {
           const teamRef = doc(db, "user_teams", getTeamDocId());
-          await updateDoc(teamRef, {
-            alineacion: { titulares, suplentes: finalSuplentes },
-            capitan_id: capitanId,
-            players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
-          });
+          if (activeLineupView === "siguiente") {
+            const nextAl = currentUserTeam.siguiente_alineacion || {};
+            nextAl.titulares = titulares;
+            nextAl.suplentes = finalSuplentes;
+            nextAl.capitan_id = capitanId;
+            await updateDoc(teamRef, {
+              siguiente_alineacion: nextAl
+            });
+            currentUserTeam.siguiente_alineacion = nextAl;
+          } else {
+            await updateDoc(teamRef, {
+              alineacion: { titulares, suplentes: finalSuplentes },
+              capitan_id: capitanId,
+              players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
+            });
+            currentUserTeam.alineacion = { titulares, suplentes: finalSuplentes };
+            currentUserTeam.capitan_id = capitanId;
+            currentUserTeam.players = buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids);
+          }
           showNotification(`🔄 Intercambiado ${reservePlayer.nombre} por ${benchPlayer.nombre} en el banquillo.`, "success");
         } catch (err) {
           console.error(err);
@@ -12746,14 +12976,14 @@
         if (!draggedPlayer) return;
 
         const targetPlayer = targetId ? PLAYERS_POOL.find(p => p.id === targetId) : null;
-        
+
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
 
         const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
 
         // Validar si el jugador arrastrado está bloqueado
         const lockDragged = checkPlayerLockStatus(draggedPlayer, window.matchesListGlobal || [], activeJor);
-        if (lockDragged.isLocked && !isSystemAdmin) {
+        if (activeLineupView === "actual" && lockDragged.isLocked && !isSystemAdmin) {
           showNotification(`🔒 Movimiento bloqueado: ${draggedPlayer.nombre} está bloqueado por kickoff de su partido.`, "error");
           return;
         }
@@ -12761,7 +12991,7 @@
         // Validar si el jugador destino está bloqueado (si hay un swap directo)
         if (targetPlayer) {
           const lockTarget = checkPlayerLockStatus(targetPlayer, window.matchesListGlobal || [], activeJor);
-          if (lockTarget.isLocked && !isSystemAdmin) {
+          if (activeLineupView === "actual" && lockTarget.isLocked && !isSystemAdmin) {
             showNotification(`🔒 Movimiento bloqueado: ${targetPlayer.nombre} está bloqueado por kickoff de su partido.`, "error");
             return;
           }
@@ -12769,17 +12999,21 @@
 
         const targetPosition = targetPlayer ? targetPlayer.posicion : targetPos;
 
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
         const titulares = {
-          portero: [...(currentUserTeam.alineacion?.titulares?.portero || [])],
-          defensas: [...(currentUserTeam.alineacion?.titulares?.defensas || [])],
-          mediocampistas: [...(currentUserTeam.alineacion?.titulares?.mediocampistas || [])],
-          delanteros: [...(currentUserTeam.alineacion?.titulares?.delanteros || [])]
+          portero: [...(sourceAl.titulares?.portero || [])],
+          defensas: [...(sourceAl.titulares?.defensas || [])],
+          mediocampistas: [...(sourceAl.titulares?.mediocampistas || [])],
+          delanteros: [...(sourceAl.titulares?.delanteros || [])]
         };
         const suplentes = {
-          portero: [...(currentUserTeam.alineacion?.suplentes?.portero || [])],
-          defensas: [...(currentUserTeam.alineacion?.suplentes?.defensas || [])],
-          mediocampistas: [...(currentUserTeam.alineacion?.suplentes?.mediocampistas || [])],
-          delanteros: [...(currentUserTeam.alineacion?.suplentes?.delanteros || [])]
+          portero: [...(sourceAl.suplentes?.portero || [])],
+          defensas: [...(sourceAl.suplentes?.defensas || [])],
+          mediocampistas: [...(sourceAl.suplentes?.mediocampistas || [])],
+          delanteros: [...(sourceAl.suplentes?.delanteros || [])]
         };
 
         const titularesIds = [
@@ -12856,7 +13090,10 @@
         // Caso 2: Se arrastra a un slot vacío en el campo
         else {
           if (!isDraggedTitular) {
-            const activeFormation = currentUserTeam.formacion || "4-4-2";
+            const activeFormation = activeLineupView === "siguiente"
+              ? (sourceAl.formacion || "4-4-2")
+              : (currentUserTeam.formacion || "4-4-2");
+
             const formationSlots = {
               "4-4-2": { df: 4, mf: 4, fw: 2 },
               "4-3-3": { df: 4, mf: 3, fw: 3 },
@@ -12888,7 +13125,7 @@
         }
 
         // Sincronizar Capitán
-        let capitanId = currentUserTeam.capitan_id || "";
+        let capitanId = activeLineupView === "siguiente" ? (sourceAl.capitan_id || "") : (currentUserTeam.capitan_id || "");
         const nuevosTitulares = [
           ...(titulares.portero || []),
           ...(titulares.defensas || []),
@@ -12903,11 +13140,25 @@
 
         try {
           const teamRef = doc(db, "user_teams", getTeamDocId());
-          await updateDoc(teamRef, {
-            alineacion: { titulares, suplentes: finalSuplentes },
-            capitan_id: capitanId,
-            players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
-          });
+          if (activeLineupView === "siguiente") {
+            const nextAl = currentUserTeam.siguiente_alineacion || {};
+            nextAl.titulares = titulares;
+            nextAl.suplentes = finalSuplentes;
+            nextAl.capitan_id = capitanId;
+            await updateDoc(teamRef, {
+              siguiente_alineacion: nextAl
+            });
+            currentUserTeam.siguiente_alineacion = nextAl;
+          } else {
+            await updateDoc(teamRef, {
+              alineacion: { titulares, suplentes: finalSuplentes },
+              capitan_id: capitanId,
+              players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
+            });
+            currentUserTeam.alineacion = { titulares, suplentes: finalSuplentes };
+            currentUserTeam.capitan_id = capitanId;
+            currentUserTeam.players = buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids);
+          }
         } catch (err) {
           console.error("Error al guardar arrastre:", err);
           showNotification("Error al guardar alineación.", "error");
@@ -12917,7 +13168,7 @@
       // --- SELECCIONADOR MODAL DE SUSTITUCIONES DIRECTAS ---
 
       window.openSwapSelector = function (posicion, currentStarId = null) {
-        if (areLineupsLocked()) {
+        if (activeLineupView === "actual" && areLineupsLocked()) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
           return;
         }
@@ -12935,11 +13186,15 @@
           posicion === "defensa" ? "defensas" :
             posicion === "mediocampista" ? "mediocampistas" : "delanteros";
 
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
         const titularesIds = [
-          ...(currentUserTeam.alineacion?.titulares?.portero || []),
-          ...(currentUserTeam.alineacion?.titulares?.defensas || []),
-          ...(currentUserTeam.alineacion?.titulares?.mediocampistas || []),
-          ...(currentUserTeam.alineacion?.titulares?.delanteros || [])
+          ...(sourceAl.titulares?.portero || []),
+          ...(sourceAl.titulares?.defensas || []),
+          ...(sourceAl.titulares?.mediocampistas || []),
+          ...(sourceAl.titulares?.delanteros || [])
         ];
 
         // Todos los jugadores del usuario
@@ -12985,7 +13240,7 @@
             const btn = document.createElement("button");
             btn.className = "w-full p-3 rounded-xl bg-slate-900/60 hover:bg-slate-900 border border-white/5 hover:border-emerald-500/30 flex items-center justify-between text-left transition cursor-pointer text-white";
 
-            let subBadge = currentUserTeam.alineacion?.suplentes?.[posPlural]?.includes(id) ?
+            let subBadge = (sourceAl.suplentes?.[posPlural]?.includes(id)) ?
               `<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-extrabold uppercase">Banquillo</span>` :
               `<span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 font-extrabold uppercase">Reserva</span>`;
 
@@ -13054,17 +13309,21 @@
       async function executeSwapDirectly(starId, subId, posicion) {
         if (!currentUserTeam) return;
 
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
         const titulares = {
-          portero: [...(currentUserTeam.alineacion?.titulares?.portero || [])],
-          defensas: [...(currentUserTeam.alineacion?.titulares?.defensas || [])],
-          mediocampistas: [...(currentUserTeam.alineacion?.titulares?.mediocampistas || [])],
-          delanteros: [...(currentUserTeam.alineacion?.titulares?.delanteros || [])]
+          portero: [...(sourceAl.titulares?.portero || [])],
+          defensas: [...(sourceAl.titulares?.defensas || [])],
+          mediocampistas: [...(sourceAl.titulares?.mediocampistas || [])],
+          delanteros: [...(sourceAl.titulares?.delanteros || [])]
         };
         const suplentes = {
-          portero: [...(currentUserTeam.alineacion?.suplentes?.portero || [])],
-          defensas: [...(currentUserTeam.alineacion?.suplentes?.defensas || [])],
-          mediocampistas: [...(currentUserTeam.alineacion?.suplentes?.mediocampistas || [])],
-          delanteros: [...(currentUserTeam.alineacion?.suplentes?.delanteros || [])]
+          portero: [...(sourceAl.suplentes?.portero || [])],
+          defensas: [...(sourceAl.suplentes?.defensas || [])],
+          mediocampistas: [...(sourceAl.suplentes?.mediocampistas || [])],
+          delanteros: [...(sourceAl.suplentes?.delanteros || [])]
         };
 
         const posPlural = posicion === "portero" ? "portero" :
@@ -13100,7 +13359,7 @@
         titulares[posPlural] = listTitulares.filter(Boolean);
         suplentes[posPlural] = listSuplentes.filter(Boolean);
 
-        let capitanId = currentUserTeam.capitan_id || "";
+        let capitanId = activeLineupView === "siguiente" ? (sourceAl.capitan_id || "") : (currentUserTeam.capitan_id || "");
         const nuevosTitulares = [
           ...(titulares.portero || []),
           ...(titulares.defensas || []),
@@ -13115,11 +13374,25 @@
 
         try {
           const teamRef = doc(db, "user_teams", getTeamDocId());
-          await updateDoc(teamRef, {
-            alineacion: { titulares, suplentes: finalSuplentes },
-            capitan_id: capitanId,
-            players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
-          });
+          if (activeLineupView === "siguiente") {
+            const nextAl = currentUserTeam.siguiente_alineacion || {};
+            nextAl.titulares = titulares;
+            nextAl.suplentes = finalSuplentes;
+            nextAl.capitan_id = capitanId;
+            await updateDoc(teamRef, {
+              siguiente_alineacion: nextAl
+            });
+            currentUserTeam.siguiente_alineacion = nextAl;
+          } else {
+            await updateDoc(teamRef, {
+              alineacion: { titulares, suplentes: finalSuplentes },
+              capitan_id: capitanId,
+              players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
+            });
+            currentUserTeam.alineacion = { titulares, suplentes: finalSuplentes };
+            currentUserTeam.capitan_id = capitanId;
+            currentUserTeam.players = buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids);
+          }
           showNotification("Alineación actualizada con éxito.");
         } catch (err) {
           console.error(err);
@@ -13130,9 +13403,11 @@
 
       // Cambiar formación táctica y ajustar alineación automáticamente
       async function changeTacticalFormation(newFormation) {
-        if (areLineupsLocked()) {
+        if (activeLineupView === "actual" && areLineupsLocked()) {
           showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
-          document.getElementById("squad-formation-select").value = currentUserTeam.formacion || "4-4-2";
+          document.getElementById("squad-formation-select").value = activeLineupView === "siguiente"
+            ? (currentUserTeam.siguiente_alineacion?.formacion || "4-4-2")
+            : (currentUserTeam.formacion || "4-4-2");
           return;
         }
         if (!currentUser || !currentUserTeam) return;
@@ -13148,17 +13423,21 @@
         };
 
         const slots = formationSlots[newFormation] || formationSlots["4-4-2"];
+        const sourceAl = (activeLineupView === "siguiente" && currentUserTeam.siguiente_alineacion)
+          ? currentUserTeam.siguiente_alineacion
+          : (currentUserTeam.alineacion || {});
+
         const titulares = {
-          portero: [...(currentUserTeam.alineacion?.titulares?.portero || [])],
-          defensas: [...(currentUserTeam.alineacion?.titulares?.defensas || [])],
-          mediocampistas: [...(currentUserTeam.alineacion?.titulares?.mediocampistas || [])],
-          delanteros: [...(currentUserTeam.alineacion?.titulares?.delanteros || [])]
+          portero: [...(sourceAl.titulares?.portero || [])],
+          defensas: [...(sourceAl.titulares?.defensas || [])],
+          mediocampistas: [...(sourceAl.titulares?.mediocampistas || [])],
+          delanteros: [...(sourceAl.titulares?.delanteros || [])]
         };
         const suplentes = {
-          portero: [...(currentUserTeam.alineacion?.suplentes?.portero || [])],
-          defensas: [...(currentUserTeam.alineacion?.suplentes?.defensas || [])],
-          mediocampistas: [...(currentUserTeam.alineacion?.suplentes?.mediocampistas || [])],
-          delanteros: [...(currentUserTeam.alineacion?.suplentes?.delanteros || [])]
+          portero: [...(sourceAl.suplentes?.portero || [])],
+          defensas: [...(sourceAl.suplentes?.defensas || [])],
+          mediocampistas: [...(sourceAl.suplentes?.mediocampistas || [])],
+          delanteros: [...(sourceAl.suplentes?.delanteros || [])]
         };
 
         // Ajustar excedentes a suplentes
@@ -13178,7 +13457,7 @@
         adjustPos("portero", 1);
 
         // Comprobar capitán
-        let capitanId = currentUserTeam.capitan_id || "";
+        let capitanId = activeLineupView === "siguiente" ? (sourceAl.capitan_id || "") : (currentUserTeam.capitan_id || "");
         const nuevosTitulares = [
           ...(titulares.portero || []),
           ...(titulares.defensas || []),
@@ -13193,12 +13472,28 @@
 
         try {
           const teamRef = doc(db, "user_teams", getTeamDocId());
-          await updateDoc(teamRef, {
-            formacion: newFormation,
-            alineacion: { titulares, suplentes: finalSuplentes },
-            capitan_id: capitanId,
-            players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
-          });
+          if (activeLineupView === "siguiente") {
+            const nextAl = currentUserTeam.siguiente_alineacion || {};
+            nextAl.formacion = newFormation;
+            nextAl.titulares = titulares;
+            nextAl.suplentes = finalSuplentes;
+            nextAl.capitan_id = capitanId;
+            await updateDoc(teamRef, {
+              siguiente_alineacion: nextAl
+            });
+            currentUserTeam.siguiente_alineacion = nextAl;
+          } else {
+            await updateDoc(teamRef, {
+              formacion: newFormation,
+              alineacion: { titulares, suplentes: finalSuplentes },
+              capitan_id: capitanId,
+              players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
+            });
+            currentUserTeam.formacion = newFormation;
+            currentUserTeam.alineacion = { titulares, suplentes: finalSuplentes };
+            currentUserTeam.capitan_id = capitanId;
+            currentUserTeam.players = buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids);
+          }
           showNotification(`Táctica cambiada a ${newFormation}. Alineación equilibrada.`);
         } catch (err) {
           console.error("Error al cambiar formación táctica:", err);
@@ -13567,6 +13862,75 @@
         btn.disabled = true;
         try {
           const leagueRef = doc(db, "leagues", adminSelectedLeagueId);
+
+          // 1. Obtener la liga y migrar alineaciones de todos los participantes
+          const lDoc = await getDoc(leagueRef);
+          if (lDoc.exists()) {
+            const participantesUids = lDoc.data().participantes || [];
+            showNotification(`Migrando alineaciones de la jornada siguiente para ${participantesUids.length} mánagers...`, "info");
+            for (const pUid of participantesUids) {
+              const teamDocId = `${pUid}_${adminSelectedLeagueId}`;
+              const teamRef = doc(db, "user_teams", teamDocId);
+              const teamSnap = await getDoc(teamRef);
+              if (teamSnap.exists()) {
+                const teamData = teamSnap.data();
+                let nextAl = teamData.siguiente_alineacion;
+                if (!nextAl) {
+                  nextAl = {
+                    titulares: teamData.alineacion?.titulares || { portero: [], defensas: [], mediocampistas: [], delanteros: [] },
+                    suplentes: teamData.alineacion?.suplentes || { portero: [], defensas: [], mediocampistas: [], delanteros: [] },
+                    capitan_id: teamData.capitan_id || "",
+                    formacion: teamData.formacion || "4-4-2"
+                  };
+                }
+
+                // Filtrar para que solo contengan jugadores que el usuario realmente posee en la actualidad
+                const ownedIds = teamData.jugadores_ids || [];
+                const newTitulares = {
+                  portero: (nextAl.titulares?.portero || []).filter(id => ownedIds.includes(id)),
+                  defensas: (nextAl.titulares?.defensas || []).filter(id => ownedIds.includes(id)),
+                  mediocampistas: (nextAl.titulares?.mediocampistas || []).filter(id => ownedIds.includes(id)),
+                  delanteros: (nextAl.titulares?.delanteros || []).filter(id => ownedIds.includes(id))
+                };
+                const newSuplentes = {
+                  portero: (nextAl.suplentes?.portero || []).filter(id => ownedIds.includes(id)),
+                  defensas: (nextAl.suplentes?.defensas || []).filter(id => ownedIds.includes(id)),
+                  mediocampistas: (nextAl.suplentes?.mediocampistas || []).filter(id => ownedIds.includes(id)),
+                  delanteros: (nextAl.suplentes?.delanteros || []).filter(id => ownedIds.includes(id))
+                };
+
+                let newCapitanId = nextAl.capitan_id || "";
+                const flatTitulares = [
+                  ...(newTitulares.portero || []),
+                  ...(newTitulares.defensas || []),
+                  ...(newTitulares.mediocampistas || []),
+                  ...(newTitulares.delanteros || [])
+                ];
+                if (newCapitanId && !flatTitulares.includes(newCapitanId)) {
+                  newCapitanId = "";
+                }
+
+                const newFormacion = nextAl.formacion || teamData.formacion || "4-4-2";
+
+                const updatedPlayers = buildPlayersArrayFromAlineacion(newTitulares, newSuplentes, ownedIds);
+
+                await updateDoc(teamRef, {
+                  alineacion: { titulares: newTitulares, suplentes: newSuplentes },
+                  capitan_id: newCapitanId,
+                  formacion: newFormacion,
+                  players: updatedPlayers,
+                  siguiente_alineacion: {
+                    titulares: JSON.parse(JSON.stringify(newTitulares)),
+                    suplentes: JSON.parse(JSON.stringify(newSuplentes)),
+                    capitan_id: newCapitanId,
+                    formacion: newFormacion
+                  }
+                });
+              }
+            }
+          }
+
+          // 2. Establecer la jornada en la liga
           await updateDoc(leagueRef, {
             jornada_activa: newJornada
           });
@@ -20120,22 +20484,37 @@
           });
         });
 
+        // Helper to normalize and find the exact group team name
+        function getGroupTeamRealName(name) {
+          if (!name) return name;
+          const normInput = normalizeCountry(name);
+          if (!window.GRUPOS_MUNDIAL) return name;
+          for (const g of window.GRUPOS_MUNDIAL) {
+            for (const eq of g.equipos) {
+              if (normalizeCountry(eq) === normInput) {
+                return eq;
+              }
+            }
+          }
+          return name;
+        }
+
         // 2. Procesar partidos resueltos de matchesListGlobal
         const matches = window.matchesListGlobal || [];
         matches.forEach(m => {
           if (m.resuelto) {
-            const localName = m.equipo_local;
-            const visitName = m.equipo_visitante;
-            const groupLocal = window.PAIS_A_GRUPO ? window.PAIS_A_GRUPO[localName] : null;
-            const groupVisit = window.PAIS_A_GRUPO ? window.PAIS_A_GRUPO[visitName] : null;
+            const realLocal = getGroupTeamRealName(m.equipo_local);
+            const realVisit = getGroupTeamRealName(m.equipo_visitante);
+            const groupLocal = window.PAIS_A_GRUPO ? window.PAIS_A_GRUPO[realLocal] : null;
+            const groupVisit = window.PAIS_A_GRUPO ? window.PAIS_A_GRUPO[realVisit] : null;
 
             if (groupLocal && groupLocal === groupVisit) {
               const gId = groupLocal;
               const scoreLocal = parseInt(m.resultado_local) || 0;
               const scoreVisit = parseInt(m.resultado_visitante) || 0;
 
-              const statsLocal = standings[gId][localName];
-              const statsVisit = standings[gId][visitName];
+              const statsLocal = standings[gId][realLocal];
+              const statsVisit = standings[gId][realVisit];
 
               if (statsLocal && statsVisit) {
                 statsLocal.PJ += 1;

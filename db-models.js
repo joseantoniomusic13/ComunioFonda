@@ -55,6 +55,12 @@ export const FirestoreSchemas = {
       }
     },
     capitan_id: "string (ID del jugador)",           // Puntos de este jugador se multiplican por 2
+    siguiente_alineacion: {                         // Alineación preparada para la próxima jornada (se aplica al cambiar jornada)
+      titulares: {},                                // Estructura idéntica a alineacion.titulares
+      suplentes: {},                                // Estructura idéntica a alineacion.suplentes
+      capitan_id: "string",                         // Capitán seleccionado para la siguiente jornada
+      formacion: "string"                           // Formación táctica para la siguiente jornada
+    },
     cambios_realizados_jornada: 0,                  // Contador de fichajes en la jornada en curso
     chips: {
       wildcard: {
