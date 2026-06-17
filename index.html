@@ -1433,6 +1433,28 @@
             </span>
           </div>
 
+          <!-- Panel de Constructor de Alineación Siguiente (Alternativo y sin restricciones) -->
+          <div id="squad-next-builder-panel" class="hidden w-full p-5 rounded-3xl bg-slate-900/40 border border-white/5 space-y-4 mb-4 text-left">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+              <div>
+                <h4 class="text-sm font-black text-white flex items-center gap-2">
+                  <i data-lucide="sliders" class="w-4 h-4 text-gold"></i>
+                  Editor de Alineación Siguiente (Sin Restricciones)
+                </h4>
+                <p class="text-[10px] text-slate-400 font-bold leading-tight">Configura tu próxima plantilla de manera sencilla, haciendo clic en los botones. Sin bloqueos de jornada.</p>
+              </div>
+              <div class="flex items-center gap-2 flex-wrap text-[10px] font-black">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/20 text-emerald-400">Titulares: <span id="next-builder-tit-count">0/11</span></span>
+                <span class="px-2 py-0.5 rounded bg-cyan-500/15 border border-cyan-500/20 text-cyan-400">Suplentes: <span id="next-builder-sup-count">0/2</span></span>
+                <span class="px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/20 text-gold flex items-center gap-1"><i data-lucide="crown" class="w-3 h-3 text-gold"></i> <span id="next-builder-cap-name">Ninguno</span></span>
+              </div>
+            </div>
+            <div class="border-t border-white/5 my-2"></div>
+            <div id="squad-next-builder-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto pr-1">
+              <!-- Se rellenará dinámicamente con las tarjetas de los jugadores del usuario -->
+            </div>
+          </div>
+
           <!-- Terreno del Estadio Visual -->
           <div class="football-pitch w-full p-4 flex flex-col gap-3 min-h-[500px] justify-between relative shadow-2xl">
 
@@ -11616,6 +11638,197 @@
       };
 
 
+      // --- CONSTRUCTOR RÁPIDO DE SIGUIENTE ALINEACIÓN (Bypass restricciones) ---
+
+      function renderNextLineupBuilder(ownedIds, titulares, suplentes, capitanId) {
+        const listContainer = document.getElementById("squad-next-builder-list");
+        if (!listContainer) return;
+        listContainer.innerHTML = "";
+
+        const flatTitulares = [
+          ...(titulares.portero || []),
+          ...(titulares.defensas || []),
+          ...(titulares.mediocampistas || []),
+          ...(titulares.delanteros || [])
+        ];
+        const flatSuplentes = [
+          ...(suplentes.portero || []),
+          ...(suplentes.defensas || []),
+          ...(suplentes.mediocampistas || []),
+          ...(suplentes.delanteros || [])
+        ];
+
+        document.getElementById("next-builder-tit-count").textContent = `${flatTitulares.length} / 11`;
+        document.getElementById("next-builder-sup-count").textContent = `${flatSuplentes.length} / 2`;
+
+        let capName = "Ninguno";
+        if (capitanId) {
+          const capPlayer = PLAYERS_POOL.find(p => p.id === capitanId);
+          if (capPlayer) capName = capPlayer.nombre;
+        }
+        document.getElementById("next-builder-cap-name").textContent = capName;
+
+        ownedIds.forEach(id => {
+          const fPlayer = firestorePlayersList.find(p => p.id === id);
+          const staticPlayer = PLAYERS_POOL.find(p => p.id === id);
+          const player = fPlayer || staticPlayer;
+          if (!player) return;
+
+          const isTitular = flatTitulares.includes(id);
+          const isSuplente = flatSuplentes.includes(id);
+          const isReserva = !isTitular && !isSuplente;
+          const isCaptain = capitanId === id;
+
+          const card = document.createElement("div");
+          card.className = "flex items-center justify-between p-2.5 rounded-2xl bg-slate-950/40 border border-white/5 hover:border-purple-500/20 transition text-xs";
+
+          let posLabel = player.posicion === "portero" ? "POR" :
+            player.posicion === "defensa" ? "DFC" :
+            player.posicion === "mediocampista" ? "MC" : "DEL";
+
+          let posBadgeClass = player.posicion === "portero" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
+            player.posicion === "defensa" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+            player.posicion === "mediocampista" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20";
+
+          card.innerHTML = `
+            <div class="flex items-center gap-2 truncate max-w-[45%]">
+              <span class="text-base">${player.flag || "🌐"}</span>
+              <div class="truncate">
+                <p class="font-extrabold text-white truncate">${player.nombre}</p>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span class="text-[8px] px-1 py-0.2 rounded border ${posBadgeClass} font-black uppercase">${posLabel}</span>
+                  <span class="text-[8px] text-slate-500 font-bold">${(player.precio / 1000000).toFixed(1)}M$</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <!-- Button Group Role -->
+              <div class="flex rounded-lg bg-slate-900/80 p-0.5 border border-white/5">
+                <button class="role-btn-tit px-2 py-1 rounded text-[9px] font-black transition cursor-pointer ${isTitular ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-white'}" title="Hacer Titular">TIT</button>
+                <button class="role-btn-sup px-2 py-1 rounded text-[9px] font-black transition cursor-pointer ${isSuplente ? 'bg-cyan-600 text-white shadow' : 'text-slate-400 hover:text-white'}" title="Hacer Suplente">SUP</button>
+                <button class="role-btn-res px-2 py-1 rounded text-[9px] font-black transition cursor-pointer ${isReserva ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-white'}" title="Enviar a Reservas">RES</button>
+              </div>
+              <!-- Captain Button -->
+              <button class="cap-btn p-1.5 rounded-lg border transition cursor-pointer ${isCaptain ? 'bg-amber-500/15 border-gold text-gold shadow' : 'bg-slate-900/40 border-white/5 text-slate-500 hover:text-slate-300'}" title="Hacer Capitán">
+                <i data-lucide="crown" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          `;
+
+          // Add Event Listeners
+          const btnTit = card.querySelector(".role-btn-tit");
+          const btnSup = card.querySelector(".role-btn-sup");
+          const btnRes = card.querySelector(".role-btn-res");
+          const btnCap = card.querySelector(".cap-btn");
+
+          btnTit.addEventListener("click", () => handleNextBuilderAction(id, "titular", player.posicion));
+          btnSup.addEventListener("click", () => handleNextBuilderAction(id, "suplente", player.posicion));
+          btnRes.addEventListener("click", () => handleNextBuilderAction(id, "reserva", player.posicion));
+          btnCap.addEventListener("click", () => handleNextBuilderAction(id, "capitan", player.posicion));
+
+          listContainer.appendChild(card);
+        });
+
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      }
+
+      async function handleNextBuilderAction(playerId, action, posicion) {
+        if (!currentUserTeam) return;
+        const sourceAl = currentUserTeam.siguiente_alineacion || {
+          titulares: { portero: [], defensas: [], mediocampistas: [], delanteros: [] },
+          suplentes: { portero: [], defensas: [], mediocampistas: [], delanteros: [] },
+          capitan_id: "",
+          formacion: currentUserTeam.formacion || "4-4-2"
+        };
+
+        const titulares = {
+          portero: [...(sourceAl.titulares?.portero || [])],
+          defensas: [...(sourceAl.titulares?.defensas || [])],
+          mediocampistas: [...(sourceAl.titulares?.mediocampistas || [])],
+          delanteros: [...(sourceAl.titulares?.delanteros || [])]
+        };
+        const suplentes = {
+          portero: [...(sourceAl.suplentes?.portero || [])],
+          defensas: [...(sourceAl.suplentes?.defensas || [])],
+          mediocampistas: [...(sourceAl.suplentes?.mediocampistas || [])],
+          delanteros: [...(sourceAl.suplentes?.delanteros || [])]
+        };
+        let capitanId = sourceAl.capitan_id || "";
+
+        const flatTitulares = [
+          ...(titulares.portero || []),
+          ...(titulares.defensas || []),
+          ...(titulares.mediocampistas || []),
+          ...(titulares.delanteros || [])
+        ];
+        const flatSuplentes = [
+          ...(suplentes.portero || []),
+          ...(suplentes.defensas || []),
+          ...(suplentes.mediocampistas || []),
+          ...(suplentes.delanteros || [])
+        ];
+
+        const posPlural = posicion === "portero" ? "portero" :
+          posicion === "defensa" ? "defensas" :
+          posicion === "mediocampista" ? "mediocampistas" : "delanteros";
+
+        if (action === "titular") {
+          if (flatTitulares.includes(playerId)) return;
+          if (flatTitulares.length >= 11) {
+            showNotification("⚠️ Ya tienes 11 titulares. Cambia algún jugador a Suplente o Reserva primero.", "error");
+            return;
+          }
+          if (posicion === "portero" && titulares.portero.length >= 1) {
+            showNotification("⚠️ Solo puedes tener 1 Portero titular.", "error");
+            return;
+          }
+          // Quitar de suplentes si estaba
+          titulares[posPlural].push(playerId);
+          suplentes[posPlural] = suplentes[posPlural].filter(id => id !== playerId);
+        }
+        else if (action === "suplente") {
+          if (flatSuplentes.includes(playerId)) return;
+          if (flatSuplentes.length >= 2) {
+            showNotification("⚠️ Ya tienes el máximo de 2 suplentes en el Banquillo Oficial.", "error");
+            return;
+          }
+          // Quitar de titulares
+          titulares[posPlural] = titulares[posPlural].filter(id => id !== playerId);
+          suplentes[posPlural].push(playerId);
+          if (capitanId === playerId) capitanId = "";
+        }
+        else if (action === "reserva") {
+          titulares[posPlural] = titulares[posPlural].filter(id => id !== playerId);
+          suplentes[posPlural] = suplentes[posPlural].filter(id => id !== playerId);
+          if (capitanId === playerId) capitanId = "";
+        }
+        else if (action === "capitan") {
+          if (!flatTitulares.includes(playerId)) {
+            showNotification("⚠️ El capitán debe pertenecer a tu 11 titular.", "error");
+            return;
+          }
+          capitanId = (capitanId === playerId) ? "" : playerId;
+        }
+
+        try {
+          const teamRef = doc(db, "user_teams", getTeamDocId());
+          const nextAl = {
+            titulares,
+            suplentes,
+            capitan_id: capitanId,
+            formacion: sourceAl.formacion || "4-4-2"
+          };
+          await updateDoc(teamRef, {
+            siguiente_alineacion: nextAl
+          });
+          currentUserTeam.siguiente_alineacion = nextAl;
+          renderSquadAndPitch();
+        } catch (err) {
+          console.error("Error al guardar en constructor siguiente:", err);
+          showNotification("Error al actualizar la alineación.", "error");
+        }
+      }
+
       // --- RENDERIZADO DEL CAMPO ---
 
       function renderSquadAndPitch() {
@@ -11985,7 +12198,7 @@
         // Helper inline para registrar los eventos de arrastre
         function setupDragAndDropForCard(cardEl, id, posicion) {
           cardEl.addEventListener("dragstart", (e) => {
-            if (areLineupsLocked()) {
+            if (activeLineupView === "actual" && areLineupsLocked()) {
               e.preventDefault();
               showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
               return;
@@ -12010,7 +12223,7 @@
           cardEl.addEventListener("drop", (e) => {
             e.preventDefault();
             cardEl.classList.remove("drag-over");
-            if (areLineupsLocked()) {
+            if (activeLineupView === "actual" && areLineupsLocked()) {
               showNotification("🔒 Las alineaciones están bloqueadas para esta jornada.", "error");
               return;
             }
@@ -12019,6 +12232,17 @@
               handleDragAndDropSwap(draggedId, id, posicion);
             }
           });
+        }
+
+        // Toggle de visibilidad de panel de constructor rápido
+        const nextBuilderPanel = document.getElementById("squad-next-builder-panel");
+        if (nextBuilderPanel) {
+          if (activeLineupView === "siguiente") {
+            nextBuilderPanel.classList.remove("hidden");
+            renderNextLineupBuilder(ownedIds, titulares, suplentes, capitanId);
+          } else {
+            nextBuilderPanel.classList.add("hidden");
+          }
         }
 
         renderChipsPanel();
