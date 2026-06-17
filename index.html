@@ -11640,22 +11640,32 @@
 
       // --- CONSTRUCTOR RÁPIDO DE SIGUIENTE ALINEACIÓN (Bypass restricciones) ---
 
+      function ensureArray(val) {
+        if (!val) return [];
+        if (Array.isArray(val)) return val.filter(Boolean);
+        if (typeof val === "object") {
+          console.warn("⚠️ [Fonda Engine] Detectado objeto en vez de Array. Auto-corrigiendo:", val);
+          return Object.values(val).filter(Boolean);
+        }
+        return [];
+      }
+
       function renderNextLineupBuilder(ownedIds, titulares, suplentes, capitanId) {
         const listContainer = document.getElementById("squad-next-builder-list");
         if (!listContainer) return;
         listContainer.innerHTML = "";
 
         const flatTitulares = [
-          ...(titulares.portero || []),
-          ...(titulares.defensas || []),
-          ...(titulares.mediocampistas || []),
-          ...(titulares.delanteros || [])
+          ...ensureArray(titulares.portero),
+          ...ensureArray(titulares.defensas),
+          ...ensureArray(titulares.mediocampistas),
+          ...ensureArray(titulares.delanteros)
         ];
         const flatSuplentes = [
-          ...(suplentes.portero || []),
-          ...(suplentes.defensas || []),
-          ...(suplentes.mediocampistas || []),
-          ...(suplentes.delanteros || [])
+          ...ensureArray(suplentes.portero),
+          ...ensureArray(suplentes.defensas),
+          ...ensureArray(suplentes.mediocampistas),
+          ...ensureArray(suplentes.delanteros)
         ];
 
         document.getElementById("next-builder-tit-count").textContent = `${flatTitulares.length} / 11`;
@@ -11742,30 +11752,30 @@
         };
 
         const titulares = {
-          portero: [...(sourceAl.titulares?.portero || [])],
-          defensas: [...(sourceAl.titulares?.defensas || [])],
-          mediocampistas: [...(sourceAl.titulares?.mediocampistas || [])],
-          delanteros: [...(sourceAl.titulares?.delanteros || [])]
+          portero: [...ensureArray(sourceAl.titulares?.portero)],
+          defensas: [...ensureArray(sourceAl.titulares?.defensas)],
+          mediocampistas: [...ensureArray(sourceAl.titulares?.mediocampistas)],
+          delanteros: [...ensureArray(sourceAl.titulares?.delanteros)]
         };
         const suplentes = {
-          portero: [...(sourceAl.suplentes?.portero || [])],
-          defensas: [...(sourceAl.suplentes?.defensas || [])],
-          mediocampistas: [...(sourceAl.suplentes?.mediocampistas || [])],
-          delanteros: [...(sourceAl.suplentes?.delanteros || [])]
+          portero: [...ensureArray(sourceAl.suplentes?.portero)],
+          defensas: [...ensureArray(sourceAl.suplentes?.defensas)],
+          mediocampistas: [...ensureArray(sourceAl.suplentes?.mediocampistas)],
+          delanteros: [...ensureArray(sourceAl.suplentes?.delanteros)]
         };
         let capitanId = sourceAl.capitan_id || "";
 
         const flatTitulares = [
-          ...(titulares.portero || []),
-          ...(titulares.defensas || []),
-          ...(titulares.mediocampistas || []),
-          ...(titulares.delanteros || [])
+          ...ensureArray(titulares.portero),
+          ...ensureArray(titulares.defensas),
+          ...ensureArray(titulares.mediocampistas),
+          ...ensureArray(titulares.delanteros)
         ];
         const flatSuplentes = [
-          ...(suplentes.portero || []),
-          ...(suplentes.defensas || []),
-          ...(suplentes.mediocampistas || []),
-          ...(suplentes.delanteros || [])
+          ...ensureArray(suplentes.portero),
+          ...ensureArray(suplentes.defensas),
+          ...ensureArray(suplentes.mediocampistas),
+          ...ensureArray(suplentes.delanteros)
         ];
 
         const posPlural = posicion === "portero" ? "portero" :
@@ -11933,17 +11943,17 @@
           activeFormation = currentUserTeam.siguiente_alineacion.formacion || "4-4-2";
 
           titulares = {
-            portero: rawTitulares.portero || [],
-            defensas: rawTitulares.defensas || [],
-            mediocampistas: rawTitulares.mediocampistas || [],
-            delanteros: rawTitulares.delanteros || []
+            portero: ensureArray(rawTitulares.portero),
+            defensas: ensureArray(rawTitulares.defensas),
+            mediocampistas: ensureArray(rawTitulares.mediocampistas),
+            delanteros: ensureArray(rawTitulares.delanteros)
           };
 
           suplentes = {
-            portero: rawSuplentes.portero || [],
-            defensas: rawSuplentes.defensas || [],
-            mediocampistas: rawSuplentes.mediocampistas || [],
-            delanteros: rawSuplentes.delanteros || []
+            portero: ensureArray(rawSuplentes.portero),
+            defensas: ensureArray(rawSuplentes.defensas),
+            mediocampistas: ensureArray(rawSuplentes.mediocampistas),
+            delanteros: ensureArray(rawSuplentes.delanteros)
           };
         } else {
           capitanId = currentUserTeam.capitan_id || "";
@@ -11991,17 +12001,17 @@
             const rawSuplentes = currentUserTeam.alineacion?.suplentes || {};
 
             titulares = {
-              portero: rawTitulares.portero || [],
-              defensas: rawTitulares.defensas || [],
-              mediocampistas: rawTitulares.mediocampistas || [],
-              delanteros: rawTitulares.delanteros || []
+              portero: ensureArray(rawTitulares.portero),
+              defensas: ensureArray(rawTitulares.defensas),
+              mediocampistas: ensureArray(rawTitulares.mediocampistas),
+              delanteros: ensureArray(rawTitulares.delanteros)
             };
 
             suplentes = {
-              portero: rawSuplentes.portero || [],
-              defensas: rawSuplentes.defensas || [],
-              mediocampistas: rawSuplentes.mediocampistas || [],
-              delanteros: rawSuplentes.delanteros || []
+              portero: ensureArray(rawSuplentes.portero),
+              defensas: ensureArray(rawSuplentes.defensas),
+              mediocampistas: ensureArray(rawSuplentes.mediocampistas),
+              delanteros: ensureArray(rawSuplentes.delanteros)
             };
           }
         }
@@ -13303,10 +13313,14 @@
 
             if (isDraggedTitular) {
               listTitulares[idxTit] = targetId;
-              listSuplentes[idxSup] = draggedId;
+              if (idxSup !== -1) {
+                listSuplentes[idxSup] = draggedId;
+              }
             } else {
               listTitulares[idxTit] = draggedId;
-              listSuplentes[idxSup] = targetId;
+              if (idxSup !== -1) {
+                listSuplentes[idxSup] = targetId;
+              }
             }
             titulares[posPlural] = listTitulares;
             suplentes[posPlural] = listSuplentes;
