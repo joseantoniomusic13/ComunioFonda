@@ -12523,58 +12523,59 @@
 
         // Quitar de titulares
         let listTitulares = [...(titulares[posPlural] || [])];
-              if (idxTit !== -1) listTitulares.splice(idxTit, 1);
+        const idxTit = listTitulares.indexOf(draggedId);
+        if (idxTit !== -1) listTitulares.splice(idxTit, 1);
 
-              // Quitar de suplentes
-              let listSuplentes = [...(suplentes[posPlural] || [])];
-              const idxSup = listSuplentes.indexOf(draggedId);
-              if (idxSup !== -1) listSuplentes.splice(idxSup, 1);
+        // Quitar de suplentes
+        let listSuplentes = [...(suplentes[posPlural] || [])];
+        const idxSup = listSuplentes.indexOf(draggedId);
+        if (idxSup !== -1) listSuplentes.splice(idxSup, 1);
 
-              titulares[posPlural] = listTitulares;
-              suplentes[posPlural] = listSuplentes;
+        titulares[posPlural] = listTitulares;
+        suplentes[posPlural] = listSuplentes;
 
-              // Sincronizar Capitán
-              let capitanId = activeLineupView === "siguiente" ? (sourceAl.capitan_id || "") : (currentUserTeam.capitan_id || "");
-              const nuevosTitulares = [
-                ...(titulares.portero || []),
-                ...(titulares.defensas || []),
-                ...(titulares.mediocampistas || []),
-                ...(titulares.delanteros || [])
-              ];
-              if (capitanId && !nuevosTitulares.includes(capitanId)) {
-                capitanId = "";
-              }
+        // Sincronizar Capitán
+        let capitanId = activeLineupView === "siguiente" ? (sourceAl.capitan_id || "") : (currentUserTeam.capitan_id || "");
+        const nuevosTitulares = [
+          ...(titulares.portero || []),
+          ...(titulares.defensas || []),
+          ...(titulares.mediocampistas || []),
+          ...(titulares.delanteros || [])
+        ];
+        if (capitanId && !nuevosTitulares.includes(capitanId)) {
+          capitanId = "";
+        }
 
-              const finalSuplentes = constrenirSuplentes(suplentes);
+        const finalSuplentes = constrenirSuplentes(suplentes);
 
-              try {
-                const teamRef = doc(db, "user_teams", getTeamDocId());
-                if (activeLineupView === "siguiente") {
-                  const nextAl = currentUserTeam.siguiente_alineacion || {};
-                  nextAl.titulares = titulares;
-                  nextAl.suplentes = finalSuplentes;
-                  nextAl.capitan_id = capitanId;
-                  await updateDoc(teamRef, {
-                    siguiente_alineacion: nextAl
-                  });
-                  currentUserTeam.siguiente_alineacion = nextAl;
-                } else {
-                  await updateDoc(teamRef, {
-                    alineacion: { titulares, suplentes: finalSuplentes },
-                    capitan_id: capitanId,
-                    players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
-                  });
-                  currentUserTeam.alineacion = { titulares, suplentes: finalSuplentes };
-                  currentUserTeam.capitan_id = capitanId;
-                  currentUserTeam.players = buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids);
-                }
-                showNotification(`Movid@ ${player.nombre} a las Reservas (dejará de puntuar).`);
-              } catch (err) {
-                console.error(err);
-              } finally {
-                renderSquadAndPitch();
-              }
-            }
+        try {
+          const teamRef = doc(db, "user_teams", getTeamDocId());
+          if (activeLineupView === "siguiente") {
+            const nextAl = currentUserTeam.siguiente_alineacion || {};
+            nextAl.titulares = titulares;
+            nextAl.suplentes = finalSuplentes;
+            nextAl.capitan_id = capitanId;
+            await updateDoc(teamRef, {
+              siguiente_alineacion: nextAl
+            });
+            currentUserTeam.siguiente_alineacion = nextAl;
+          } else {
+            await updateDoc(teamRef, {
+              alineacion: { titulares, suplentes: finalSuplentes },
+              capitan_id: capitanId,
+              players: buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids)
+            });
+            currentUserTeam.alineacion = { titulares, suplentes: finalSuplentes };
+            currentUserTeam.capitan_id = capitanId;
+            currentUserTeam.players = buildPlayersArrayFromAlineacion(titulares, finalSuplentes, currentUserTeam.jugadores_ids);
+          }
+          showNotification(`Movid@ ${player.nombre} a las Reservas (dejará de puntuar).`);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          renderSquadAndPitch();
+        }
+      }
 
       async function handleMoveToTitulares(playerId) {
         const isSystemAdmin = currentUserProfile?.rol === "admin" || (currentUser && currentUser.email === "admin@comuniomundial.com");
