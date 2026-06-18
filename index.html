@@ -790,6 +790,7 @@
                         <option value="Jornada 1">Jornada 1</option>
                         <option value="Jornada 2">Jornada 2</option>
                         <option value="Jornada 3">Jornada 3</option>
+                        <option value="Dieciseisavos de Final">Dieciseisavos de Final</option>
                         <option value="Octavos de Final">Octavos de Final</option>
                         <option value="Cuartos de Final">Cuartos de Final</option>
                         <option value="Semifinales">Semifinales</option>
@@ -821,6 +822,7 @@
                         <option value="Jornada 1">Jornada 1</option>
                         <option value="Jornada 2">Jornada 2</option>
                         <option value="Jornada 3">Jornada 3</option>
+                        <option value="Dieciseisavos de Final">Dieciseisavos de Final</option>
                         <option value="Octavos de Final">Octavos de Final</option>
                         <option value="Cuartos de Final">Cuartos de Final</option>
                         <option value="Semifinales">Semifinales</option>
@@ -917,6 +919,7 @@
                     <option value="Jornada 1">Jornada 1</option>
                     <option value="Jornada 2">Jornada 2</option>
                     <option value="Jornada 3">Jornada 3</option>
+                    <option value="Dieciseisavos de Final">Dieciseisavos de Final</option>
                     <option value="Octavos de Final">Octavos de Final</option>
                     <option value="Cuartos de Final">Cuartos de Final</option>
                     <option value="Semifinales">Semifinales</option>
@@ -1030,23 +1033,58 @@
                 <label id="admin-match-form-title"
                   class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Nuevo Partido</label>
                 <input type="hidden" id="admin-match-id-edit" value="">
-                <input type="text" id="admin-match-local" placeholder="Equipo Local (ej: España)"
-                  class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20">
-                <input type="text" id="admin-match-visitante" placeholder="Equipo Visitante (ej: Francia)"
-                  class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20">
-                <div class="grid grid-cols-2 gap-2">
-                  <div class="flex flex-col gap-1">
+                <!-- Inputs ocultos para mantener compatibilidad con el JS actual -->
+                <input type="hidden" id="admin-match-local" value="">
+                <input type="hidden" id="admin-match-visitante" value="">
+
+                <!-- Custom Select Local -->
+                <div class="relative w-full text-left" id="admin-select-local-container">
+                  <label class="text-[8px] font-black text-slate-400 uppercase tracking-wider pl-1">Equipo Local:</label>
+                  <button type="button" id="admin-select-local-btn" class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border border-purple-500/20 flex items-center justify-between transition hover:border-purple-500/40">
+                    <span id="admin-select-local-selected" class="flex items-center gap-1.5">
+                      <span class="text-slate-500">Seleccionar Equipo Local...</span>
+                    </span>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500"></i>
+                  </button>
+                  <div id="admin-select-local-dropdown" class="hidden absolute left-0 right-0 mt-1 p-2 rounded-xl bg-slate-950 border border-purple-500/30 shadow-2xl z-50 max-h-[220px] flex flex-col gap-1.5">
+                    <input type="text" id="admin-select-local-search" placeholder="🔍 Buscar selección..." class="w-full px-2.5 py-1.5 rounded-lg text-[10px] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-purple-500/40">
+                    <div id="admin-select-local-options" class="flex flex-col gap-0.5 overflow-y-auto max-h-[140px] custom-scrollbar">
+                      <!-- Dinámico -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Custom Select Visitante -->
+                <div class="relative w-full text-left" id="admin-select-visitante-container">
+                  <label class="text-[8px] font-black text-slate-400 uppercase tracking-wider pl-1">Equipo Visitante:</label>
+                  <button type="button" id="admin-select-visitante-btn" class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border border-purple-500/20 flex items-center justify-between transition hover:border-purple-500/40">
+                    <span id="admin-select-visitante-selected" class="flex items-center gap-1.5">
+                      <span class="text-slate-500">Seleccionar Equipo Visitante...</span>
+                    </span>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500"></i>
+                  </button>
+                  <div id="admin-select-visitante-dropdown" class="hidden absolute left-0 right-0 mt-1 p-2 rounded-xl bg-slate-950 border border-purple-500/30 shadow-2xl z-50 max-h-[220px] flex flex-col gap-1.5">
+                    <input type="text" id="admin-select-visitante-search" placeholder="🔍 Buscar selección..." class="w-full px-2.5 py-1.5 rounded-lg text-[10px] bg-white/5 border border-white/10 text-white focus:outline-none focus:border-purple-500/40">
+                    <div id="admin-select-visitante-options" class="flex flex-col gap-0.5 overflow-y-auto max-h-[140px] custom-scrollbar">
+                      <!-- Dinámico -->
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 w-full">
+                  <div class="flex flex-col gap-1 text-left">
                     <label class="text-[8px] font-black text-slate-400 uppercase tracking-wider pl-1">Fecha y Hora (Kickoff):</label>
                     <input type="datetime-local" id="admin-match-kickoff"
                       class="glass-input w-full px-2 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20">
                   </div>
-                  <div class="flex flex-col gap-1">
+                  <div class="flex flex-col gap-1 text-left">
                     <label class="text-[8px] font-black text-slate-400 uppercase tracking-wider pl-1">Fase / Jornada:</label>
                     <select id="admin-match-fase"
                       class="glass-input w-full px-2 py-2.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20">
                       <option value="Jornada 1">Jornada 1</option>
                       <option value="Jornada 2">Jornada 2</option>
                       <option value="Jornada 3">Jornada 3</option>
+                      <option value="Dieciseisavos de Final">Dieciseisavos de Final</option>
                       <option value="Octavos de Final">Octavos de Final</option>
                       <option value="Cuartos de Final">Cuartos de Final</option>
                       <option value="Semifinales">Semifinales</option>
@@ -1321,6 +1359,7 @@
                     <option value="Jornada 1">Jornada 1</option>
                     <option value="Jornada 2">Jornada 2</option>
                     <option value="Jornada 3">Jornada 3</option>
+                    <option value="Dieciseisavos de Final">Dieciseisavos de Final</option>
                     <option value="Octavos de Final">Octavos de Final</option>
                     <option value="Cuartos de Final">Cuartos de Final</option>
                     <option value="Semifinales">Semifinales</option>
@@ -1927,6 +1966,7 @@
                   <option value="Jornada 1">Jornada 1</option>
                   <option value="Jornada 2">Jornada 2</option>
                   <option value="Jornada 3">Jornada 3</option>
+                  <option value="Dieciseisavos de Final">Dieciseisavos de Final</option>
                   <option value="Octavos de Final">Octavos de Final</option>
                   <option value="Cuartos de Final">Cuartos de Final</option>
                   <option value="Semifinales">Semifinales</option>
@@ -5609,14 +5649,49 @@
         console.log(`🌱 [Fonda Engine] Sembrando subastas iniciales para la liga: ${leagueCode}...`);
         try {
           const leagueRef = doc(db, "leagues", leagueCode);
+          const leagueSnap = await getDoc(leagueRef);
+          let currentJornada = "Jornada 1";
+          if (leagueSnap.exists()) {
+            currentJornada = leagueSnap.data().jornada_activa || "Jornada 1";
+          }
+
           const allSystemPlayersSnap = await getDocs(collection(db, "players"));
           const allPlayers = [];
           allSystemPlayersSnap.forEach(snap => {
             allPlayers.push({ id: snap.id, ...snap.data() });
           });
 
+          // Filtrar por equipos activos si estamos en eliminatorias
+          let activeTeams = [];
+          if (currentJornada && !currentJornada.startsWith("Jornada")) {
+            try {
+              const matchesSnap = await getDocs(collection(db, "matches"));
+              const teamsSet = new Set();
+              matchesSnap.forEach(d => {
+                const data = d.data();
+                if (data.fase === currentJornada) {
+                  if (data.equipo_local) teamsSet.add(normalizeCountry(data.equipo_local));
+                  if (data.equipo_visitante) teamsSet.add(normalizeCountry(data.equipo_visitante));
+                }
+              });
+              activeTeams = Array.from(teamsSet);
+              console.log(`📋 [seedSystemMarket] Fase eliminatoria "${currentJornada}". Equipos activos:`, activeTeams);
+            } catch (err) {
+              console.error("Error al obtener partidos activos en seedSystemMarket:", err);
+            }
+          }
+
+          let filteredPlayers = allPlayers;
+          if (activeTeams.length > 0) {
+            filteredPlayers = allPlayers.filter(p => activeTeams.includes(normalizeCountry(p.pais)));
+            if (filteredPlayers.length === 0) {
+              console.warn("⚠️ [seedSystemMarket] No se encontraron jugadores para los equipos activos, usando todos.");
+              filteredPlayers = allPlayers;
+            }
+          }
+
           // 14 jugadores iniciales expuestos
-          const chosen = [...allPlayers].sort(() => 0.5 - Math.random()).slice(0, 14);
+          const chosen = [...filteredPlayers].sort(() => 0.5 - Math.random()).slice(0, 14);
           const marketPlayers = chosen.map(p => ({
             id: p.id,
             precio_base: p.precio,
@@ -5825,8 +5900,40 @@
           }
 
           const unownedPlayers = allPlayers.filter(p => !ownedPlayersInLeague.has(p.id));
-          const batchSize = Math.min(unownedPlayers.length, Math.floor(12 + Math.random() * 4));
-          const chosenPlayers = [...unownedPlayers].sort(() => 0.5 - Math.random()).slice(0, batchSize);
+
+          // Filtrar por equipos activos si estamos en eliminatorias
+          const currentJornada = leagueData.jornada_activa || "Jornada 1";
+          let activeTeams = [];
+          if (!currentJornada.startsWith("Jornada")) {
+            try {
+              const matchesSnap = await getDocs(collection(db, "matches"));
+              const teamsSet = new Set();
+              matchesSnap.forEach(d => {
+                const data = d.data();
+                if (data.fase === currentJornada) {
+                  if (data.equipo_local) teamsSet.add(normalizeCountry(data.equipo_local));
+                  if (data.equipo_visitante) teamsSet.add(normalizeCountry(data.equipo_visitante));
+                }
+              });
+              activeTeams = Array.from(teamsSet);
+              console.log(`📋 [Matching Engine] Fase eliminatoria "${currentJornada}". Equipos activos:`, activeTeams);
+            } catch (err) {
+              console.error("Error al obtener partidos activos en resolveAuctions:", err);
+            }
+          }
+
+          let filteredUnownedPlayers = unownedPlayers;
+          if (activeTeams.length > 0) {
+            filteredUnownedPlayers = unownedPlayers.filter(p => activeTeams.includes(normalizeCountry(p.pais)));
+            console.log(`🎯 [Matching Engine] Candidatos de mercado filtrados: ${filteredUnownedPlayers.length} de ${unownedPlayers.length} sin propietario pertenecen a equipos activos.`);
+            if (filteredUnownedPlayers.length === 0) {
+              console.warn("⚠️ [Matching Engine] No se encontraron jugadores sin propietario para los equipos activos, usando todos.");
+              filteredUnownedPlayers = unownedPlayers;
+            }
+          }
+
+          const batchSize = Math.min(filteredUnownedPlayers.length, Math.floor(12 + Math.random() * 4));
+          const chosenPlayers = [...filteredUnownedPlayers].sort(() => 0.5 - Math.random()).slice(0, batchSize);
 
           const newMarketPlayers = chosenPlayers.map(p => ({
             id: p.id,
@@ -15306,6 +15413,8 @@
               document.getElementById("admin-match-id-edit").value = m.id;
               document.getElementById("admin-match-local").value = m.equipo_local;
               document.getElementById("admin-match-visitante").value = m.equipo_visitante;
+              if (typeof window.setAdminSelectLocal === "function") window.setAdminSelectLocal(m.equipo_local);
+              if (typeof window.setAdminSelectVisitante === "function") window.setAdminSelectVisitante(m.equipo_visitante);
               
               let kickoffLocalVal = "";
               if (m.kickoff_time) {
@@ -15402,6 +15511,8 @@
         document.getElementById("admin-match-id-edit").value = "";
         document.getElementById("admin-match-local").value = "";
         document.getElementById("admin-match-visitante").value = "";
+        if (typeof window.setAdminSelectLocal === "function") window.setAdminSelectLocal("");
+        if (typeof window.setAdminSelectVisitante === "function") window.setAdminSelectVisitante("");
         document.getElementById("admin-match-kickoff").value = "";
         document.getElementById("admin-match-fase").value = "Jornada 1";
 
@@ -15466,6 +15577,8 @@
 
             document.getElementById("admin-match-local").value = "";
             document.getElementById("admin-match-visitante").value = "";
+            if (typeof window.setAdminSelectLocal === "function") window.setAdminSelectLocal("");
+            if (typeof window.setAdminSelectVisitante === "function") window.setAdminSelectVisitante("");
             document.getElementById("admin-match-kickoff").value = "";
             document.getElementById("admin-match-fase").value = "Jornada 1";
             showNotification(`✅ Partido "${local} vs ${visitante}" creado correctamente.`);
@@ -21112,13 +21225,56 @@
         if (!countryName) return "🏳️";
         const normalized = normalizeCountry(countryName).replace(/ /g, "_");
         const flagMap = {
-          "espana": "🇪🇸", "alemania": "🇩🇪", "argentina": "🇦🇷", "brasil": "🇧🇷", "francia": "🇫🇷",
-          "inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "italia": "🇮🇹", "portugal": "🇵🇹", "paises_bajos": "🇳🇱",
-          "uruguay": "🇺🇾", "belgica": "🇧🇪", "croacia": "🇭🇷", "dinamarca": "🇩🇰", "senegal": "🇸🇳",
-          "marruecos": "🇲🇦", "japon": "🇯🇵", "corea_del_sur": "🇰🇷", "estados_unidos": "🇺🇸",
-          "mexico": "🇲🇽", "canada": "🇨🇦", "suiza": "🇨🇭", "serbia": "🇷🇸", "polonia": "🇵🇱",
-          "arabia_saudi": "🇸🇦", "arabia_saudita": "🇸🇦", "ecuador": "🇪🇨", "ghana": "🇬🇭", "camerun": "🇨🇲", "tunez": "🇹🇳",
-          "australia": "🇦🇺", "costa_rica": "🇨🇷", "iran": "🇮🇷", "gales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿"
+          "espana": "🇪🇸",
+          "alemania": "🇩🇪",
+          "argentina": "🇦🇷",
+          "brasil": "🇧🇷",
+          "francia": "🇫🇷",
+          "inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+          "portugal": "🇵🇹",
+          "paises_bajos": "🇳🇱",
+          "uruguay": "🇺🇾",
+          "belgica": "🇧🇪",
+          "croacia": "🇭🇷",
+          "senegal": "🇸🇳",
+          "marruecos": "🇲🇦",
+          "japon": "🇯🇵",
+          "corea_del_sur": "🇰🇷",
+          "estados_unidos": "🇺🇸",
+          "mexico": "🇲🇽",
+          "canada": "🇨🇦",
+          "suiza": "🇨🇭",
+          "arabia_saudi": "🇸🇦",
+          "arabia_saudita": "🇸🇦",
+          "ecuador": "🇪🇨",
+          "ghana": "🇬🇭",
+          "tunez": "🇹🇳",
+          "australia": "🇦🇺",
+          "iran": "🇮🇷",
+          "republica_checa": "🇨🇿",
+          "sudafrica": "🇿🇦",
+          "catar": "🇶🇦",
+          "bosnia_y_herzegovina": "🇧🇦",
+          "escocia": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+          "haiti": "🇭🇹",
+          "turquia": "🇹🇷",
+          "paraguay": "🇵🇾",
+          "costa_de_marfil": "🇨🇮",
+          "curazao": "🇨🇼",
+          "suecia": "🇸🇪",
+          "egipto": "🇪🇬",
+          "nueva_zelanda": "🇳🇿",
+          "cabo_verde": "🇨🇻",
+          "noruega": "🇳🇴",
+          "irak": "🇮🇶",
+          "austria": "🇦🇹",
+          "argelia": "🇩🇿",
+          "jordania": "🇯🇴",
+          "colombia": "🇨🇴",
+          "r.d._del_congo": "🇨🇩",
+          "rd_congo": "🇨🇩",
+          "uzbekistan": "🇺🇿",
+          "panama": "🇵🇦"
         };
         return flagMap[normalized] || "🏳️";
       }
@@ -23658,6 +23814,114 @@
       window.initMarqueeBulbs();
       
       // =========================================================================
+
+      // Inicializar selectores de equipos premium
+      initCustomTeamSelectors();
+
+      // Inicializar Selectores de Equipos Premium con Buscador para Administración
+      function initCustomTeamSelectors() {
+        const localContainer = document.getElementById("admin-select-local-container");
+        const visitanteContainer = document.getElementById("admin-select-visitante-container");
+        if (!localContainer || !visitanteContainer) return;
+
+        // Obtener selecciones ordenadas
+        const teams = [];
+        if (window.GRUPOS_MUNDIAL) {
+          window.GRUPOS_MUNDIAL.forEach(g => {
+            g.equipos.forEach(eq => {
+              teams.push(eq);
+            });
+          });
+        }
+        teams.sort((a, b) => a.localeCompare(b));
+
+        setupSelector("local", teams);
+        setupSelector("visitante", teams);
+
+        function setupSelector(type, teamsList) {
+          const btn = document.getElementById(`admin-select-${type}-btn`);
+          const dropdown = document.getElementById(`admin-select-${type}-dropdown`);
+          const searchInput = document.getElementById(`admin-select-${type}-search`);
+          const optionsContainer = document.getElementById(`admin-select-${type}-options`);
+          const selectedSpan = document.getElementById(`admin-select-${type}-selected`);
+          const hiddenInput = document.getElementById(`admin-match-${type}`);
+
+          // Renderizar opciones
+          function renderOptions(filterText = "") {
+            optionsContainer.innerHTML = "";
+            const filteredTeams = teamsList.filter(t => 
+              t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+              .includes(filterText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+            );
+
+            if (filteredTeams.length === 0) {
+              optionsContainer.innerHTML = `<div class="py-2 text-center text-slate-500 text-[10px]">No se encontraron resultados</div>`;
+              return;
+            }
+
+            filteredTeams.forEach(t => {
+              const flag = getCountryFlag(t);
+              const optBtn = document.createElement("button");
+              optBtn.type = "button";
+              optBtn.className = "w-full text-left px-2.5 py-1.5 rounded-lg text-xs text-white hover:bg-purple-500/20 hover:text-purple-300 transition flex items-center gap-2 font-bold cursor-pointer";
+              optBtn.innerHTML = `<span>${flag}</span> <span>${t}</span>`;
+              optBtn.addEventListener("click", () => {
+                selectTeam(t);
+                dropdown.classList.add("hidden");
+              });
+              optionsContainer.appendChild(optBtn);
+            });
+          }
+
+          function selectTeam(teamName) {
+            if (!teamName) {
+              hiddenInput.value = "";
+              selectedSpan.innerHTML = `<span class="text-slate-500 font-semibold">Seleccionar Equipo ${type === "local" ? "Local" : "Visitante"}...</span>`;
+            } else {
+              hiddenInput.value = teamName;
+              const flag = getCountryFlag(teamName);
+              selectedSpan.innerHTML = `<span>${flag}</span> <span class="text-white font-extrabold">${teamName}</span>`;
+            }
+            // Trigger change event
+            hiddenInput.dispatchEvent(new Event("change"));
+          }
+
+          // Guardar el cargador en window para poder seleccionarlo al editar
+          window[`setAdminSelect${type.charAt(0).toUpperCase() + type.slice(1)}`] = selectTeam;
+
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            // Cerrar el otro primero
+            const otherType = type === "local" ? "visitante" : "local";
+            const otherDropdown = document.getElementById(`admin-select-${otherType}-dropdown`);
+            if (otherDropdown) otherDropdown.classList.add("hidden");
+            
+            dropdown.classList.toggle("hidden");
+            if (!dropdown.classList.contains("hidden")) {
+              searchInput.value = "";
+              renderOptions("");
+              searchInput.focus();
+            }
+          });
+
+          searchInput.addEventListener("input", (e) => {
+            renderOptions(e.target.value);
+          });
+
+          // Prevenir que el click en el dropdown lo cierre
+          dropdown.addEventListener("click", (e) => {
+            e.stopPropagation();
+          });
+        }
+
+        // Cerrar al hacer click fuera
+        document.addEventListener("click", () => {
+          const dl = document.getElementById("admin-select-local-dropdown");
+          const dv = document.getElementById("admin-select-visitante-dropdown");
+          if (dl) dl.classList.add("hidden");
+          if (dv) dv.classList.add("hidden");
+        });
+      }
 
     </script>
 
