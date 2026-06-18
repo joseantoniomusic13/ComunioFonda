@@ -1286,6 +1286,134 @@
               </button>
             </div>
           </div>
+
+          <!-- CATEGORY 9 (RECOMPENSA POR JORNADA) -->
+          <div class="glass-panel border border-white/5 rounded-2xl overflow-hidden mt-4">
+            <button
+              class="w-full px-5 py-4 flex items-center justify-between text-left font-extrabold text-xs md:text-sm uppercase tracking-wider text-emerald-400 bg-emerald-950/10 hover:bg-emerald-950/20 cursor-pointer transition select-none"
+              onclick="toggleAccordion('acc-admin-rewards')">
+              <span class="flex items-center gap-2">
+                <i data-lucide="gift" class="w-4 h-4 text-emerald-400 animate-pulse"></i>
+                9. Recompensa por Jornada
+              </span>
+              <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" id="chevron-acc-admin-rewards"></i>
+            </button>
+            <div id="acc-admin-rewards" class="p-5 space-y-4 bg-fonda-950/40 hidden text-xs">
+              <p class="text-[10px] text-slate-400 leading-relaxed">
+                Asigna premios en dólares ($) y Fonda Coins (FC) a los mánagers según su rendimiento en la jornada activa. 
+                Por defecto, la recompensa base es de <strong class="text-emerald-400">1M$ por cada 1 punto</strong>. 
+                Las recompensas extra por clasificación serán <strong class="text-purple-400">exclusivamente en FC</strong>, y el administrador decide cuándo entregarlas.
+              </p>
+
+              <!-- CONFIGURATION PRESETS FOR BALANCE -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950/30 rounded-2xl border border-white/5 p-4 text-[11px] md:text-xs">
+                <div class="space-y-2">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Multiplicador Base ($/Punto)</label>
+                  <div class="flex items-center gap-2">
+                    <input type="number" id="admin-reward-multiplier" oninput="loadAdminRewardsTable(false)" value="1.0" min="0" step="0.1" class="glass-input w-24 px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10 text-center">
+                    <span class="text-xs text-slate-400">M$ por punto</span>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Premios del Podio (Extras en FC)</label>
+                  <p class="text-[9px] text-slate-500 leading-relaxed">
+                    Bono automático para los mejores de la jornada:
+                    <br>• 1º Puesto: <strong class="text-purple-400">+5 FC</strong> | 2º Puesto: <strong class="text-purple-400">+3 FC</strong>
+                    <br>• 3º Puesto: <strong class="text-purple-400">+2 FC</strong> | 4º y 5º Puesto: <strong class="text-purple-400">+1 FC</strong>
+                  </p>
+                </div>
+              </div>
+
+              <!-- DYNAMIC TABLE OF MATCHDAY PERFORMANCE & CALCULATED REWARDS -->
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <h5 class="text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5">
+                    <i data-lucide="users" class="w-3.5 h-3.5 text-amber-400"></i>
+                    Clasificación y Reparto de la Jornada
+                  </h5>
+                  <button type="button" onclick="loadAdminRewardsTable()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[9px] uppercase font-black tracking-wider transition cursor-pointer flex items-center justify-center gap-1">
+                    <i data-lucide="refresh-cw" class="w-3 h-3"></i> Recargar
+                  </button>
+                </div>
+                
+                <div class="overflow-x-auto rounded-xl border border-white/5 bg-slate-950/20">
+                  <table class="w-full text-left border-collapse text-[10px] md:text-xs">
+                    <thead>
+                      <tr class="bg-slate-950/50 border-b border-white/5">
+                        <th class="py-2 px-3 font-bold text-slate-400">Pos</th>
+                        <th class="py-2 px-3 font-bold text-slate-400">Mánager</th>
+                        <th class="py-2 px-3 font-bold text-slate-400 text-center">Puntos</th>
+                        <th class="py-2 px-3 font-bold text-slate-400 text-right">Recompensa ($)</th>
+                        <th class="py-2 px-3 font-bold text-slate-400 text-center">Recompensa (FC)</th>
+                        <th class="py-2 px-3 font-bold text-slate-400 text-center">Estado</th>
+                        <th class="py-2 px-3 font-bold text-slate-400 text-center">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="admin-rewards-table-body">
+                      <tr>
+                        <td colspan="7" class="py-8 text-center text-slate-500 italic">Haz clic en Recargar para listar mánagers...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- MASS DISTRIBUTION BUTTON -->
+              <div class="flex justify-end gap-3 pt-2">
+                <button type="button" id="btn-admin-reward-all" onclick="distributeRewardsToAll()" class="w-full md:w-auto py-3 px-6 rounded-xl text-slate-950 font-black text-xs uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10">
+                  <i data-lucide="award" class="w-4 h-4"></i>
+                  Entregar Premios Calculados a Todos
+                </button>
+              </div>
+
+              <!-- INDIVIDUAL MANUAL REWARD EDITOR -->
+              <div class="border-t border-white/5 pt-4 space-y-4">
+                <h5 class="text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="sliders" class="w-3.5 h-3.5 text-amber-400"></i>
+                  Ajuste Manual e Individual
+                </h5>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <!-- Selector de Manager -->
+                  <div class="space-y-2">
+                    <label for="admin-reward-select-user" class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Mánager Seleccionado</label>
+                    <select id="admin-reward-select-user" onchange="onAdminRewardUserChange()" class="glass-input w-full px-3 py-2.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10">
+                      <option value="">Selecciona mánager...</option>
+                    </select>
+                  </div>
+                  <!-- Ajuste $ -->
+                  <div class="space-y-2">
+                    <label for="admin-reward-money-input" class="block text-[10px] font-bold uppercase tracking-wider text-emerald-400">Dinero a Entregar ($)</label>
+                    <div class="relative">
+                      <input type="number" id="admin-reward-money-input" min="0" step="0.5" value="0" class="glass-input w-full pl-3 pr-10 py-2.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-emerald-500/20">
+                      <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-emerald-400 font-extrabold uppercase">M$</span>
+                    </div>
+                  </div>
+                  <!-- Ajuste FC -->
+                  <div class="space-y-2">
+                    <label for="admin-reward-fc-input" class="block text-[10px] font-bold uppercase tracking-wider text-purple-400">Fonda Coins a Entregar (FC)</label>
+                    <div class="relative">
+                      <input type="number" id="admin-reward-fc-input" min="0" step="1" value="0" class="glass-input w-full pl-3 pr-10 py-2.5 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20">
+                      <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-purple-400 font-extrabold uppercase">FC</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3">
+                  <button type="button" id="btn-admin-reward-single" onclick="distributeSingleReward()" disabled class="flex-1 py-3 px-4 rounded-xl text-slate-950 font-black text-xs uppercase tracking-wider bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    Entregar Recompensa Individual
+                  </button>
+                  <button type="button" id="btn-admin-reward-reset-jornada" onclick="resetRewardsForCurrentJornada()" class="py-3 px-4 rounded-xl text-rose-400 hover:text-white font-black text-xs uppercase tracking-wider bg-rose-950/20 hover:bg-rose-600 border border-rose-500/30 hover:border-transparent active:scale-[0.98] transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-rose-950/20">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    Reiniciar Recompensas de la Jornada
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
 
       </div>
@@ -9182,6 +9310,7 @@
       // Cuando el admin cambia la liga
       document.getElementById("admin-select-league").addEventListener("change", async (e) => {
         adminSelectedLeagueId = e.target.value;
+        window.cachedAdminRewardsUsers = [];
         const selectUser = document.getElementById("admin-select-user");
         const selectJornada = document.getElementById("admin-select-jornada");
         const btnSetJornada = document.getElementById("btn-admin-set-jornada");
@@ -13530,6 +13659,10 @@
         if (isHidden) {
           accordion.classList.remove("hidden");
           accordion.classList.add("animate-fade-in");
+          
+          if (id === "acc-admin-rewards") {
+            window.loadAdminRewardsTable(true);
+          }
         } else {
           accordion.classList.add("hidden");
         }
@@ -17144,12 +17277,385 @@
           await Promise.all(promises);
           showNotification(`📢 Actualización enviada con éxito a ${usersSnap.docs.length} usuarios (+5 FC asignados en su buzón).`, "success");
           textInput.value = "";
-        } catch (err) {
-          console.error("Error al enviar actualizaciones:", err);
-          showNotification("Error al enviar la actualización y los FC.", "error");
         } finally {
           if (btn) btn.disabled = false;
           if (spinner) spinner.classList.add("hidden");
+        }
+      };
+
+      // =========================================================================
+      // ================= 9. RECOMPENSA POR JORNADA (ADMIN ONLY) =================
+      // =========================================================================
+
+      window.cachedAdminRewardsUsers = [];
+
+      window.loadAdminRewardsTable = async function (forceFetch = true) {
+        const tableBody = document.getElementById("admin-rewards-table-body");
+        const selectUserReward = document.getElementById("admin-reward-select-user");
+        if (!tableBody) return;
+
+        const leagueId = adminSelectedLeagueId || currentActiveLeague;
+        if (!leagueId) {
+          tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500 italic">Por favor, selecciona una liga en la Sección 1 primero.</td></tr>`;
+          return;
+        }
+
+        const activeJornada = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+
+        try {
+          if (forceFetch || window.cachedAdminRewardsUsers.length === 0) {
+            tableBody.innerHTML = `
+              <tr>
+                <td colspan="7" class="py-8 text-center text-slate-400 font-medium">
+                  Cargando clasificación de jornada... <i data-lucide="loader" class="w-3.5 h-3.5 inline animate-spin ml-1"></i>
+                </td>
+              </tr>
+            `;
+            if (window.lucide) lucide.createIcons();
+
+            const leagueDoc = await getDoc(doc(db, "leagues", leagueId));
+            if (!leagueDoc.exists()) {
+              tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-rose-400 font-bold">No se encontró la liga activa.</td></tr>`;
+              return;
+            }
+
+            const leagueData = leagueDoc.data();
+            const participantes = leagueData.participantes || leagueData.miembros || [];
+            if (participantes.length === 0) {
+              tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500 italic">La liga no tiene participantes aún.</td></tr>`;
+              return;
+            }
+
+            const q = query(collection(db, "users"), where("uid", "in", participantes));
+            const usersSnapshot = await getDocs(q);
+            const users = [];
+            usersSnapshot.forEach(docSnap => {
+              users.push({ uid: docSnap.id, ...docSnap.data() });
+            });
+
+            window.cachedAdminRewardsUsers = users;
+          }
+
+          const users = window.cachedAdminRewardsUsers;
+          const multiplier = parseFloat(document.getElementById("admin-reward-multiplier").value) || 1.0;
+
+          users.sort((a, b) => (b.puntos_jornada_actual || 0) - (a.puntos_jornada_actual || 0));
+
+          let currentRank = 1;
+          for (let i = 0; i < users.length; i++) {
+            const u = users[i];
+            if (i > 0 && (u.puntos_jornada_actual || 0) < (users[i - 1].puntos_jornada_actual || 0)) {
+              currentRank = i + 1;
+            }
+            u.calculatedRank = currentRank;
+            u.calculatedMoney = (u.puntos_jornada_actual || 0) * multiplier;
+            
+            let calculatedFC = 0;
+            if (u.calculatedRank === 1) calculatedFC = 5;
+            else if (u.calculatedRank === 2) calculatedFC = 3;
+            else if (u.calculatedRank === 3) calculatedFC = 2;
+            else if (u.calculatedRank === 4 || u.calculatedRank === 5) calculatedFC = 1;
+            
+            u.calculatedFC = calculatedFC;
+            
+            const jr = u.jornadas_recompensadas || [];
+            u.isRewarded = jr.includes(activeJornada);
+          }
+
+          if (selectUserReward) {
+            selectUserReward.innerHTML = `<option value="">Selecciona mánager...</option>`;
+            users.forEach(u => {
+              const opt = document.createElement("option");
+              opt.value = u.uid;
+              opt.textContent = `${u.nombre_usuario} (${u.calculatedRank}º - ${u.puntos_jornada_actual || 0} PTS)`;
+              selectUserReward.appendChild(opt);
+            });
+          }
+
+          if (users.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500 italic">No hay mánagers para listar.</td></tr>`;
+            return;
+          }
+
+          tableBody.innerHTML = users.map(u => {
+            const rankBadge = u.calculatedRank === 1 
+              ? `<span class="bg-amber-500 text-slate-950 font-black px-2 py-0.5 rounded text-[10px]">1º 👑</span>` 
+              : u.calculatedRank === 2 
+              ? `<span class="bg-slate-300 text-slate-950 font-black px-2 py-0.5 rounded text-[10px]">2º 🥈</span>`
+              : u.calculatedRank === 3 
+              ? `<span class="bg-amber-700 text-white font-black px-2 py-0.5 rounded text-[10px]">3º 🥉</span>`
+              : `<span class="text-slate-400 font-bold px-1">${u.calculatedRank}º</span>`;
+
+            const moneyText = `${u.calculatedMoney.toFixed(1)} M$`;
+            const fcText = `${u.calculatedFC} FC`;
+            
+            const statusBadge = u.isRewarded 
+              ? `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[9px] font-black uppercase">Entregado</span>`
+              : `<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[9px] font-black uppercase">Pendiente</span>`;
+
+            const actionBtn = u.isRewarded
+              ? `<button type="button" disabled class="opacity-40 cursor-not-allowed bg-slate-800 text-slate-500 px-2 py-1 rounded text-[9px] font-bold">Cargar</button>`
+              : `<button type="button" onclick="loadUserToManualRewardEditor('${u.uid}')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2 py-1 rounded text-[9px] font-black transition cursor-pointer">Cargar</button>`;
+
+            return `
+              <tr class="border-b border-white/5 hover:bg-white/[0.02] transition text-left">
+                <td class="py-2.5 px-3 font-medium">${rankBadge}</td>
+                <td class="py-2.5 px-3">
+                  <div class="font-extrabold text-white">${u.nombre_usuario}</div>
+                  <div class="text-[9px] text-slate-400 truncate max-w-[120px]">${u.nombre_equipo || "Sin equipo"}</div>
+                </td>
+                <td class="py-2.5 px-3 text-center font-black text-white">${u.puntos_jornada_actual || 0}</td>
+                <td class="py-2.5 px-3 text-right font-black text-emerald-400">${moneyText}</td>
+                <td class="py-2.5 px-3 text-center font-black text-purple-400">${fcText}</td>
+                <td class="py-2.5 px-3 text-center">${statusBadge}</td>
+                <td class="py-2.5 px-3 text-center">${actionBtn}</td>
+              </tr>
+            `;
+          }).join("");
+
+          if (window.lucide) lucide.createIcons();
+
+        } catch (err) {
+          console.error("Error al cargar tabla de recompensas admin:", err);
+          tableBody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-red-400 font-bold">Error de base de datos al cargar la clasificación.</td></tr>`;
+        }
+      };
+
+      window.loadUserToManualRewardEditor = function (userId) {
+        const select = document.getElementById("admin-reward-select-user");
+        if (select) {
+          select.value = userId;
+          window.onAdminRewardUserChange();
+          const targetEl = document.getElementById("admin-reward-select-user");
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      };
+
+      window.onAdminRewardUserChange = function () {
+        const select = document.getElementById("admin-reward-select-user");
+        const moneyInput = document.getElementById("admin-reward-money-input");
+        const fcInput = document.getElementById("admin-reward-fc-input");
+        const btnSingle = document.getElementById("btn-admin-reward-single");
+
+        if (!select || !select.value) {
+          if (moneyInput) moneyInput.value = 0;
+          if (fcInput) fcInput.value = 0;
+          if (btnSingle) btnSingle.disabled = true;
+          return;
+        }
+
+        const userId = select.value;
+        const u = window.cachedAdminRewardsUsers.find(x => x.uid === userId);
+        if (u) {
+          if (moneyInput) moneyInput.value = u.calculatedMoney;
+          if (fcInput) fcInput.value = u.calculatedFC;
+          if (btnSingle) btnSingle.disabled = u.isRewarded;
+        }
+      };
+
+      window.distributeSingleReward = async function () {
+        const select = document.getElementById("admin-reward-select-user");
+        if (!select || !select.value) return;
+
+        const userId = select.value;
+        const u = window.cachedAdminRewardsUsers.find(x => x.uid === userId);
+        if (!u) return;
+
+        const activeJornada = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+
+        if (u.isRewarded) {
+          showNotification("Este mánager ya ha recibido su recompensa para esta jornada.", "error");
+          return;
+        }
+
+        const moneyVal = parseFloat(document.getElementById("admin-reward-money-input").value) || 0;
+        const fcVal = parseInt(document.getElementById("admin-reward-fc-input").value) || 0;
+        const moneyBytes = moneyVal * 1000000;
+
+        if (!confirm(`¿Confirmas entregar la recompensa a ${u.nombre_usuario} para la ${activeJornada}?\n\n• Monto: +${moneyVal.toFixed(1)}M$\n• Fonda Coins: +${fcVal} FC`)) {
+          return;
+        }
+
+        const btnSingle = document.getElementById("btn-admin-reward-single");
+        if (btnSingle) btnSingle.disabled = true;
+
+        try {
+          const userRef = doc(db, "users", userId);
+          const userSnap = await getDoc(userRef);
+
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            const currentBActual = userData.presupuesto_actual || 0;
+            const currentBClub = userData.presupuesto_club || 0;
+            const currentFC = userData.fonda_coins || 0;
+            const jr = userData.jornadas_recompensadas || [];
+
+            if (jr.includes(activeJornada)) {
+              showNotification("Error: Este usuario ya tiene guardada esta jornada como recompensada.", "error");
+              return;
+            }
+
+            const newBActual = currentBActual + moneyBytes;
+            const newBClub = currentBClub + moneyBytes;
+            const newFC = currentFC + fcVal;
+            const newJR = [...jr, activeJornada];
+
+            await updateDoc(userRef, {
+              presupuesto_actual: newBActual,
+              presupuesto_club: newBClub,
+              fonda_coins: newFC,
+              jornadas_recompensadas: newJR
+            });
+
+            const rewardId = `reward_matchday_${cleanIdString(activeJornada)}_${userId}_${Date.now()}`;
+            const mailboxRef = doc(db, "users", userId, "mailbox", rewardId);
+
+            await setDoc(mailboxRef, {
+              id: rewardId,
+              type: "transfer_confirmed",
+              title: `🏆 Recompensa: ${activeJornada}`,
+              description: `El Gran Fondero te ha ingresado +${moneyVal.toFixed(1)}M$ y +${fcVal} FC por tu rendimiento en la jornada (${u.puntos_jornada_actual || 0} PTS, Clasificación: #${u.calculatedRank}).`,
+              claimed: false,
+              createdAt: Date.now()
+            });
+
+            showNotification(`✅ Recompensa entregada con éxito a ${u.nombre_usuario}.`, "success");
+            await window.loadAdminRewardsTable(true);
+          }
+        } catch (err) {
+          console.error("Error al entregar recompensa individual:", err);
+          showNotification("Error de base de datos al realizar el ingreso.", "error");
+          if (btnSingle) btnSingle.disabled = false;
+        }
+      };
+
+      window.distributeRewardsToAll = async function () {
+        const users = window.cachedAdminRewardsUsers || [];
+        const activeJornada = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+
+        const pendingUsers = users.filter(u => !u.isRewarded);
+
+        if (pendingUsers.length === 0) {
+          showNotification("Todos los mánagers ya han recibido su recompensa para esta jornada.", "info");
+          return;
+        }
+
+        const summaryList = pendingUsers.map(u => `• ${u.nombre_usuario}: +${u.calculatedMoney.toFixed(1)}M$ y +${u.calculatedFC} FC (${u.puntos_jornada_actual || 0} PTS, #${u.calculatedRank})`).join("\n");
+        
+        if (!confirm(`¿Estás seguro de que deseas entregar las recompensas automáticas de la ${activeJornada} a los siguientes mánagers?\n\n${summaryList}`)) {
+          return;
+        }
+
+        const btnAll = document.getElementById("btn-admin-reward-all");
+        if (btnAll) {
+          btnAll.disabled = true;
+          btnAll.textContent = "Procesando...";
+        }
+
+        let successCount = 0;
+        let failCount = 0;
+
+        try {
+          for (const u of pendingUsers) {
+            try {
+              const userRef = doc(db, "users", u.uid);
+              const userSnap = await getDoc(userRef);
+
+              if (userSnap.exists()) {
+                const userData = userSnap.data();
+                const jr = userData.jornadas_recompensadas || [];
+
+                if (jr.includes(activeJornada)) {
+                  failCount++;
+                  continue;
+                }
+
+                const moneyBytes = u.calculatedMoney * 1000000;
+                const newBActual = (userData.presupuesto_actual || 0) + moneyBytes;
+                const newBClub = (userData.presupuesto_club || 0) + moneyBytes;
+                const newFC = (userData.fonda_coins || 0) + u.calculatedFC;
+                const newJR = [...jr, activeJornada];
+
+                await updateDoc(userRef, {
+                  presupuesto_actual: newBActual,
+                  presupuesto_club: newBClub,
+                  fonda_coins: newFC,
+                  jornadas_recompensadas: newJR
+                });
+
+                const rewardId = `reward_matchday_${cleanIdString(activeJornada)}_${u.uid}_${Date.now()}`;
+                const mailboxRef = doc(db, "users", u.uid, "mailbox", rewardId);
+
+                await setDoc(mailboxRef, {
+                  id: rewardId,
+                  type: "transfer_confirmed",
+                  title: `🏆 Recompensa: ${activeJornada}`,
+                  description: `El Gran Fondero te ha ingresado +${u.calculatedMoney.toFixed(1)}M$ y +${u.calculatedFC} FC por tu rendimiento en la jornada (${u.puntos_jornada_actual || 0} PTS, Clasificación: #${u.calculatedRank}).`,
+                  claimed: false,
+                  createdAt: Date.now()
+                });
+
+                successCount++;
+              }
+            } catch (singleErr) {
+              console.error(`Error procesando recompensa masiva para ${u.nombre_usuario}:`, singleErr);
+              failCount++;
+            }
+          }
+
+          showNotification(`✅ Reparto completado. Éxitos: ${successCount}. Errores: ${failCount}.`, successCount > 0 ? "success" : "error");
+          await window.loadAdminRewardsTable(true);
+        } catch (err) {
+          console.error("Error global en reparto masivo:", err);
+          showNotification("Error global al procesar las recompensas.", "error");
+        } finally {
+          if (btnAll) {
+            btnAll.disabled = false;
+            btnAll.innerHTML = `<i data-lucide="award" class="w-4 h-4"></i> Entregar Premios Calculados a Todos`;
+            if (window.lucide) lucide.createIcons();
+          }
+        }
+      };
+
+      window.resetRewardsForCurrentJornada = async function () {
+        const users = window.cachedAdminRewardsUsers || [];
+        const activeJornada = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+
+        const rewardedUsers = users.filter(u => u.isRewarded);
+
+        if (rewardedUsers.length === 0) {
+          showNotification("Ningún mánager tiene recompensas registradas en esta jornada.", "info");
+          return;
+        }
+
+        const names = rewardedUsers.map(u => u.nombre_usuario).join(", ");
+        if (!confirm(`⚠️ CUIDADO: Esta acción eliminará el registro de recompensado para la ${activeJornada} de los siguientes mánagers:\n\n${names}\n\nNo descuenta el dinero ni las FC ingresadas, pero permitirá volver a pagarles la jornada. ¿Proceder?`)) {
+          return;
+        }
+
+        try {
+          for (const u of rewardedUsers) {
+            const userRef = doc(db, "users", u.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              const jr = userData.jornadas_recompensadas || [];
+              const newJR = jr.filter(jName => jName !== activeJornada);
+
+              await updateDoc(userRef, {
+                jornadas_recompensadas: newJR
+              });
+            }
+          }
+
+          showNotification(`✅ Historial de recompensas reiniciado para la ${activeJornada}.`, "success");
+          await window.loadAdminRewardsTable(true);
+        } catch (err) {
+          console.error("Error al reiniciar histórico de recompensas:", err);
+          showNotification("Error al reiniciar el estado de recompensas.", "error");
         }
       };
 
