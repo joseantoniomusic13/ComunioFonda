@@ -1306,13 +1306,27 @@
               </p>
 
               <!-- CONFIGURATION PRESETS FOR BALANCE -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950/30 rounded-2xl border border-white/5 p-4 text-[11px] md:text-xs">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-950/30 rounded-2xl border border-white/5 p-4 text-[11px] md:text-xs">
                 <div class="space-y-2">
                   <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Multiplicador Base ($/Punto)</label>
                   <div class="flex items-center gap-2">
                     <input type="number" id="admin-reward-multiplier" oninput="loadAdminRewardsTable(false)" value="1.0" min="0" step="0.1" class="glass-input w-24 px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10 text-center">
                     <span class="text-xs text-slate-400">M$ por punto</span>
                   </div>
+                </div>
+
+                <div class="space-y-2">
+                  <label for="admin-reward-jornada-select" class="block text-xs font-bold uppercase tracking-wider text-amber-400">Jornada a Recompensar</label>
+                  <select id="admin-reward-jornada-select" onchange="loadAdminRewardsTable(true)" class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-white/10">
+                    <option value="Jornada 1">Jornada 1</option>
+                    <option value="Jornada 2">Jornada 2</option>
+                    <option value="Jornada 3">Jornada 3</option>
+                    <option value="Octavos de Final">Octavos de Final</option>
+                    <option value="Cuartos de Final">Cuartos de Final</option>
+                    <option value="Semifinales">Semifinales</option>
+                    <option value="Tercer Puesto">Tercer Puesto</option>
+                    <option value="Final">Final</option>
+                  </select>
                 </div>
 
                 <div class="space-y-2">
@@ -9311,6 +9325,8 @@
       document.getElementById("admin-select-league").addEventListener("change", async (e) => {
         adminSelectedLeagueId = e.target.value;
         window.cachedAdminRewardsUsers = [];
+        window.cachedAdminRewardsTeams = null;
+        window.adminRewardJornadaLastLeague = null;
         const selectUser = document.getElementById("admin-select-user");
         const selectJornada = document.getElementById("admin-select-jornada");
         const btnSetJornada = document.getElementById("btn-admin-set-jornada");
@@ -17288,6 +17304,8 @@
       // =========================================================================
 
       window.cachedAdminRewardsUsers = [];
+      window.cachedAdminRewardsTeams = null;
+      window.adminRewardJornadaLastLeague = null;
 
       window.loadAdminRewardsTable = async function (forceFetch = true) {
         const tableBody = document.getElementById("admin-rewards-table-body");
@@ -17301,9 +17319,18 @@
         }
 
         const activeJornada = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+        
+        // Initializing the dropdown if it hasn't been initialized or league changed
+        const selectRewardJornada = document.getElementById("admin-reward-jornada-select");
+        if (selectRewardJornada && window.adminRewardJornadaLastLeague !== leagueId) {
+          selectRewardJornada.value = activeJornada;
+          window.adminRewardJornadaLastLeague = leagueId;
+        }
+        
+        const selectedJornada = selectRewardJornada ? selectRewardJornada.value : activeJornada;
 
         try {
-          if (forceFetch || window.cachedAdminRewardsUsers.length === 0) {
+          if (forceFetch || window.cachedAdminRewardsUsers.length === 0 || !window.cachedAdminRewardsTeams) {
             tableBody.innerHTML = `
               <tr>
                 <td colspan="7" class="py-8 text-center text-slate-400 font-medium">
@@ -17334,21 +17361,52 @@
             });
 
             window.cachedAdminRewardsUsers = users;
+
+            // Fetch team documents:
+            const teamsMap = {};
+            await Promise.all(participantes.map(async (uid) => {
+              const teamDocId = getTeamDocId(uid, leagueId);
+              if (teamDocId) {
+                const teamSnap = await getDoc(doc(db, "user_teams", teamDocId));
+                if (teamSnap.exists()) {
+                  teamsMap[uid] = teamSnap.data();
+                }
+              }
+            }));
+            window.cachedAdminRewardsTeams = teamsMap;
           }
 
           const users = window.cachedAdminRewardsUsers;
+          const teamsMap = window.cachedAdminRewardsTeams || {};
           const multiplier = parseFloat(document.getElementById("admin-reward-multiplier").value) || 1.0;
 
-          users.sort((a, b) => (b.puntos_jornada_actual || 0) - (a.puntos_jornada_actual || 0));
+          // Calculate points for the selected jornada for each user
+          users.forEach(u => {
+            const team = teamsMap[u.uid];
+            let pts = 0;
+            if (team && team.puntos_por_jornada && team.puntos_por_jornada[selectedJornada] !== undefined) {
+              // If we have closed points for this jornada, use them
+              pts = team.puntos_por_jornada[selectedJornada] || 0;
+            } else if (selectedJornada === activeJornada) {
+              // If it's the active (and not closed) jornada, use the live points from user document
+              pts = u.puntos_jornada_actual || 0;
+            } else {
+              // If it's a past/other jornada that was never recorded or has no points, default to 0
+              pts = 0;
+            }
+            u.selectedJornadaPoints = pts;
+          });
+
+          users.sort((a, b) => (b.selectedJornadaPoints || 0) - (a.selectedJornadaPoints || 0));
 
           let currentRank = 1;
           for (let i = 0; i < users.length; i++) {
             const u = users[i];
-            if (i > 0 && (u.puntos_jornada_actual || 0) < (users[i - 1].puntos_jornada_actual || 0)) {
+            if (i > 0 && (u.selectedJornadaPoints || 0) < (users[i - 1].selectedJornadaPoints || 0)) {
               currentRank = i + 1;
             }
             u.calculatedRank = currentRank;
-            u.calculatedMoney = (u.puntos_jornada_actual || 0) * multiplier;
+            u.calculatedMoney = (u.selectedJornadaPoints || 0) * multiplier;
             
             let calculatedFC = 0;
             if (u.calculatedRank === 1) calculatedFC = 5;
@@ -17359,7 +17417,7 @@
             u.calculatedFC = calculatedFC;
             
             const jr = u.jornadas_recompensadas || [];
-            u.isRewarded = jr.includes(activeJornada);
+            u.isRewarded = jr.includes(selectedJornada);
           }
 
           if (selectUserReward) {
@@ -17367,7 +17425,7 @@
             users.forEach(u => {
               const opt = document.createElement("option");
               opt.value = u.uid;
-              opt.textContent = `${u.nombre_usuario} (${u.calculatedRank}º - ${u.puntos_jornada_actual || 0} PTS)`;
+              opt.textContent = `${u.nombre_usuario} (${u.calculatedRank}º - ${u.selectedJornadaPoints || 0} PTS)`;
               selectUserReward.appendChild(opt);
             });
           }
@@ -17404,7 +17462,7 @@
                   <div class="font-extrabold text-white">${u.nombre_usuario}</div>
                   <div class="text-[9px] text-slate-400 truncate max-w-[120px]">${u.nombre_equipo || "Sin equipo"}</div>
                 </td>
-                <td class="py-2.5 px-3 text-center font-black text-white">${u.puntos_jornada_actual || 0}</td>
+                <td class="py-2.5 px-3 text-center font-black text-white">${u.selectedJornadaPoints || 0}</td>
                 <td class="py-2.5 px-3 text-right font-black text-emerald-400">${moneyText}</td>
                 <td class="py-2.5 px-3 text-center font-black text-purple-400">${fcText}</td>
                 <td class="py-2.5 px-3 text-center">${statusBadge}</td>
@@ -17463,7 +17521,8 @@
         const u = window.cachedAdminRewardsUsers.find(x => x.uid === userId);
         if (!u) return;
 
-        const activeJornada = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+        const selectRewardJornada = document.getElementById("admin-reward-jornada-select");
+        const selectedJornada = selectRewardJornada ? selectRewardJornada.value : (currentActiveLeagueData?.jornada_activa || "Jornada 1");
 
         if (u.isRewarded) {
           showNotification("Este mánager ya ha recibido su recompensa para esta jornada.", "error");
@@ -17474,7 +17533,7 @@
         const fcVal = parseInt(document.getElementById("admin-reward-fc-input").value) || 0;
         const moneyBytes = moneyVal * 1000000;
 
-        if (!confirm(`¿Confirmas entregar la recompensa a ${u.nombre_usuario} para la ${activeJornada}?\n\n• Monto: +${moneyVal.toFixed(1)}M$\n• Fonda Coins: +${fcVal} FC`)) {
+        if (!confirm(`¿Confirmas entregar la recompensa a ${u.nombre_usuario} para la ${selectedJornada}?\n\n• Monto: +${moneyVal.toFixed(1)}M$\n• Fonda Coins: +${fcVal} FC`)) {
           return;
         }
 
@@ -17492,7 +17551,7 @@
             const currentFC = userData.fonda_coins || 0;
             const jr = userData.jornadas_recompensadas || [];
 
-            if (jr.includes(activeJornada)) {
+            if (jr.includes(selectedJornada)) {
               showNotification("Error: Este usuario ya tiene guardada esta jornada como recompensada.", "error");
               return;
             }
@@ -17500,7 +17559,7 @@
             const newBActual = currentBActual + moneyBytes;
             const newBClub = currentBClub + moneyBytes;
             const newFC = currentFC + fcVal;
-            const newJR = [...jr, activeJornada];
+            const newJR = [...jr, selectedJornada];
 
             await updateDoc(userRef, {
               presupuesto_actual: newBActual,
@@ -17509,14 +17568,14 @@
               jornadas_recompensadas: newJR
             });
 
-            const rewardId = `reward_matchday_${cleanIdString(activeJornada)}_${userId}_${Date.now()}`;
+            const rewardId = `reward_matchday_${cleanIdString(selectedJornada)}_${userId}_${Date.now()}`;
             const mailboxRef = doc(db, "users", userId, "mailbox", rewardId);
 
             await setDoc(mailboxRef, {
               id: rewardId,
               type: "transfer_confirmed",
-              title: `🏆 Recompensa: ${activeJornada}`,
-              description: `El Gran Fondero te ha ingresado +${moneyVal.toFixed(1)}M$ y +${fcVal} FC por tu rendimiento en la jornada (${u.puntos_jornada_actual || 0} PTS, Clasificación: #${u.calculatedRank}).`,
+              title: `🏆 Recompensa: ${selectedJornada}`,
+              description: `El Gran Fondero te ha ingresado +${moneyVal.toFixed(1)}M$ y +${fcVal} FC por tu rendimiento en la jornada (${u.selectedJornadaPoints || 0} PTS, Clasificación: #${u.calculatedRank}).`,
               claimed: false,
               createdAt: Date.now()
             });
@@ -17533,7 +17592,8 @@
 
       window.distributeRewardsToAll = async function () {
         const users = window.cachedAdminRewardsUsers || [];
-        const activeJornada = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+        const selectRewardJornada = document.getElementById("admin-reward-jornada-select");
+        const selectedJornada = selectRewardJornada ? selectRewardJornada.value : (currentActiveLeagueData?.jornada_activa || "Jornada 1");
 
         const pendingUsers = users.filter(u => !u.isRewarded);
 
@@ -17542,9 +17602,9 @@
           return;
         }
 
-        const summaryList = pendingUsers.map(u => `• ${u.nombre_usuario}: +${u.calculatedMoney.toFixed(1)}M$ y +${u.calculatedFC} FC (${u.puntos_jornada_actual || 0} PTS, #${u.calculatedRank})`).join("\n");
+        const summaryList = pendingUsers.map(u => `• ${u.nombre_usuario}: +${u.calculatedMoney.toFixed(1)}M$ y +${u.calculatedFC} FC (${u.selectedJornadaPoints || 0} PTS, #${u.calculatedRank})`).join("\n");
         
-        if (!confirm(`¿Estás seguro de que deseas entregar las recompensas automáticas de la ${activeJornada} a los siguientes mánagers?\n\n${summaryList}`)) {
+        if (!confirm(`¿Estás seguro de que deseas entregar las recompensas automáticas de la ${selectedJornada} a los siguientes mánagers?\n\n${summaryList}`)) {
           return;
         }
 
@@ -17567,7 +17627,7 @@
                 const userData = userSnap.data();
                 const jr = userData.jornadas_recompensadas || [];
 
-                if (jr.includes(activeJornada)) {
+                if (jr.includes(selectedJornada)) {
                   failCount++;
                   continue;
                 }
@@ -17576,7 +17636,7 @@
                 const newBActual = (userData.presupuesto_actual || 0) + moneyBytes;
                 const newBClub = (userData.presupuesto_club || 0) + moneyBytes;
                 const newFC = (userData.fonda_coins || 0) + u.calculatedFC;
-                const newJR = [...jr, activeJornada];
+                const newJR = [...jr, selectedJornada];
 
                 await updateDoc(userRef, {
                   presupuesto_actual: newBActual,
@@ -17585,14 +17645,14 @@
                   jornadas_recompensadas: newJR
                 });
 
-                const rewardId = `reward_matchday_${cleanIdString(activeJornada)}_${u.uid}_${Date.now()}`;
+                const rewardId = `reward_matchday_${cleanIdString(selectedJornada)}_${u.uid}_${Date.now()}`;
                 const mailboxRef = doc(db, "users", u.uid, "mailbox", rewardId);
 
                 await setDoc(mailboxRef, {
                   id: rewardId,
                   type: "transfer_confirmed",
-                  title: `🏆 Recompensa: ${activeJornada}`,
-                  description: `El Gran Fondero te ha ingresado +${u.calculatedMoney.toFixed(1)}M$ y +${u.calculatedFC} FC por tu rendimiento en la jornada (${u.puntos_jornada_actual || 0} PTS, Clasificación: #${u.calculatedRank}).`,
+                  title: `🏆 Recompensa: ${selectedJornada}`,
+                  description: `El Gran Fondero te ha ingresado +${u.calculatedMoney.toFixed(1)}M$ y +${u.calculatedFC} FC por tu rendimiento en la jornada (${u.selectedJornadaPoints || 0} PTS, Clasificación: #${u.calculatedRank}).`,
                   claimed: false,
                   createdAt: Date.now()
                 });
@@ -17621,7 +17681,8 @@
 
       window.resetRewardsForCurrentJornada = async function () {
         const users = window.cachedAdminRewardsUsers || [];
-        const activeJornada = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+        const selectRewardJornada = document.getElementById("admin-reward-jornada-select");
+        const selectedJornada = selectRewardJornada ? selectRewardJornada.value : (currentActiveLeagueData?.jornada_activa || "Jornada 1");
 
         const rewardedUsers = users.filter(u => u.isRewarded);
 
@@ -17631,7 +17692,7 @@
         }
 
         const names = rewardedUsers.map(u => u.nombre_usuario).join(", ");
-        if (!confirm(`⚠️ CUIDADO: Esta acción eliminará el registro de recompensado para la ${activeJornada} de los siguientes mánagers:\n\n${names}\n\nNo descuenta el dinero ni las FC ingresadas, pero permitirá volver a pagarles la jornada. ¿Proceder?`)) {
+        if (!confirm(`⚠️ CUIDADO: Esta acción eliminará el registro de recompensado para la ${selectedJornada} de los siguientes mánagers:\n\n${names}\n\nNo descuenta el dinero ni las FC ingresadas, pero permitirá volver a pagarles la jornada. ¿Proceder?`)) {
           return;
         }
 
@@ -17643,7 +17704,7 @@
             if (userSnap.exists()) {
               const userData = userSnap.data();
               const jr = userData.jornadas_recompensadas || [];
-              const newJR = jr.filter(jName => jName !== activeJornada);
+              const newJR = jr.filter(jName => jName !== selectedJornada);
 
               await updateDoc(userRef, {
                 jornadas_recompensadas: newJR
@@ -17651,7 +17712,7 @@
             }
           }
 
-          showNotification(`✅ Historial de recompensas reiniciado para la ${activeJornada}.`, "success");
+          showNotification(`✅ Historial de recompensas reiniciado para la ${selectedJornada}.`, "success");
           await window.loadAdminRewardsTable(true);
         } catch (err) {
           console.error("Error al reiniciar histórico de recompensas:", err);
