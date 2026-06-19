@@ -4268,6 +4268,11 @@
                 Publicar
               </button>
             </div>
+            <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-400 font-bold mt-2">
+              <input type="checkbox" id="ppm-venta-ai-bid" checked
+                class="rounded border-slate-600 bg-fonda-950 text-emerald-500 focus:ring-0 w-3.5 h-3.5">
+              <span>Recibir oferta de la IA de la Liga (-5% a -10%)</span>
+            </label>
           </div>
           <button id="ppm-btn-capitan"
             class="hidden w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gold/10 hover:bg-gold/20 border border-gold/20 text-gold font-bold text-xs transition cursor-pointer">
@@ -6152,6 +6157,96 @@
           const player = PLAYERS_POOL.find(p => p.id === playerId);
           const leagueCode = currentActiveLeagueData.id;
 
+          const sellerRef = doc(db, "users", currentUser.uid);
+          const sellerTeamRef = doc(db, "user_teams", getTeamDocId());
+
+          const sellerOwnedIds = currentUserTeam.jugadores_ids || [];
+          const nuevosJugadoresIdsVendedor = sellerOwnedIds.filter(id => id !== playerId);
+          const nuevoPresupuestoVendedor = currentUserProfile.presupuesto_actual + offerPrice;
+
+          const titularesVendedor = { ...currentUserTeam.alineacion.titulares };
+          const suplentesVendedor = { ...currentUserTeam.alineacion.suplentes };
+
+          const posPlural = player.posicion === "portero" ? "portero" :
+            player.posicion === "defensa" ? "defensas" :
+              player.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
+
+          titularesVendedor[posPlural] = (titularesVendedor[posPlural] || []).filter(id => id !== playerId);
+          suplentesVendedor[posPlural] = (suplentesVendedor[posPlural] || []).filter(id => id !== playerId);
+
+          let capitanId = currentUserTeam.capitan_id;
+          if (capitanId === playerId) capitanId = "";
+
+          // Actualizar las cláusulas de rescisión
+          const prevClausulasVendedor = currentUserTeam.clausulas || {};
+          const nuevasClausulasVendedor = { ...prevClausulasVendedor };
+          delete nuevasClausulasVendedor[playerId];
+
+          // Actualizar blindados
+          const prevBlindados = currentUserTeam.blindados || {};
+          const nuevosBlindados = { ...prevBlindados };
+          delete nuevosBlindados[playerId];
+
+          // Actualizar seguros de 24h
+          const prevSeguro24h = currentUserTeam.seguro_24h || {};
+          const nuevoSeguro24h = { ...prevSeguro24h };
+          delete nuevoSeguro24h[playerId];
+
+          // Actualizar motivaciones plus
+          const prevMotivacionPlus = currentUserTeam.motivacion_plus || {};
+          const nuevaMotivacionPlus = { ...prevMotivacionPlus };
+          delete nuevaMotivacionPlus[playerId];
+
+          const prevFechasSeller = { ...(currentUserTeam.fechas_adquisicion || {}) };
+          delete prevFechasSeller[playerId];
+
+          if (buyerUid === "IA_LIGA") {
+            const nuevoPresupuestoClubVendedor = currentUserProfile.presupuesto_club + offerPrice;
+
+            await updateDoc(sellerRef, {
+              presupuesto_actual: nuevoPresupuestoVendedor,
+              presupuesto_club: nuevoPresupuestoClubVendedor
+            });
+            await updateDoc(sellerTeamRef, {
+              jugadores_ids: nuevosJugadoresIdsVendedor,
+              alineacion: { titulares: titularesVendedor, suplentes: suplentesVendedor },
+              capitan_id: capitanId,
+              clausulas: nuevasClausulasVendedor,
+              blindados: nuevosBlindados,
+              seguro_24h: nuevoSeguro24h,
+              motivacion_plus: nuevaMotivacionPlus,
+              players: buildPlayersArrayFromAlineacion(titularesVendedor, suplentesVendedor, nuevosJugadoresIdsVendedor),
+              fechas_adquisicion: prevFechasSeller
+            });
+
+            // Actualizar locales
+            currentUserProfile.presupuesto_actual = nuevoPresupuestoVendedor;
+            currentUserProfile.presupuesto_club = nuevoPresupuestoClubVendedor;
+            currentUserTeam.jugadores_ids = nuevosJugadoresIdsVendedor;
+            currentUserTeam.alineacion = { titulares: titularesVendedor, suplentes: suplentesVendedor };
+            currentUserTeam.capitan_id = capitanId;
+            currentUserTeam.clausulas = nuevasClausulasVendedor;
+            currentUserTeam.blindados = nuevosBlindados;
+            currentUserTeam.seguro_24h = nuevoSeguro24h;
+            currentUserTeam.motivacion_plus = nuevaMotivacionPlus;
+            currentUserTeam.fechas_adquisicion = prevFechasSeller;
+
+            const updatedSecondary = (currentActiveLeagueData.secondary_market || []).filter(x => x.id !== playerId);
+            const updatedIncidencias = [...(currentActiveLeagueData.incidencias || [])];
+            updatedIncidencias.unshift(`🤖 [IA de la Liga] ha comprado a ${player.nombre} a ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} por ${(offerPrice / 1000000).toFixed(1)}M$`);
+
+            await updateDoc(doc(db, "leagues", leagueCode), {
+              secondary_market: updatedSecondary,
+              incidencias: updatedIncidencias
+            });
+
+            window.sendSystemLeagueChatMessage(leagueCode, `🤖 [IA LIGA] ¡La IA de la liga ha comprado a ${player.nombre} a ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} por ${(offerPrice / 1e6).toFixed(1)}M$!`);
+
+            showNotification(`¡Traspaso confirmado! Has vendido a ${player.nombre} a la IA de la Liga por ${(offerPrice / 1000000).toFixed(1)}M$.`);
+            if (window.renderMarketTable) window.renderMarketTable();
+            return;
+          }
+
           const buyerRef = doc(db, "users", buyerUid);
           const buyerTeamRef = doc(db, "user_teams", `${buyerUid}_${currentActiveLeagueData.id}`);
 
@@ -6179,38 +6274,19 @@
           }
 
           // Ejecutar transferencia
-          const sellerOwnedIds = currentUserTeam.jugadores_ids || [];
-          const nuevosJugadoresIdsVendedor = sellerOwnedIds.filter(id => id !== playerId);
-          const nuevoPresupuestoVendedor = currentUserProfile.presupuesto_actual + offerPrice;
-
-          const titularesVendedor = { ...currentUserTeam.alineacion.titulares };
-          const suplentesVendedor = { ...currentUserTeam.alineacion.suplentes };
-
-          const posPlural = player.posicion === "portero" ? "portero" :
-            player.posicion === "defensa" ? "defensas" :
-              player.posicion === "mediocampista" ? "mediocampistas" : "delanteros";
-
-          titularesVendedor[posPlural] = (titularesVendedor[posPlural] || []).filter(id => id !== playerId);
-          suplentesVendedor[posPlural] = (suplentesVendedor[posPlural] || []).filter(id => id !== playerId);
-
-          let capitanId = currentUserTeam.capitan_id;
-          if (capitanId === playerId) capitanId = "";
-
           const nuevosJugadoresIdsComprador = [...buyerOwnedIds, playerId];
           const titularesComprador = { ...buyerTeam.alineacion.titulares };
           const suplentesComprador = { ...buyerTeam.alineacion.suplentes };
-
-          const sellerRef = doc(db, "users", currentUser.uid);
-          const sellerTeamRef = doc(db, "user_teams", getTeamDocId());
-
-          const prevFechasSeller = { ...(currentUserTeam.fechas_adquisicion || {}) };
-          delete prevFechasSeller[playerId];
 
           await updateDoc(sellerRef, { presupuesto_actual: nuevoPresupuestoVendedor });
           await updateDoc(sellerTeamRef, {
             jugadores_ids: nuevosJugadoresIdsVendedor,
             alineacion: { titulares: titularesVendedor, suplentes: suplentesVendedor },
             capitan_id: capitanId,
+            clausulas: nuevasClausulasVendedor,
+            blindados: nuevosBlindados,
+            seguro_24h: nuevoSeguro24h,
+            motivacion_plus: nuevaMotivacionPlus,
             players: buildPlayersArrayFromAlineacion(titularesVendedor, suplentesVendedor, nuevosJugadoresIdsVendedor),
             fechas_adquisicion: prevFechasSeller
           });
@@ -6227,6 +6303,17 @@
             clausulas: { ...prevClausulasComprador, [playerId]: clausulaInicialComprador },
             fechas_adquisicion: { ...prevFechasBuyer, [playerId]: Date.now() }
           });
+
+          // Actualizar locales del vendedor
+          currentUserProfile.presupuesto_actual = nuevoPresupuestoVendedor;
+          currentUserTeam.jugadores_ids = nuevosJugadoresIdsVendedor;
+          currentUserTeam.alineacion = { titulares: titularesVendedor, suplentes: suplentesVendedor };
+          currentUserTeam.capitan_id = capitanId;
+          currentUserTeam.clausulas = nuevasClausulasVendedor;
+          currentUserTeam.blindados = nuevosBlindados;
+          currentUserTeam.seguro_24h = nuevoSeguro24h;
+          currentUserTeam.motivacion_plus = nuevaMotivacionPlus;
+          currentUserTeam.fechas_adquisicion = prevFechasSeller;
 
           const updatedSecondary = (currentActiveLeagueData.secondary_market || []).filter(x => x.id !== playerId);
           const updatedIncidencias = [...(currentActiveLeagueData.incidencias || [])];
@@ -6261,6 +6348,7 @@
           } catch (e) {
             console.error("Error sending transfer_confirmed mailbox alert:", e);
           }
+          if (window.renderMarketTable) window.renderMarketTable();
         } catch (err) {
           console.error("Error accepting offer:", err);
           showNotification("Error en base de datos al realizar el traspaso.", "error");
@@ -6754,7 +6842,8 @@
                   btnConfirmVenta.onclick = async () => {
                     const priceM = parseFloat(ventaPrice.value) || 0;
                     if (priceM <= 0) { showNotification("Indica un precio de venta válido.", "error"); return; }
-                    await listPlayerOnSecondaryFromModal(playerId, priceM);
+                    const allowAiBid = document.getElementById("ppm-venta-ai-bid")?.checked || false;
+                    await listPlayerOnSecondaryFromModal(playerId, priceM, allowAiBid);
                   };
                 }
               }
@@ -6984,7 +7073,7 @@
       }
 
       // --- Poner en Venta desde Modal de Perfil ---
-      async function listPlayerOnSecondaryFromModal(playerId, minPriceM) {
+      async function listPlayerOnSecondaryFromModal(playerId, minPriceM, allowAiBid = false) {
         if (!currentUser || !currentActiveLeagueData || !currentUserProfile) return;
         const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
         
@@ -7004,10 +7093,24 @@
         }
         const clausulaActual = (currentUserTeam.clausulas || {})[playerId] || (player?.precio || 10_000_000);
         try {
+          const bids = [];
+          if (allowAiBid) {
+            const playerPrice = player?.precio || 10_000_000;
+            // Puja entre un 5% y un 10% menos de su valor
+            const discountPercent = 0.05 + Math.random() * 0.05; // 0.05 a 0.10
+            const aiOfferAmount = Math.round(playerPrice * (1 - discountPercent));
+            bids.push({
+              uid: "IA_LIGA",
+              nombre_usuario: "IA de la Liga",
+              price: aiOfferAmount,
+              timestamp: Date.now()
+            });
+          }
+
           const newListing = {
             id: playerId, owner_uid: currentUser.uid,
             owner_name: currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario,
-            min_price: minPrice, clausula: clausulaActual, bids: [],
+            min_price: minPrice, clausula: clausulaActual, bids: bids,
             listed_at: Date.now()
           };
           const updated = [...secondaryMarket, newListing];
