@@ -4268,11 +4268,6 @@
                 Publicar
               </button>
             </div>
-            <label class="flex items-center gap-1.5 cursor-pointer text-[10px] text-slate-400 font-bold mt-2">
-              <input type="checkbox" id="ppm-venta-ai-bid" checked
-                class="rounded border-slate-600 bg-fonda-950 text-emerald-500 focus:ring-0 w-3.5 h-3.5">
-              <span>Recibir oferta de la IA de la Liga (-5% a -10%)</span>
-            </label>
           </div>
           <button id="ppm-btn-capitan"
             class="hidden w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gold/10 hover:bg-gold/20 border border-gold/20 text-gold font-bold text-xs transition cursor-pointer">
@@ -5716,6 +5711,67 @@
         }
       }
 
+      async function processPendingAiBidsForUser(leagueCode, lData) {
+        if (!currentUser) return;
+        const secondaryMarket = lData.secondary_market || [];
+        let modified = false;
+
+        const updatedMarket = [];
+        for (const item of secondaryMarket) {
+          if (item.owner_uid === currentUser.uid && item.ai_bid_at && Date.now() >= item.ai_bid_at && !item.ai_bid_done) {
+            const player = PLAYERS_POOL.find(p => p.id === item.id) || firestorePlayersList.find(p => p.id === item.id);
+            const playerPrice = player?.precio || 10_000_000;
+            const discountPercent = 0.05 + Math.random() * 0.05; // 5% a 10%
+            const aiOfferAmount = Math.round(playerPrice * (1 - discountPercent));
+
+            const bids = item.bids || [];
+            if (!bids.some(b => b.uid === "IA_LIGA")) {
+              bids.push({
+                uid: "IA_LIGA",
+                nombre_usuario: "IA de la Liga",
+                price: aiOfferAmount,
+                timestamp: Date.now()
+              });
+            }
+
+            // Enviar alerta al buzón del usuario vendedor
+            try {
+              const playerName = player ? player.nombre : item.id;
+              await db.collection("users").doc(currentUser.uid).collection("mailbox").add({
+                type: "offer_received",
+                title: `🤖 Oferta de la IA: ${playerName}`,
+                description: `La IA de la Liga te ofrece ${(aiOfferAmount / 1000000).toFixed(1)}M$ por tu jugador.`,
+                claimed: false,
+                createdAt: Date.now()
+              });
+              
+              // Mostrar notificación local
+              showNotification(`🤖 La IA de la Liga ha ofertado por ${playerName}. ¡Revisa tu buzón y el mercado!`, "success");
+            } catch (e) {
+              console.error("Error writing IA mailbox alert:", e);
+            }
+
+            updatedMarket.push({
+              ...item,
+              bids: bids,
+              ai_bid_done: true
+            });
+            modified = true;
+          } else {
+            updatedMarket.push(item);
+          }
+        }
+
+        if (modified) {
+          try {
+            const leagueRef = doc(db, "leagues", leagueCode);
+            await updateDoc(leagueRef, { secondary_market: updatedMarket });
+          } catch (e) {
+            console.error("Error updating league with IA bid:", e);
+          }
+        }
+      }
+
       // Evitar bucles o ejecuciones concurrentes en memoria local
       let isResolvingMarketLocal = false;
 
@@ -6842,8 +6898,7 @@
                   btnConfirmVenta.onclick = async () => {
                     const priceM = parseFloat(ventaPrice.value) || 0;
                     if (priceM <= 0) { showNotification("Indica un precio de venta válido.", "error"); return; }
-                    const allowAiBid = document.getElementById("ppm-venta-ai-bid")?.checked || false;
-                    await listPlayerOnSecondaryFromModal(playerId, priceM, allowAiBid);
+                    await listPlayerOnSecondaryFromModal(playerId, priceM);
                   };
                 }
               }
@@ -7073,7 +7128,7 @@
       }
 
       // --- Poner en Venta desde Modal de Perfil ---
-      async function listPlayerOnSecondaryFromModal(playerId, minPriceM, allowAiBid = false) {
+      async function listPlayerOnSecondaryFromModal(playerId, minPriceM) {
         if (!currentUser || !currentActiveLeagueData || !currentUserProfile) return;
         const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
         
@@ -7094,24 +7149,15 @@
         const clausulaActual = (currentUserTeam.clausulas || {})[playerId] || (player?.precio || 10_000_000);
         try {
           const bids = [];
-          if (allowAiBid) {
-            const playerPrice = player?.precio || 10_000_000;
-            // Puja entre un 5% y un 10% menos de su valor
-            const discountPercent = 0.05 + Math.random() * 0.05; // 0.05 a 0.10
-            const aiOfferAmount = Math.round(playerPrice * (1 - discountPercent));
-            bids.push({
-              uid: "IA_LIGA",
-              nombre_usuario: "IA de la Liga",
-              price: aiOfferAmount,
-              timestamp: Date.now()
-            });
-          }
+          const aiBidAt = Date.now() + Math.random() * 24 * 60 * 60 * 1000; // puja aleatoria en un plazo de 24h
 
           const newListing = {
             id: playerId, owner_uid: currentUser.uid,
             owner_name: currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario,
             min_price: minPrice, clausula: clausulaActual, bids: bids,
-            listed_at: Date.now()
+            listed_at: Date.now(),
+            ai_bid_at: aiBidAt,
+            ai_bid_done: false
           };
           const updated = [...secondaryMarket, newListing];
           await updateDoc(leagueRef, { secondary_market: updated });
@@ -8856,6 +8902,11 @@
 
             // Comprobar y resolver automáticamente el mercado si ha caducado
             checkAndAutoResolveMarket(leagueCode, lData);
+
+            // Procesar pujas automáticas pendientes de la IA para el usuario
+            if (currentUser) {
+              await processPendingAiBidsForUser(leagueCode, lData);
+            }
 
             widgetLeagueName.innerHTML = `${lData.nombre} <span class="ml-2 text-[9px] px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/20 text-gold font-extrabold uppercase inline-block animate-pulse">${lData.jornada_activa || "Jornada 1"}</span>`;
             widgetLeagueCode.textContent = lData.id;
@@ -14380,33 +14431,9 @@
           return;
         }
 
-        const player = PLAYERS_POOL.find(p => p.id === playerId);
-        if (!player) return;
-
         try {
-          const minPriceBytes = minPriceM * 1000000;
-          const leagueCode = currentActiveLeagueData.id;
-          const leagueRef = doc(db, "leagues", leagueCode);
-
-          const secondaryMarket = currentActiveLeagueData.secondary_market || [];
-          const isListed = secondaryMarket.some(x => x.id === playerId);
-          if (isListed) {
-            showNotification("Este jugador ya está puesto a la venta.", "error");
-            return;
-          }
-
-          const newSecondary = [...secondaryMarket, {
-            id: playerId,
-            owner_uid: currentUser.uid,
-            owner_name: currentUserProfile.nombre_usuario,
-            min_price: minPriceBytes,
-            bids: []
-          }];
-
-          await updateDoc(leagueRef, { secondary_market: newSecondary });
-
+          await listPlayerOnSecondaryFromModal(playerId, minPriceM);
           document.getElementById("sell-min-price").value = "";
-          showNotification(`¡${player.nombre} se ha puesto a la venta por un mínimo de ${minPriceM}M$!`);
           if (window.advanceMission) {
             window.advanceMission("daily_negociador", 1);
           }
@@ -20360,32 +20387,39 @@
           const userRef = doc(db, "users", currentUser.uid);
           const rewardRef = doc(db, "users", currentUser.uid, "mailbox", rewardId);
 
-          const batch = firebase.firestore().batch();
-          const isMoney = reward.rewardType === "money";
-
-          if (isMoney) {
-            const currentBActual = currentUserProfile.presupuesto_actual || 0;
-            const currentBClub = currentUserProfile.presupuesto_club || 0;
-            const newBActual = currentBActual + reward.amount;
-            const newBClub = currentBClub + reward.amount;
-
-            batch.update(firebase.firestore().doc(`users/${currentUser.uid}`), {
-              presupuesto_actual: newBActual,
-              presupuesto_club: newBClub
-            });
-
-            batch.update(firebase.firestore().doc(`users/${currentUser.uid}/mailbox/${rewardId}`), {
+          if (reward.type !== "custom_reward") {
+            await firebase.firestore().doc(`users/${currentUser.uid}/mailbox/${rewardId}`).update({
               claimed: true,
               claimedAt: new Date().toISOString()
             });
-
-            await batch.commit();
-
-            currentUserProfile.presupuesto_actual = newBActual;
-            currentUserProfile.presupuesto_club = newBClub;
-            updateHeaderAndDashboardStats();
-            showNotification(`🎉 ¡Recompensa reclamada! +${(reward.amount / 1000000).toFixed(1)}M$ añadidos a tu presupuesto.`, "success");
+            showNotification("Mensaje marcado como leído.", "success");
           } else {
+            const batch = firebase.firestore().batch();
+            const isMoney = reward.rewardType === "money";
+
+            if (isMoney) {
+              const currentBActual = currentUserProfile.presupuesto_actual || 0;
+              const currentBClub = currentUserProfile.presupuesto_club || 0;
+              const newBActual = currentBActual + reward.amount;
+              const newBClub = currentBClub + reward.amount;
+
+              batch.update(firebase.firestore().doc(`users/${currentUser.uid}`), {
+                presupuesto_actual: newBActual,
+                presupuesto_club: newBClub
+              });
+
+              batch.update(firebase.firestore().doc(`users/${currentUser.uid}/mailbox/${rewardId}`), {
+                claimed: true,
+                claimedAt: new Date().toISOString()
+              });
+
+              await batch.commit();
+
+              currentUserProfile.presupuesto_actual = newBActual;
+              currentUserProfile.presupuesto_club = newBClub;
+              updateHeaderAndDashboardStats();
+              showNotification(`🎉 ¡Recompensa reclamada! +${(reward.amount / 1000000).toFixed(1)}M$ añadidos a tu presupuesto.`, "success");
+            } else {
             const currentFC = currentUserProfile.fonda_coins || 0;
             const newFC = currentFC + reward.amount;
 
@@ -20404,6 +20438,7 @@
             updateHeaderAndDashboardStats();
             showNotification(`🎉 ¡Recompensa reclamada! +${reward.amount} Fonda Coins (FC) añadidos.`, "success");
           }
+        }
         } catch (err) {
           // Revertir estado local en caso de error
           reward.claimed = false;
