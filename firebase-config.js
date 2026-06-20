@@ -435,6 +435,40 @@
   // ================= MOTOR DUAL DE TRANSACCIONES RTDB ======================
   // =========================================================================
 
+  const sanitizeTeamData = (team) => {
+    if (!team) return team;
+    const ensureArray = (val) => {
+      if (!val) return [];
+      if (Array.isArray(val)) return val.filter(Boolean);
+      if (typeof val === "object") {
+        return Object.values(val).filter(Boolean);
+      }
+      return [];
+    };
+    if (team.alineacion) {
+      if (!team.alineacion.titulares) team.alineacion.titulares = {};
+      if (!team.alineacion.suplentes) team.alineacion.suplentes = {};
+      const positions = ["portero", "defensas", "mediocampistas", "delanteros"];
+      positions.forEach(pos => {
+        team.alineacion.titulares[pos] = ensureArray(team.alineacion.titulares[pos]);
+        team.alineacion.suplentes[pos] = ensureArray(team.alineacion.suplentes[pos]);
+      });
+    }
+    if (team.siguiente_alineacion) {
+      if (!team.siguiente_alineacion.titulares) team.siguiente_alineacion.titulares = {};
+      if (!team.siguiente_alineacion.suplentes) team.siguiente_alineacion.suplentes = {};
+      const positions = ["portero", "defensas", "mediocampistas", "delanteros"];
+      positions.forEach(pos => {
+        team.siguiente_alineacion.titulares[pos] = ensureArray(team.siguiente_alineacion.titulares[pos]);
+        team.siguiente_alineacion.suplentes[pos] = ensureArray(team.siguiente_alineacion.suplentes[pos]);
+      });
+    }
+    if (team.players && !Array.isArray(team.players)) {
+      team.players = ensureArray(team.players);
+    }
+    return team;
+  };
+
   const dbGetDoc = async (docRef) => {
     const path = getRTDBPath(docRef.collectionName, docRef.id);
     let data = null;
@@ -452,10 +486,16 @@
       }
     }
 
+    const isUserTeam = docRef.collectionName === "user_teams";
+
     return {
       exists: () => data !== null && data !== undefined,
       id: docRef.id,
-      data: () => data ? JSON.parse(JSON.stringify(data)) : null
+      data: () => {
+        if (!data) return null;
+        const copy = JSON.parse(JSON.stringify(data));
+        return isUserTeam ? sanitizeTeamData(copy) : copy;
+      }
     };
   };
 
@@ -627,9 +667,13 @@
       });
     }
 
+    const isUserTeam = ref.collectionName === "user_teams";
     const docSnapshots = items.map(item => ({
       id: item.id,
-      data: () => JSON.parse(JSON.stringify(item.data)),
+      data: () => {
+        const copy = JSON.parse(JSON.stringify(item.data));
+        return isUserTeam ? sanitizeTeamData(copy) : copy;
+      },
       exists: () => true
     }));
 
@@ -703,10 +747,15 @@
           if (ref.collectionName === "players" && val && val.pais === "Netherlands") {
             val.pais = "Países Bajos";
           }
+          const isUserTeam = ref.collectionName === "user_teams";
           callback({
             exists: () => val !== null && val !== undefined,
             id: ref.id,
-            data: () => val ? JSON.parse(JSON.stringify(val)) : null
+            data: () => {
+              if (!val) return null;
+              const copy = JSON.parse(JSON.stringify(val));
+              return isUserTeam ? sanitizeTeamData(copy) : copy;
+            }
           });
         } else {
           const snapDocs = await dbGetDocs(ref);
