@@ -10912,6 +10912,25 @@
           ...(suplentes.delanteros || [])
         ];
 
+        const chips = teamData.chips || {};
+        const hasCapitanMaximo = chips.capitan_maximo?.usado_en_jornada === activeJor;
+
+        // Find max points player among titulares
+        let maxPointsPlayerId = "";
+        let maxPointsVal = -999;
+        if (hasCapitanMaximo) {
+          titularIds.forEach(id => {
+            const player = allPlayers.find(p => p.id === id);
+            if (player) {
+              const pts = player.puntos_jornadas?.[activeJor] || 0;
+              if (pts > maxPointsVal) {
+                maxPointsVal = pts;
+                maxPointsPlayerId = id;
+              }
+            }
+          });
+        }
+
         const createPlayerCardNode = (id, player, role) => {
           // Clausula calculation
           const seguroUntil = (teamData.seguro_24h || {})[id] || 0;
@@ -10934,9 +10953,10 @@
 
           // Calcular puntos aportados
           const isCaptain = teamData?.capitan_id === id;
+          const isCapMax = hasCapitanMaximo && maxPointsPlayerId === id;
           let contributedPts = 0;
           if (role === "titular") {
-            contributedPts = isCaptain ? livePts * 2 : livePts;
+            contributedPts = isCapMax ? livePts * 3 : (isCaptain && !hasCapitanMaximo ? livePts * 2 : livePts);
           } else if (role === "suplente") {
             const hasSuperBanquillo = teamData.chips?.super_banquillo?.usado_en_jornada === activeJor;
             if (hasSuperBanquillo) {
@@ -10949,7 +10969,7 @@
           }
 
           // Avatar and visual elements
-          const avatar = window.getPlayerCardAvatarHTML(id, player, "w-10 h-10", isCaptain);
+          const avatar = window.getPlayerCardAvatarHTML(id, player, "w-10 h-10", isCaptain, "rounded-full", isCapMax);
           const isClausulazoPending = (currentActiveLeagueData?.pending_clausulazos || []).some(
             c => c.playerId === id && c.status === "pending"
           );
@@ -10965,13 +10985,38 @@
             actionBtn = `<button onclick="triggerRivalClausulazo('${id}', '${player.nombre.replace(/'/g, "\\'")}', ${currentClause})" class="px-1.5 py-0.5 rounded bg-rose-600 hover:bg-rose-500 active:scale-95 transition text-[7.5px] text-white font-black uppercase cursor-pointer flex items-center gap-0.5 shadow-sm shadow-rose-500/10">⚡ Clausular</button>`;
           }
 
+          let capCrownHTML = '';
+          if (isCapMax) {
+            capCrownHTML = `
+              <div class="absolute -top-1 -left-1 bg-gradient-to-br from-purple-500 to-pink-500 border border-purple-200 rounded-full w-3.5 h-3.5 flex items-center justify-center shadow-md animate-pulse z-20" title="Capitán Máximo (x3 Puntos)">
+                <i data-lucide="crown" class="w-2 h-2 text-white"></i>
+              </div>
+            `;
+          } else if (isCaptain) {
+            capCrownHTML = `
+              <div class="absolute -top-1 -left-1 bg-slate-950 border border-gold rounded-full w-3.5 h-3.5 flex items-center justify-center shadow-md z-20" title="Capitán (x2 Puntos)">
+                <i data-lucide="crown" class="w-2 h-2 text-gold"></i>
+              </div>
+            `;
+          }
+
+          let scoreBadgeHTML = "";
+          if (hasPlayed) {
+            if (isCapMax) {
+              scoreBadgeHTML = `<div class="absolute -bottom-1 -left-1 w-4 h-4 bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-full flex items-center justify-center text-[8.5px] font-black border border-slate-950/20 shadow shadow-purple-500/40" title="Puntos aportados a la jornada (x3 por Capitán Máximo)">${contributedPts}</div>`;
+            } else {
+              scoreBadgeHTML = `<div class="absolute -bottom-1 -left-1 w-4 h-4 bg-yellow-400 text-slate-950 rounded-full flex items-center justify-center text-[8.5px] font-black border border-slate-950/20 shadow shadow-yellow-500/40" title="Puntos aportados a la jornada">${contributedPts}</div>`;
+            }
+          }
+
           const card = document.createElement("div");
           card.className = "flex flex-col items-center text-center space-y-0.5 relative group";
           card.innerHTML = `
             <div class="relative">
+              ${capCrownHTML}
               ${avatar}
               <span class="absolute -top-1 -right-1 text-[8px] bg-slate-900 border border-white/10 text-slate-300 font-extrabold px-1 rounded-full">${formattedClause}M</span>
-              ${hasPlayed ? `<div class="absolute -bottom-1 -left-1 w-4 h-4 bg-yellow-400 text-slate-950 rounded-full flex items-center justify-center text-[8.5px] font-black border border-slate-950/20 shadow shadow-yellow-500/40">${contributedPts}</div>` : ''}
+              ${scoreBadgeHTML}
             </div>
             <p class="text-[8px] font-black text-slate-100 truncate max-w-[65px]">${player.nombre.split(" ").pop()}</p>
             <div class="mt-0.5">${actionBtn}</div>
@@ -11047,6 +11092,42 @@
         const capitanId = teamData.capitan_id || "";
         const jugador12Id = teamData.chips?.jugador_12?.jugador_id || "";
 
+        // --- CALCULAR SI EL POTENCIADOR DE CAPITÁN MÁXIMO ESTÁ ACTIVO PARA EL RIVAL ---
+        const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+        const chips = teamData.chips || {};
+        const hasCapitanMaximo = chips.capitan_maximo?.usado_en_jornada === activeJor;
+
+        // Encontrar al titular con más puntos
+        let maxPointsPlayerId = "";
+        let maxPointsVal = -999;
+        const titulares = teamData.alineacion?.titulares || {};
+        const titularIds = [
+          ...(titulares.portero || []),
+          ...(titulares.defensas || []),
+          ...(titulares.mediocampistas || []),
+          ...(titulares.delanteros || [])
+        ];
+        const suplentes = teamData.alineacion?.suplentes || {};
+        const suplenteIds = [
+          ...(suplentes.portero || []),
+          ...(suplentes.defensas || []),
+          ...(suplentes.mediocampistas || []),
+          ...(suplentes.delanteros || [])
+        ];
+
+        if (hasCapitanMaximo) {
+          titularIds.forEach(id => {
+            const player = allPlayers.find(p => p.id === id);
+            if (player) {
+              const pts = player.puntos_jornadas?.[activeJor] || 0;
+              if (pts > maxPointsVal) {
+                maxPointsVal = pts;
+                maxPointsPlayerId = id;
+              }
+            }
+          });
+        }
+
         if (allPlayers.length === 0) {
           container.innerHTML = `<div class="py-8 text-center text-slate-500 italic text-xs">Sin jugadores en plantilla.</div>`;
           return;
@@ -11081,12 +11162,58 @@
             const currentClause = clausulas[player.id] || player.precio;
             const formattedClause = (currentClause / 1000000).toFixed(1);
 
+            const isCapMax = hasCapitanMaximo && player.id === maxPointsPlayerId;
+
             let statusBadges = "";
-            if (player.id === capitanId) {
+            if (isCapMax) {
+              statusBadges += `<span class="px-1 py-0.5 rounded bg-gradient-to-br from-purple-500 to-pink-500 text-white font-black text-[7px] flex items-center gap-0.5 animate-pulse shadow shadow-purple-500/40" title="Capitán Máximo (x3 Puntos)"><i data-lucide="crown" class="w-2.5 h-2.5"></i> CAP MÁXIMO</span>`;
+            } else if (player.id === capitanId) {
               statusBadges += `<span class="px-1 py-0.5 rounded bg-amber-500 text-slate-950 font-black text-[7px] flex items-center gap-0.5"><i data-lucide="crown" class="w-2.5 h-2.5"></i> C</span>`;
             }
             if (player.id === jugador12Id) {
               statusBadges += `<span class="px-1 py-0.5 rounded bg-purple-500 text-white font-black text-[7px] flex items-center gap-0.5"><i data-lucide="zap" class="w-2.5 h-2.5"></i> 12</span>`;
+            }
+
+            // Calcular puntos aportados
+            const isTitular = titularIds.includes(player.id);
+            const isSuplente = suplenteIds.includes(player.id);
+            const livePts = (player.puntos_jornadas) ? (player.puntos_jornadas[activeJor] || 0) : 0;
+
+            // Verificar si ha jugado
+            const lockStatus = checkPlayerLockStatus(player, window.matchesListGlobal || [], activeJor);
+            const match = lockStatus.partido;
+            const hasPlayed = match && (match.resuelto || (match.kickoff_time && new Date() >= new Date(match.kickoff_time)));
+
+            let finalPts = 0;
+            let ptsExplanation = "";
+            if (isTitular) {
+              const isCaptain = player.id === capitanId;
+              if (isCapMax) {
+                finalPts = livePts * 3;
+                ptsExplanation = ` (${livePts} x3 Cap. Máx)`;
+              } else if (isCaptain && !hasCapitanMaximo) {
+                finalPts = livePts * 2;
+                ptsExplanation = ` (${livePts} x2 Cap)`;
+              } else {
+                finalPts = livePts;
+              }
+            } else if (isSuplente) {
+              const hasSuperBanquillo = teamData.chips?.super_banquillo?.usado_en_jornada === activeJor;
+              if (hasSuperBanquillo) {
+                finalPts = livePts;
+                ptsExplanation = " (Banquillo - Super Banquillo)";
+              } else {
+                finalPts = Math.round((livePts / 2) * 10) / 10;
+                ptsExplanation = ` (${livePts} / 2 Banquillo)`;
+              }
+            } else {
+              finalPts = 0;
+              ptsExplanation = " (Reserva)";
+            }
+
+            let ptsText = "";
+            if (hasPlayed) {
+              ptsText = ` • Puntos: <span class="text-emerald-400 font-bold">${finalPts} pts</span><span class="text-slate-500 font-normal text-[8px]">${ptsExplanation}</span>`;
             }
 
             // Clausulazo button or status badge
@@ -11123,7 +11250,7 @@
                   ${statusBadges}
                 </div>
                 <div class="text-[9px] text-slate-400 font-medium">
-                  Valor: <span class="text-slate-300 font-bold">${(player.precio / 1000000).toFixed(1)}M$</span> • Cláusula: <span class="text-amber-400 font-black">${formattedClause}M$</span>
+                  Valor: <span class="text-slate-300 font-bold">${(player.precio / 1000000).toFixed(1)}M$</span> • Cláusula: <span class="text-amber-400 font-black">${formattedClause}M$</span>${ptsText}
                 </div>
               </div>
             </div>
@@ -11889,7 +12016,7 @@
       };
 
       // --- GENERAR AVATAR/FOTO PREMIUM PARA LA PLANTILLA ---
-      window.getPlayerCardAvatarHTML = function (id, player, sizeClass = "w-16 h-16", isCaptain = false, shapeClass = "rounded-full") {
+      window.getPlayerCardAvatarHTML = function (id, player, sizeClass = "w-16 h-16", isCaptain = false, shapeClass = "rounded-full", isCapMax = false) {
         if (id === "cromo_comodin") {
           return `
           <div class="${sizeClass} ${shapeClass} border-2 border-purple-500 bg-gradient-to-br from-purple-800 to-indigo-950 flex flex-col items-center justify-center relative overflow-hidden shadow-lg select-none pointer-events-none">
@@ -11909,9 +12036,16 @@
         const posTheme = posMap[player.posicion] || "from-slate-700 to-slate-950 text-slate-200 border-slate-600/40";
         const initials = player.nombre.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
 
+        let borderAndShadowClass = "border-slate-700/60";
+        if (isCapMax) {
+          borderAndShadowClass = "border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.6)] animate-[capMaxPulse_3s_infinite_ease-in-out]";
+        } else if (isCaptain) {
+          borderAndShadowClass = "border-gold shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-[pulseGold_2s_infinite]";
+        }
+
         if (photoUrl) {
           return `
-          <div class="${sizeClass} ${shapeClass} border-2 ${isCaptain ? 'border-gold shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-[pulseGold_2s_infinite]' : 'border-slate-700/60'} bg-slate-950 overflow-hidden relative shadow-lg flex items-center justify-center transition duration-200 mx-auto select-none pointer-events-none">
+          <div class="${sizeClass} ${shapeClass} border-2 ${borderAndShadowClass} bg-slate-950 overflow-hidden relative shadow-lg flex items-center justify-center transition duration-200 mx-auto select-none pointer-events-none">
             <img src="${photoUrl}" alt="${player.nombre}" class="w-full h-full object-cover object-top" onerror="this.onerror=null; this.src=''; this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="w-full h-full bg-gradient-to-b ${posTheme} flex flex-col items-center justify-center" style="display: none;">
               <i data-lucide="shirt" class="w-1/2 h-1/2 opacity-15 absolute"></i>
@@ -11921,7 +12055,7 @@
         `;
         } else {
           return `
-          <div class="${sizeClass} ${shapeClass} border-2 ${isCaptain ? 'border-gold shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-[pulseGold_2s_infinite]' : 'border-slate-700/60'} bg-gradient-to-b ${posTheme} overflow-hidden relative shadow-lg flex flex-col items-center justify-center transition duration-200 mx-auto select-none pointer-events-none">
+          <div class="${sizeClass} ${shapeClass} border-2 ${borderAndShadowClass} bg-gradient-to-b ${posTheme} overflow-hidden relative shadow-lg flex flex-col items-center justify-center transition duration-200 mx-auto select-none pointer-events-none">
             <i data-lucide="shirt" class="w-1/2 h-1/2 opacity-15 absolute"></i>
             <span class="font-black text-xs tracking-wider z-10">${initials}</span>
           </div>
@@ -11930,7 +12064,7 @@
       };
 
       // --- GENERAR HTML DEL CROMO TÁCTICO PREMIUM (EL CAMPO, BANQUILLO Y RESERVAS) ---
-      window.getPlayerPitchCardHTML = function (id, player, isCaptain, isSwapping, livePts) {
+      window.getPlayerPitchCardHTML = function (id, player, isCaptain, isSwapping, livePts, isCapMax = false, hasCapMaxActive = false) {
         const photoUrl = window.getPlayerPhotoUrl(id);
 
         // Iniciales para el fallback
@@ -11941,9 +12075,9 @@
         const posAbbr = { portero: 'POR', defensa: 'DFC', mediocampista: 'MC', delantero: 'DEL' };
         const abbr = posAbbr[player.posicion] || 'JUG';
 
-        // Puntos mostrados (×2 para capitán)
+        // Puntos mostrados (x3 si es cap-max, x2 si es capitán tradicional pero no hay cap-max activo)
         const rawPts    = Number(livePts) || 0;
-        const displayPts = isCaptain ? rawPts * 2 : rawPts;
+        const displayPts = isCapMax ? rawPts * 3 : (isCaptain && !hasCapMaxActive ? rawPts * 2 : rawPts);
         const zeroBadge = displayPts === 0;
 
         // Valor de mercado
@@ -11979,7 +12113,7 @@
           ];
 
           if (allTit.includes(id)) {
-            contributedPts = isCaptain ? rawPts * 2 : rawPts;
+            contributedPts = displayPts;
           } else if (allSup.includes(id)) {
             const hasSuperBanquillo = currentUserTeam.chips?.super_banquillo?.usado_en_jornada === activeJor;
             if (hasSuperBanquillo) {
@@ -11991,7 +12125,22 @@
             contributedPts = 0; // Reserva
           }
         } else {
-          contributedPts = rawPts;
+          contributedPts = displayPts;
+        }
+
+        let capCrownHTML = '';
+        if (isCapMax) {
+          capCrownHTML = `
+            <div class="card-captain-crown cap-max-crown animate-pulse" title="Capitán Máximo (x3 Puntos)">
+              <i data-lucide="crown" style="width:9px;height:9px;color:#fff"></i>
+            </div>
+          `;
+        } else if (isCaptain) {
+          capCrownHTML = `
+            <div class="card-captain-crown" title="Capitán (x2 Puntos)">
+              <i data-lucide="crown" style="width:9px;height:9px;color:#fcd34d"></i>
+            </div>
+          `;
         }
 
         return `
@@ -11999,14 +12148,11 @@
                       pos-${player.posicion || 'mediocampista'}
                       ${photoClass}
                       ${isSwapping ? 'active-swap-target' : ''}
-                      ${isCaptain  ? 'is-captain'         : ''}"
+                      ${isCapMax   ? 'is-cap-max border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.6)]' : (isCaptain ? 'is-captain' : '')}"
                data-id="${id}" draggable="true">
 
-            <!-- ① Corona de Capitán (esquina sup-izq, absoluta) -->
-            ${isCaptain ? `
-              <div class="card-captain-crown">
-                <i data-lucide="crown" style="width:9px;height:9px;color:#fcd34d"></i>
-              </div>` : ''}
+            <!-- ① Corona de Capitán o Capitán Máximo (esquina sup-izq, absoluta) -->
+            ${capCrownHTML}
 
             <!-- ③ Zona foto (en el flujo normal – ocupa todo el cuerpo) -->
             <div class="card-photo-zone">
@@ -12038,7 +12184,7 @@
             </div>
 
             <!-- ⑤ Círculo amarillo de puntos (esquina inferior-izquierda, absoluta) -->
-            ${hasPlayed ? `<div class="card-bottom-score-badge" title="Puntos aportados a la jornada">${contributedPts}</div>` : ''}
+            ${hasPlayed ? `<div class="card-bottom-score-badge ${isCapMax ? 'cap-max-badge' : ''}" title="Puntos aportados a la jornada">${contributedPts}</div>` : ''}
 
           </div>`;
       };
@@ -12460,6 +12606,33 @@
         // Obtener formación táctica activa
         document.getElementById("squad-formation-select").value = activeFormation;
 
+        // --- CALCULAR SI EL POTENCIADOR DE CAPITÁN MÁXIMO ESTÁ ACTIVO ---
+        const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
+        const chips = currentUserTeam.chips || {};
+        const hasCapitanMaximo = activeLineupView === "actual" && (chips.capitan_maximo?.usado_en_jornada === activeJor);
+
+        // Encontrar al titular con más puntos
+        let maxPointsPlayerId = "";
+        let maxPointsVal = -999;
+        if (hasCapitanMaximo) {
+          const titularIds = [
+            ...(titulares.portero || []),
+            ...(titulares.defensas || []),
+            ...(titulares.mediocampistas || []),
+            ...(titulares.delanteros || [])
+          ];
+          titularIds.forEach(id => {
+            const player = firestorePlayersList.find(p => p.id === id) || PLAYERS_POOL.find(p => p.id === id);
+            if (player) {
+              const pts = player.puntos_jornadas?.[activeJor] || 0;
+              if (pts > maxPointsVal) {
+                maxPointsVal = pts;
+                maxPointsPlayerId = id;
+              }
+            }
+          });
+        }
+
         let dfSlots = 4;
         let mfSlots = 4;
         let fwSlots = 2;
@@ -12471,10 +12644,10 @@
         else if (activeFormation === "3-4-3") { dfSlots = 3; mfSlots = 4; fwSlots = 3; }
 
         // Renderizar el once inicial en el césped táctico
-        renderPitchRow("row-delanteros", titulares.delanteros || [], "delantero", fwSlots);
-        renderPitchRow("row-mediocampistas", titulares.mediocampistas || [], "mediocampista", mfSlots);
-        renderPitchRow("row-defensas", titulares.defensas || [], "defensa", dfSlots);
-        renderPitchRow("row-portero", titulares.portero || [], "portero", 1);
+        renderPitchRow("row-delanteros", titulares.delanteros || [], "delantero", fwSlots, hasCapitanMaximo, maxPointsPlayerId);
+        renderPitchRow("row-mediocampistas", titulares.mediocampistas || [], "mediocampista", mfSlots, hasCapitanMaximo, maxPointsPlayerId);
+        renderPitchRow("row-defensas", titulares.defensas || [], "defensa", dfSlots, hasCapitanMaximo, maxPointsPlayerId);
+        renderPitchRow("row-portero", titulares.portero || [], "portero", 1, hasCapitanMaximo, maxPointsPlayerId);
 
         // Calcular formación dinámica para el badge
         document.getElementById("squad-formacion-badge").textContent = activeFormation;
@@ -12518,7 +12691,7 @@
 
             const isSwapping = swapActiveSourceId === id;
 
-            cardDiv.innerHTML = window.getPlayerPitchCardHTML(id, player, false, isSwapping, livePts);
+            cardDiv.innerHTML = window.getPlayerPitchCardHTML(id, player, false, isSwapping, livePts, false, hasCapitanMaximo);
 
             const benchCard = cardDiv.querySelector(".player-pitch-card");
             benchCard.addEventListener("click", () => window.openPlayerProfileModal ? window.openPlayerProfileModal(id) : handleSquadCardClick(id));
@@ -12590,7 +12763,7 @@
 
             const isSwapping = swapActiveSourceId === id;
 
-            cardDiv.innerHTML = window.getPlayerPitchCardHTML(id, player, false, isSwapping, livePts);
+            cardDiv.innerHTML = window.getPlayerPitchCardHTML(id, player, false, isSwapping, livePts, false, hasCapitanMaximo);
 
             const benchCard = cardDiv.querySelector(".player-pitch-card");
             benchCard.addEventListener("click", () => window.openPlayerProfileModal ? window.openPlayerProfileModal(id) : handleSquadCardClick(id));
@@ -12666,7 +12839,7 @@
       }
 
       // Renderizar Fila de Campo
-      function renderPitchRow(rowId, ids, posicion, slotsBase) {
+      function renderPitchRow(rowId, ids, posicion, slotsBase, hasCapMax = false, maxPlayerId = "") {
         console.log(`🏟️ [Fonda Engine] Renderizando fila táctica '${rowId}' para posición '${posicion}'. IDs a inyectar:`, ids);
 
         const row = document.getElementById(rowId);
@@ -12700,8 +12873,9 @@
             const livePts = (player.puntos_jornadas) ? (player.puntos_jornadas[jAct] || 0) : 0;
             const isCaptain = capitanId === id;
             const isSwapping = swapActiveSourceId === id;
+            const isCapMax = hasCapMax && maxPlayerId === id;
 
-            playerDiv.innerHTML = window.getPlayerPitchCardHTML(id, player, isCaptain, isSwapping, livePts);
+            playerDiv.innerHTML = window.getPlayerPitchCardHTML(id, player, isCaptain, isSwapping, livePts, isCapMax, hasCapMax);
 
             const pCard = playerDiv.querySelector(".player-pitch-card");
 
