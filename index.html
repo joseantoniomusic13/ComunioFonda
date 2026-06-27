@@ -12263,6 +12263,9 @@
 
         // Calcular puntos recibidos (contributed points) para el círculo amarillo
         let contributedPts = 0;
+        let hasJugador12 = false;
+        let extraPlayerId = null;
+
         if (currentUserTeam) {
           const rawTitulares = currentUserTeam.alineacion?.titulares || {};
           const rawSuplentes = currentUserTeam.alineacion?.suplentes || {};
@@ -12280,8 +12283,8 @@
             ...(rawSuplentes.delanteros || [])
           ];
 
-          const hasJugador12 = currentUserTeam.chips?.jugador_12?.usado_en_jornada === activeJor;
-          const extraPlayerId = currentUserTeam.chips?.jugador_12?.jugador_extra_id;
+          hasJugador12 = currentUserTeam.chips?.jugador_12?.usado_en_jornada === activeJor;
+          extraPlayerId = currentUserTeam.chips?.jugador_12?.jugador_extra_id;
 
           if (allTit.includes(id)) {
             contributedPts = displayPts;
