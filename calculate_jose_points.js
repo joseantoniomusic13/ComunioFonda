@@ -114,6 +114,17 @@ async function main() {
       console.log(`${item.name} (${item.id}): base=${pts}, final=${finalPts} (suplente)`);
     });
     
+    // 12o jugador extra
+    if (hasJugador12 && extraPlayerId) {
+      const pExtra = players[extraPlayerId];
+      if (pExtra) {
+        const ptsExtra = pExtra.puntos_jornadas?.[activeJornada] || 0;
+        puntosJornada += ptsExtra;
+        console.log(`\n--- 12º JUGADOR ---`);
+        console.log(`${pExtra.nombre} (${extraPlayerId}): base=${ptsExtra}, final=${ptsExtra} (12º Jugador)`);
+      }
+    }
+    
     console.log('\nTotal calculated points for Jornada 2:', puntosJornada);
     console.log('Saved in database for Jornada 2:', team.puntos_por_jornada?.['Jornada 2']);
   } catch (e) {

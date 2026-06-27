@@ -10809,7 +10809,7 @@
           const titulares = teamData.alineacion?.titulares || {};
           const suplentes = teamData.alineacion?.suplentes || {};
           const capitanId = teamData.capitan_id || "";
-          const jugador12Id = teamData.chips?.jugador_12?.jugador_id || "";
+          const jugador12Id = teamData.chips?.jugador_12?.jugador_extra_id || "";
 
           const titularIds = [
             ...(titulares.portero || []),
@@ -11248,7 +11248,7 @@
         const blindados = teamData.blindados || {};
         const clausulas = teamData.clausulas || {};
         const capitanId = teamData.capitan_id || "";
-        const jugador12Id = teamData.chips?.jugador_12?.jugador_id || "";
+        const jugador12Id = teamData.chips?.jugador_12?.jugador_extra_id || "";
 
         // --- CALCULAR SI EL POTENCIADOR DE CAPITÁN MÁXIMO ESTÁ ACTIVO PARA EL RIVAL ---
         const activeJor = currentActiveLeagueData?.jornada_activa || "Jornada 1";
@@ -11368,6 +11368,9 @@
                 finalPts = Math.round((livePts / 2) * 10) / 10;
                 ptsExplanation = ` (${livePts} / 2 Banquillo)`;
               }
+            } else if (player.id === jugador12Id && chips.jugador_12?.usado_en_jornada === activeJor) {
+              finalPts = livePts;
+              ptsExplanation = " (12º Jugador)";
             } else {
               finalPts = 0;
               ptsExplanation = " (Reserva)";
@@ -12277,6 +12280,9 @@
             ...(rawSuplentes.delanteros || [])
           ];
 
+          const hasJugador12 = currentUserTeam.chips?.jugador_12?.usado_en_jornada === activeJor;
+          const extraPlayerId = currentUserTeam.chips?.jugador_12?.jugador_extra_id;
+
           if (allTit.includes(id)) {
             contributedPts = displayPts;
           } else if (allSup.includes(id)) {
@@ -12286,6 +12292,8 @@
             } else {
               contributedPts = Math.round((rawPts / 2) * 10) / 10;
             }
+          } else if (hasJugador12 && extraPlayerId === id) {
+            contributedPts = rawPts;
           } else {
             contributedPts = 0; // Reserva
           }
@@ -12294,6 +12302,7 @@
         }
 
         let capCrownHTML = '';
+        const isJugador12 = hasJugador12 && (extraPlayerId === id);
         if (isCapMax) {
           capCrownHTML = `
             <div class="card-captain-crown cap-max-crown animate-pulse" title="Capitán Máximo (x3 Puntos)">
@@ -12306,6 +12315,12 @@
               <i data-lucide="crown" style="width:9px;height:9px;color:#fcd34d"></i>
             </div>
           `;
+        } else if (isJugador12) {
+          capCrownHTML = `
+            <div class="card-captain-crown 12-player-crown" style="background: linear-gradient(135deg, #a855f7, #6b21a8); border-color: #d8b4fe; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.7), 0 0 5px rgba(168, 85, 247, 0.75);" title="12º Jugador (Puntúa Extra)">
+              <i data-lucide="zap" style="width:9px;height:9px;color:#fff"></i>
+            </div>
+          `;
         }
 
         return `
@@ -12314,6 +12329,7 @@
                       ${photoClass}
                       ${isSwapping ? 'active-swap-target' : ''}
                       ${isCapMax   ? 'is-cap-max border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.6)]' : (isCaptain ? 'is-captain' : '')}
+                      ${isJugador12 ? 'is-12-player' : ''}
                       ${isGhost    ? 'opacity-65 saturate-50 border-dashed border-slate-500' : ''}"
                data-id="${id}" draggable="true" title="${isGhost ? 'Traspasado (Fantasma hasta final de jornada)' : ''}">
 
@@ -12350,7 +12366,7 @@
             </div>
 
             <!-- ⑤ Círculo amarillo de puntos (esquina inferior-izquierda, absoluta) -->
-            ${hasPlayed ? `<div class="card-bottom-score-badge ${isCapMax ? 'cap-max-badge' : ''}" title="Puntos aportados a la jornada">${contributedPts}</div>` : ''}
+            ${hasPlayed ? `<div class="card-bottom-score-badge ${isCapMax ? 'cap-max-badge' : (isJugador12 ? 'player-12-badge' : '')}" title="Puntos aportados a la jornada">${contributedPts}</div>` : ''}
 
           </div>`;
       };
@@ -16349,7 +16365,22 @@
           let extraSelector = "";
           if (def.key === "jugador_12" && def.state.usado_en_jornada === activeJornada) {
             const selectOptions = [];
-            const reservasIds = currentUserTeam.alineacion?.reservas || [];
+            const ownedIds = currentUserTeam.jugadores_ids || [];
+            const titulares = currentUserTeam.alineacion?.titulares || {};
+            const suplentes = currentUserTeam.alineacion?.suplentes || {};
+            const titularesIds = [
+              ...(titulares.portero || []),
+              ...(titulares.defensas || []),
+              ...(titulares.mediocampistas || []),
+              ...(titulares.delanteros || [])
+            ];
+            const suplentesIds = [
+              ...(suplentes.portero || []),
+              ...(suplentes.defensas || []),
+              ...(suplentes.mediocampistas || []),
+              ...(suplentes.delanteros || [])
+            ];
+            const reservasIds = ownedIds.filter(id => !titularesIds.includes(id) && !suplentesIds.includes(id));
 
             let selectedName = "Ninguno seleccionado";
             const currentExtraId = def.state.jugador_extra_id;
