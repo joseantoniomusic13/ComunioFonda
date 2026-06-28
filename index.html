@@ -936,6 +936,29 @@
                 </button>
               </div>
 
+              <!-- Creador Manual de Cuadro de Eliminatorias (Admin-only) -->
+              <div class="space-y-3 border-t border-white/5 pt-4">
+                <div class="flex justify-between items-center">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-amber-400">Gestión de Eliminatorias</label>
+                  <button type="button" onclick="window.toggleAccordion('acc-admin-cuadro-manual')" class="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-[9px] text-slate-400 font-extrabold transition">
+                    Ver Panel
+                  </button>
+                </div>
+                <p class="text-[9px] text-slate-400 font-bold leading-normal">
+                  Configura manualmente los 16 enfrentamientos de Dieciseisavos de Final.
+                </p>
+                <div id="acc-admin-cuadro-manual" class="hidden space-y-3 pt-2">
+                  <!-- Grid de 16 partidos -->
+                  <div id="admin-manual-bracket-matches" class="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-1">
+                    <!-- Rellenado dinámicamente -->
+                  </div>
+                  <button id="btn-admin-save-manual-bracket" disabled
+                    class="w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black py-2.5 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/10">
+                    <i data-lucide="git-branch" class="w-4 h-4 text-slate-950"></i> Guardar y Publicar Cuadro
+                  </button>
+                </div>
+              </div>
+
               <!-- Programación de Cierre de Plantillas (Alineación Lock) -->
               <div class="space-y-2 border-t border-white/5 pt-4">
                 <label class="block text-xs font-bold uppercase tracking-wider text-cyan-400">Edición de
@@ -1236,6 +1259,15 @@
                   </div>
                 </div>
 
+                <!-- Selector de ganador en eliminatorias (se muestra dinámicamente) -->
+                <div id="admin-bracket-winner-container" class="hidden flex flex-col gap-1 pt-2">
+                  <label class="block text-[10px] font-bold text-amber-400 uppercase tracking-wider">Clasifica a la siguiente ronda (en caso de empate):</label>
+                  <select id="admin-resolve-bracket-winner" class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-amber-500/20">
+                    <option value="local">Local (Avanza)</option>
+                    <option value="visitante">Visitante (Avanza)</option>
+                  </select>
+                </div>
+
                 <button id="btn-admin-resolve-match"
                   class="w-full py-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500 hover:text-slate-950 border border-emerald-500/40 font-extrabold text-emerald-300 text-sm transition cursor-pointer flex items-center justify-center gap-2 mt-1">
                   <i data-lucide="check-circle" class="w-4 h-4"></i> Resolver y Asignar Puntos
@@ -1244,6 +1276,12 @@
 
               <!-- Panel de jugadores -->
               <div id="admin-match-players-panel" class="hidden space-y-4">
+
+                <!-- Filtro de futbolistas en plantilla -->
+                <div class="flex items-center gap-2 bg-slate-950/40 border border-white/5 rounded-2xl px-4 py-2.5">
+                  <input type="checkbox" id="admin-rate-only-owned" class="rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500 h-4 w-4">
+                  <label for="admin-rate-only-owned" class="text-xs font-bold text-slate-300 cursor-pointer select-none">👤 Mostrar solo jugadores de mánagers (en plantilla)</label>
+                </div>
 
                 <!-- Cabecera del acta -->
                 <div class="flex items-center gap-3 bg-amber-500/5 border border-amber-500/20 rounded-2xl px-4 py-3">
@@ -1950,6 +1988,9 @@
               <button id="btn-subtab-groups" onclick="switchCalendarSubTab('groups')" class="px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white">
                 🏆 Grupos
               </button>
+              <button id="btn-subtab-bracket" onclick="switchCalendarSubTab('bracket')" class="px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white">
+                🌳 Cuadro
+              </button>
             </div>
           </div>
 
@@ -1985,6 +2026,13 @@
           <div id="subtab-content-groups" class="hidden space-y-4">
             <div id="groups-standings-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <!-- Rellenado por renderGroupStandings() -->
+            </div>
+          </div>
+
+          <!-- Subtab Cuadro (Bracket) -->
+          <div id="subtab-content-bracket" class="hidden space-y-4 overflow-x-auto py-2 custom-scrollbar">
+            <div id="bracket-tree-container" class="min-w-[1500px] flex gap-8 justify-between items-stretch py-6 px-4">
+              <!-- Rellenado por renderKnockoutBracket() -->
             </div>
           </div>
         </div>
@@ -5670,9 +5718,14 @@
             allPlayers.push({ id: snap.id, ...snap.data() });
           });
 
-          // Filtrar por equipos activos si estamos en eliminatorias
+          // Filtrar por equipos clasificados a eliminatorias (equipos_dieciseisavos) si existe en la liga
           let activeTeams = [];
-          if (currentJornada && !currentJornada.startsWith("Jornada")) {
+          const leagueData = leagueSnap.exists() ? leagueSnap.data() : {};
+          const equiposDieciseisavos = leagueData.equipos_dieciseisavos || [];
+          if (equiposDieciseisavos.length > 0) {
+            activeTeams = equiposDieciseisavos.map(t => normalizeCountry(t));
+            console.log(`📋 [seedSystemMarket] Filtrando mercado con equipos clasificados a eliminatorias:`, activeTeams);
+          } else if (currentJornada && !currentJornada.startsWith("Jornada")) {
             try {
               const matchesSnap = await getDocs(collection(db, "matches"));
               const teamsSet = new Set();
@@ -5971,10 +6024,14 @@
 
           const unownedPlayers = allPlayers.filter(p => !ownedPlayersInLeague.has(p.id));
 
-          // Filtrar por equipos activos si estamos en eliminatorias
+          // Filtrar por equipos clasificados a eliminatorias (equipos_dieciseisavos) si existe en la liga
           const currentJornada = leagueData.jornada_activa || "Jornada 1";
           let activeTeams = [];
-          if (!currentJornada.startsWith("Jornada")) {
+          const equiposDieciseisavos = leagueData.equipos_dieciseisavos || [];
+          if (equiposDieciseisavos.length > 0) {
+            activeTeams = equiposDieciseisavos.map(t => normalizeCountry(t));
+            console.log(`📋 [Matching Engine] Filtrando mercado con equipos clasificados a eliminatorias:`, activeTeams);
+          } else if (!currentJornada.startsWith("Jornada")) {
             try {
               const matchesSnap = await getDocs(collection(db, "matches"));
               const teamsSet = new Set();
@@ -9761,6 +9818,7 @@
           document.getElementById("btn-admin-clear-community-market").disabled = true;
           const btnSync = document.getElementById("btn-admin-sync-league");
           if (btnSync) btnSync.disabled = true;
+          document.getElementById("btn-admin-save-manual-bracket").disabled = true;
 
           const lockTimeInput = document.getElementById("admin-lock-lineups-time");
           const lockPresetsInput = document.getElementById("admin-lock-presets");
@@ -9793,6 +9851,8 @@
         document.getElementById("btn-admin-clear-community-market").disabled = false;
         const btnSync = document.getElementById("btn-admin-sync-league");
         if (btnSync) btnSync.disabled = false;
+        document.getElementById("btn-admin-save-manual-bracket").disabled = false;
+        initManualBracketEditor();
 
         try {
           const leagueDoc = await getDoc(doc(db, "leagues", adminSelectedLeagueId));
@@ -15065,6 +15125,235 @@
         }
       });
 
+      // Admin Guardar y Publicar Cuadro de Eliminatorias Manual
+      document.getElementById("btn-admin-save-manual-bracket").addEventListener("click", async () => {
+        if (!adminSelectedLeagueId) return;
+        const btn = document.getElementById("btn-admin-save-manual-bracket");
+        
+        // Recopilar emparejamientos
+        const matchesContainer = document.getElementById("admin-manual-bracket-matches");
+        if (!matchesContainer) return;
+        const matchCards = matchesContainer.querySelectorAll("[data-match-index]");
+        const pairings = [];
+        const usedTeams = new Set();
+        let hasErrors = false;
+
+        matchCards.forEach(card => {
+          if (hasErrors) return;
+          const idx = card.getAttribute("data-match-index");
+          const local = card.querySelector(".bracket-match-local-select").value;
+          const visit = card.querySelector(".bracket-match-visit-select").value;
+          const kickoff = card.querySelector(".bracket-match-kickoff-input").value;
+
+          if (!local || !visit) {
+            showNotification(`Debe seleccionar los dos equipos en el Partido ${idx}.`, "error");
+            hasErrors = true;
+            return;
+          }
+
+          if (local === visit) {
+            showNotification(`El equipo local y visitante no pueden ser iguales en el Partido ${idx} (${local}).`, "error");
+            hasErrors = true;
+            return;
+          }
+
+          if (usedTeams.has(local)) {
+            showNotification(`El equipo "${local}" está duplicado en los enfrentamientos.`, "error");
+            hasErrors = true;
+            return;
+          }
+          if (usedTeams.has(visit)) {
+            showNotification(`El equipo "${visit}" está duplicado en los enfrentamientos.`, "error");
+            hasErrors = true;
+            return;
+          }
+
+          usedTeams.add(local);
+          usedTeams.add(visit);
+
+          let kickoffTime = "";
+          let fechaFormatted = "Por confirmar";
+          if (kickoff) {
+            const d = new Date(kickoff);
+            if (!isNaN(d.getTime())) {
+              kickoffTime = d.toISOString();
+              
+              // Helper format inline
+              const options = { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' };
+              fechaFormatted = d.toLocaleString('es-ES', options).replace(',', ' -');
+            }
+          }
+
+          pairings.push({
+            bracket_id: `R32_${idx}`,
+            local,
+            visitante: visit,
+            fecha: fechaFormatted,
+            kickoff_time: kickoffTime
+          });
+        });
+
+        if (hasErrors) return;
+
+        if (pairings.length < 16) {
+          showNotification("Debe configurar los 16 enfrentamientos de Dieciseisavos.", "error");
+          return;
+        }
+
+        if (!confirm("⚠️ ¡ADVERTENCIA CRÍTICA!\n\n¿Estás seguro de que deseas publicar el cuadro eliminatorio manual?\n\nEsto sobrescribirá todos los partidos del cuadro (1/16, 1/8, 1/4, Semis, Final) en la base de datos y activará la fase de 'Dieciseisavos de Final' en la liga.")) return;
+
+        btn.disabled = true;
+        btn.innerHTML = `Publicando... <i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i>`;
+        lucide.createIcons();
+
+        try {
+          // Crear los partidos en base de datos
+          await publishManualBracket(adminSelectedLeagueId, pairings);
+          showNotification("🏆 ¡Cuadro de eliminatorias publicado con éxito!", "success");
+          
+          // Cambiar jornada activa a Dieciseisavos
+          const leagueRef = doc(db, "leagues", adminSelectedLeagueId);
+          await updateDoc(leagueRef, {
+            jornada_activa: "Dieciseisavos de Final"
+          });
+          if (currentActiveLeagueData) {
+            currentActiveLeagueData.jornada_activa = "Dieciseisavos de Final";
+          }
+          
+          // Resetear selector de jornada del admin
+          const selectJornada = document.getElementById("admin-select-jornada");
+          if (selectJornada) selectJornada.value = "Dieciseisavos de Final";
+
+          // Resetear accordion
+          window.toggleAccordion('acc-admin-cuadro-manual');
+        } catch (err) {
+          console.error("Error al publicar cuadro manual:", err);
+          showNotification("Error en base de datos al guardar el cuadro.", "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="git-branch" class="w-4 h-4 text-slate-950"></i> Guardar y Publicar Cuadro`;
+          lucide.createIcons();
+        }
+      });
+
+      async function publishManualBracket(leagueId, pairings) {
+        const batch = writeBatch(db);
+
+        // 1. Guardar la lista de 32 equipos que están en dieciseisavos en el documento de la liga
+        const qualifiedTeamsList = pairings.flatMap(p => [p.local, p.visitante]);
+        const leagueRef = doc(db, "leagues", leagueId);
+        batch.update(leagueRef, {
+          equipos_dieciseisavos: qualifiedTeamsList
+        });
+
+        // 2. Crear los 16 partidos reales de Dieciseisavos de Final
+        pairings.forEach(p => {
+          const matchId = `bracket_${p.bracket_id}`;
+          const matchRef = doc(db, "matches", matchId);
+          batch.set(matchRef, {
+            id: matchId,
+            equipo_local: p.local,
+            equipo_visitante: p.visitante,
+            fecha: p.fecha,
+            kickoff_time: p.kickoff_time,
+            fase: "Dieciseisavos de Final",
+            resuelto: false,
+            resultado_local: null,
+            resultado_visitante: null,
+            bracket_id: p.bracket_id,
+            creado_at: new Date().toISOString()
+          });
+        });
+
+        // 3. Crear placeholders de las siguientes rondas
+        // R16
+        for (let i = 1; i <= 8; i++) {
+          const matchId = `bracket_R16_${i}`;
+          const matchRef = doc(db, "matches", matchId);
+          batch.set(matchRef, {
+            id: matchId,
+            equipo_local: `Ganador R32_${(i * 2) - 1}`,
+            equipo_visitante: `Ganador R32_${i * 2}`,
+            fecha: "Por confirmar",
+            kickoff_time: "",
+            fase: "Octavos de Final",
+            resuelto: false,
+            resultado_local: null,
+            resultado_visitante: null,
+            bracket_id: `R16_${i}`,
+            creado_at: new Date().toISOString()
+          });
+        }
+        // QF
+        for (let i = 1; i <= 4; i++) {
+          const matchId = `bracket_QF_${i}`;
+          const matchRef = doc(db, "matches", matchId);
+          batch.set(matchRef, {
+            id: matchId,
+            equipo_local: `Ganador R16_${(i * 2) - 1}`,
+            equipo_visitante: `Ganador R16_${i * 2}`,
+            fecha: "Por confirmar",
+            kickoff_time: "",
+            fase: "Cuartos de Final",
+            resuelto: false,
+            resultado_local: null,
+            resultado_visitante: null,
+            bracket_id: `QF_${i}`,
+            creado_at: new Date().toISOString()
+          });
+        }
+        // SF
+        for (let i = 1; i <= 2; i++) {
+          const matchId = `bracket_SF_${i}`;
+          const matchRef = doc(db, "matches", matchId);
+          batch.set(matchRef, {
+            id: matchId,
+            equipo_local: `Ganador QF_${(i * 2) - 1}`,
+            equipo_visitante: `Ganador QF_${i * 2}`,
+            fecha: "Por confirmar",
+            kickoff_time: "",
+            fase: "Semifinales",
+            resuelto: false,
+            resultado_local: null,
+            resultado_visitante: null,
+            bracket_id: `SF_${i}`,
+            creado_at: new Date().toISOString()
+          });
+        }
+        // Final
+        const finalRef = doc(db, "matches", "bracket_Final");
+        batch.set(finalRef, {
+          id: "bracket_Final",
+          equipo_local: "Ganador SF_1",
+          equipo_visitante: "Ganador SF_2",
+          fecha: "Por confirmar",
+          kickoff_time: "",
+          fase: "Final",
+          resuelto: false,
+          resultado_local: null,
+          resultado_visitante: null,
+          bracket_id: "Final",
+          creado_at: new Date().toISOString()
+        });
+        // Tercer Puesto
+        const tpRef = doc(db, "matches", "bracket_TercerPuesto");
+        batch.set(tpRef, {
+          id: "bracket_TercerPuesto",
+          equipo_local: "Perdedor SF_1",
+          equipo_visitante: "Perdedor SF_2",
+          fecha: "Por confirmar",
+          kickoff_time: "",
+          fase: "Tercer Puesto",
+          resuelto: false,
+          resultado_local: null,
+          resultado_visitante: null,
+          bracket_id: "TercerPuesto",
+          creado_at: new Date().toISOString()
+        });
+
+        await batch.commit();
+      }
+
       // Rutina para cerrar y consolidar la jornada actual
       async function closeCurrentJornadaForLeague(leagueId) {
         if (!leagueId) return;
@@ -16965,9 +17254,11 @@
       document.getElementById("admin-local-player-search").addEventListener("input", (e) => {
         const query = e.target.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         const rows = document.querySelectorAll("#admin-players-local-list .player-fast-row");
+        const onlyOwned = document.getElementById("admin-rate-only-owned")?.checked || false;
         rows.forEach(row => {
           const name = row.getAttribute("data-player-search") || "";
-          if (name.includes(query)) {
+          const isOwned = row.classList.contains("is-owned");
+          if (name.includes(query) && (!onlyOwned || isOwned)) {
             row.classList.remove("hidden");
           } else {
             row.classList.add("hidden");
@@ -16978,9 +17269,11 @@
       document.getElementById("admin-visit-player-search").addEventListener("input", (e) => {
         const query = e.target.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         const rows = document.querySelectorAll("#admin-players-visit-list .player-fast-row");
+        const onlyOwned = document.getElementById("admin-rate-only-owned")?.checked || false;
         rows.forEach(row => {
           const name = row.getAttribute("data-player-search") || "";
-          if (name.includes(query)) {
+          const isOwned = row.classList.contains("is-owned");
+          if (name.includes(query) && (!onlyOwned || isOwned)) {
             row.classList.remove("hidden");
           } else {
             row.classList.add("hidden");
@@ -16994,11 +17287,14 @@
         const panel = document.getElementById("admin-match-players-panel");
         const resolveBtn = document.getElementById("btn-admin-resolve-match");
 
-        // Limpiar buscadores de jugadores
+        // Limpiar buscadores de jugadores y resetear checkbox de plantillas
         const localSearchInput = document.getElementById("admin-local-player-search");
         const visitSearchInput = document.getElementById("admin-visit-player-search");
         if (localSearchInput) localSearchInput.value = "";
         if (visitSearchInput) visitSearchInput.value = "";
+        
+        const checkboxOwned = document.getElementById("admin-rate-only-owned");
+        if (checkboxOwned) checkboxOwned.checked = false;
 
         if (!matchId) {
           panel.classList.add("hidden");
@@ -17011,6 +17307,35 @@
           const m = matchSnap.data();
 
           console.log("🔍 [Actas] Partido cargado:", matchId, "Ratings:", m.jugadores_ratings);
+
+          // Mostrar u ocultar selector de ganador del cuadro si es partido eliminatorio
+          const winnerContainer = document.getElementById("admin-bracket-winner-container");
+          if (winnerContainer) {
+            if (m.bracket_id) {
+              winnerContainer.classList.remove("hidden");
+              document.getElementById("admin-resolve-bracket-winner").value = m.ganador_bracket || "local";
+            } else {
+              winnerContainer.classList.add("hidden");
+            }
+          }
+
+          // Cargar los jugadores en plantillas activas de la liga en segundo plano para filtrado rápido
+          window.activeLeagueOwnedPlayerIds = new Set();
+          const leagueId = adminSelectedLeagueId || currentActiveLeagueData?.id;
+          if (leagueId) {
+            try {
+              const q = query(collection(db, "user_teams"));
+              const teamsSnap = await getDocs(q);
+              teamsSnap.forEach(d => {
+                if (d.id.endsWith(`_${leagueId}`)) {
+                  const ids = d.data().jugadores_ids || [];
+                  ids.forEach(id => window.activeLeagueOwnedPlayerIds.add(id));
+                }
+              });
+            } catch (err) {
+              console.error("Error loading league owned players:", err);
+            }
+          }
 
           if (m.resuelto) {
             document.getElementById("admin-resolve-local").value = m.resultado_local ?? 0;
@@ -17057,9 +17382,6 @@
             const borderColor = teamColor === "emerald" ? "border-emerald-500/10 hover:border-emerald-500/30" : "border-blue-500/10 hover:border-blue-500/30";
 
             const prevR = m.jugadores_ratings?.[p.id] || null;
-            if (prevR) {
-              console.log(`Loaded prev rating for ${p.nombre} (${p.id}):`, prevR);
-            }
             const valVal = prevR ? (prevR.val ?? 0.0).toFixed(1) : "0.0";
             const golVal = prevR ? (prevR.gol ?? 0) : 0;
             const gepVal = prevR ? (prevR.gep ?? 0) : 0;
@@ -17068,6 +17390,9 @@
             const rojChecked = prevR && prevR.roj ? "checked" : "";
             const encVal = prevR ? (prevR.enc ?? 0) : 0;
             const parVal = prevR ? (prevR.par ?? 0) : 0;
+
+            const isOwned = window.activeLeagueOwnedPlayerIds && window.activeLeagueOwnedPlayerIds.has(p.id);
+            const ownedBadge = isOwned ? `<span class="inline-block mt-0.5 text-[8px] font-black px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">👤 EN PLANTILLA</span>` : "";
 
             const ownGoalExtra = `
             <div class="flex items-center gap-2 pt-2 border-t border-white/5 mt-1">
@@ -17103,14 +17428,17 @@
 
             const searchName = p.nombre ? p.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() : "";
             return `
-            <div class="player-fast-row bg-slate-950/70 border ${borderColor} rounded-2xl p-3 space-y-3 transition" data-player-id="${p.id}" data-player-search="${searchName}">
+            <div class="player-fast-row bg-slate-950/70 border ${borderColor} rounded-2xl p-3 space-y-3 transition ${isOwned ? 'is-owned' : ''}" data-player-id="${p.id}" data-player-search="${searchName}">
               <!-- Nombre + posición -->
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2.5 min-w-0">
                   <span class="text-xl shrink-0">${p.flag || "🏳️"}</span>
                   <div class="min-w-0">
                     <p class="font-extrabold text-white text-xs leading-tight truncate">${p.nombre}</p>
-                    <span class="inline-block mt-0.5 text-[9px] font-black px-1.5 py-0.5 rounded-md border ${posBadgeColor}">${posLabel}</span>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="inline-block mt-0.5 text-[9px] font-black px-1.5 py-0.5 rounded-md border ${posBadgeColor}">${posLabel}</span>
+                      ${ownedBadge}
+                    </div>
                   </div>
                 </div>
                 <!-- Nota -->
@@ -17118,6 +17446,13 @@
                   <label class="text-[9px] font-bold text-amber-400 uppercase tracking-wider">Nota</label>
                   <input type="number" step="0.1" min="0" max="10" value="${valVal}"
                     class="player-val-input w-14 text-center bg-amber-950/30 border border-amber-500/30 rounded-xl py-1.5 text-lg font-black text-amber-300 focus:outline-none focus:border-amber-400">
+                  <div class="flex gap-0.5 mt-1">
+                    <button type="button" onclick="this.closest('.flex-col').querySelector('.player-val-input').value = '5.0'" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-[8px] font-bold text-slate-300 flex items-center justify-center">5</button>
+                    <button type="button" onclick="this.closest('.flex-col').querySelector('.player-val-input').value = '6.0'" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-[8px] font-bold text-slate-300 flex items-center justify-center">6</button>
+                    <button type="button" onclick="this.closest('.flex-col').querySelector('.player-val-input').value = '7.0'" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-[8px] font-bold text-slate-300 flex items-center justify-center">7</button>
+                    <button type="button" onclick="this.closest('.flex-col').querySelector('.player-val-input').value = '8.0'" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-[8px] font-bold text-slate-300 flex items-center justify-center">8</button>
+                    <button type="button" onclick="this.closest('.flex-col').querySelector('.player-val-input').value = '9.0'" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-[8px] font-bold text-slate-300 flex items-center justify-center">9</button>
+                  </div>
                 </div>
               </div>
 
@@ -17178,6 +17513,31 @@
             visitPlayers.forEach(p => {
               visitList.innerHTML += renderPlayerRow(p, "blue");
             });
+          }
+
+          // Registrar listener del checkbox para filtrado en plantilla
+          if (checkboxOwned) {
+            checkboxOwned.onchange = (e) => {
+              const onlyOwned = e.target.checked;
+              const rows = document.querySelectorAll(".player-fast-row");
+              rows.forEach(row => {
+                const isOwned = row.classList.contains("is-owned");
+                if (onlyOwned && !isOwned) {
+                  row.classList.add("hidden");
+                } else {
+                  // Respetar el buscador de texto
+                  const isLocalList = row.parentElement.id === "admin-players-local-list";
+                  const searchInputId = isLocalList ? "admin-local-player-search" : "admin-visit-player-search";
+                  const query = document.getElementById(searchInputId).value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                  const searchName = row.getAttribute("data-player-search") || "";
+                  if (searchName.includes(query)) {
+                    row.classList.remove("hidden");
+                  } else {
+                    row.classList.add("hidden");
+                  }
+                }
+              });
+            };
           }
 
           panel.classList.remove("hidden");
@@ -17246,12 +17606,34 @@
 
           const numPlayersUpdated = Object.keys(nuevosRatings).length;
 
+          const winnerSelector = document.getElementById("admin-resolve-bracket-winner");
+          const bracketWinnerSelection = winnerSelector ? winnerSelector.value : "local";
+          const ganadorBracketVal = resLocal > resVisit ? "local" : (resVisit > resLocal ? "visitante" : bracketWinnerSelection);
+
           await updateDoc(matchRef, {
             resuelto: true,
             resultado_local: resLocal,
             resultado_visitante: resVisit,
-            jugadores_ratings: nuevosRatings
+            jugadores_ratings: nuevosRatings,
+            ganador_bracket: mData.bracket_id ? ganadorBracketVal : null
           });
+
+          // Si es partido de eliminatorias, avanzar al ganador en el cuadro
+          if (mData.bracket_id) {
+            let winnerTeam = "";
+            let loserTeam = "";
+            if (resLocal > resVisit) {
+              winnerTeam = mData.equipo_local;
+              loserTeam = mData.equipo_visitante;
+            } else if (resVisit > resLocal) {
+              winnerTeam = mData.equipo_visitante;
+              loserTeam = mData.equipo_local;
+            } else {
+              winnerTeam = (bracketWinnerSelection === "local") ? mData.equipo_local : mData.equipo_visitante;
+              loserTeam = (bracketWinnerSelection === "local") ? mData.equipo_visitante : mData.equipo_local;
+            }
+            await advanceBracketMatch(mData.bracket_id, winnerTeam, loserTeam);
+          }
 
           // Recalcular estadísticas del historial completo de forma limpia para cada jugador afectado
           for (const playerId of affectedPlayerIds) {
@@ -21919,25 +22301,313 @@
         activeCalendarSubTab = subtab;
         const btnCal = document.getElementById("btn-subtab-calendar");
         const btnGrp = document.getElementById("btn-subtab-groups");
+        const btnBkt = document.getElementById("btn-subtab-bracket");
         const contentCal = document.getElementById("subtab-content-calendar");
         const contentGrp = document.getElementById("subtab-content-groups");
+        const contentBkt = document.getElementById("subtab-content-bracket");
 
-        if (!btnCal || !btnGrp || !contentCal || !contentGrp) return;
+        if (!btnCal || !btnGrp || !btnBkt || !contentCal || !contentGrp || !contentBkt) return;
+
+        // Reset all buttons classes to inactive
+        const inactiveClass = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white";
+        const activeClass = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer bg-gold-gradient text-slate-950 shadow-md";
+
+        btnCal.className = inactiveClass;
+        btnGrp.className = inactiveClass;
+        btnBkt.className = inactiveClass;
+
+        contentCal.classList.add("hidden");
+        contentGrp.classList.add("hidden");
+        contentBkt.classList.add("hidden");
 
         if (subtab === "calendar") {
-          btnCal.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer bg-gold-gradient text-slate-950 shadow-md";
-          btnGrp.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white";
+          btnCal.className = activeClass;
           contentCal.classList.remove("hidden");
-          contentGrp.classList.add("hidden");
           renderCalendarAndResults();
-        } else {
-          btnCal.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer text-slate-400 hover:text-white";
-          btnGrp.className = "px-4 py-1.5 rounded-lg text-xs font-black uppercase transition cursor-pointer bg-gold-gradient text-slate-950 shadow-md";
-          contentCal.classList.add("hidden");
+        } else if (subtab === "groups") {
+          btnGrp.className = activeClass;
           contentGrp.classList.remove("hidden");
           renderGroupStandings();
+        } else if (subtab === "bracket") {
+          btnBkt.className = activeClass;
+          contentBkt.classList.remove("hidden");
+          renderKnockoutBracket();
         }
         lucide.createIcons();
+      };
+
+      // Mapeo del avance del cuadro (bracket progression flow)
+      const BRACKET_FLOW = {
+        // Dieciseisavos → Octavos
+        "R32_1":  { nextMatch: "R16_1", slot: "local" },
+        "R32_2":  { nextMatch: "R16_1", slot: "visitante" },
+        "R32_3":  { nextMatch: "R16_2", slot: "local" },
+        "R32_4":  { nextMatch: "R16_2", slot: "visitante" },
+        "R32_5":  { nextMatch: "R16_3", slot: "local" },
+        "R32_6":  { nextMatch: "R16_3", slot: "visitante" },
+        "R32_7":  { nextMatch: "R16_4", slot: "local" },
+        "R32_8":  { nextMatch: "R16_4", slot: "visitante" },
+        "R32_9":  { nextMatch: "R16_5", slot: "local" },
+        "R32_10": { nextMatch: "R16_5", slot: "visitante" },
+        "R32_11": { nextMatch: "R16_6", slot: "local" },
+        "R32_12": { nextMatch: "R16_6", slot: "visitante" },
+        "R32_13": { nextMatch: "R16_7", slot: "local" },
+        "R32_14": { nextMatch: "R16_7", slot: "visitante" },
+        "R32_15": { nextMatch: "R16_8", slot: "local" },
+        "R32_16": { nextMatch: "R16_8", slot: "visitante" },
+
+        // Octavos → Cuartos
+        "R16_1":  { nextMatch: "QF_1", slot: "local" },
+        "R16_2":  { nextMatch: "QF_1", slot: "visitante" },
+        "R16_3":  { nextMatch: "QF_2", slot: "local" },
+        "R16_4":  { nextMatch: "QF_2", slot: "visitante" },
+        "R16_5":  { nextMatch: "QF_3", slot: "local" },
+        "R16_6":  { nextMatch: "QF_3", slot: "visitante" },
+        "R16_7":  { nextMatch: "QF_4", slot: "local" },
+        "R16_8":  { nextMatch: "QF_4", slot: "visitante" },
+
+        // Cuartos → Semis
+        "QF_1":  { nextMatch: "SF_1", slot: "local" },
+        "QF_2":  { nextMatch: "SF_1", slot: "visitante" },
+        "QF_3":  { nextMatch: "SF_2", slot: "local" },
+        "QF_4":  { nextMatch: "SF_2", slot: "visitante" },
+
+        // Semis → Final & Tercer Puesto
+        "SF_1":  { nextMatch: "Final", slot: "local", loserMatch: "TercerPuesto", loserSlot: "local" },
+        "SF_2":  { nextMatch: "Final", slot: "visitante", loserMatch: "TercerPuesto", loserSlot: "visitante" }
+      };
+
+      async function advanceBracketMatch(bracketId, winner, loser) {
+        const flow = BRACKET_FLOW[bracketId];
+        if (!flow) return; // Final / TercerPuesto
+
+        try {
+          const batch = writeBatch(db);
+
+          // Actualizar ganador en el partido siguiente
+          const nextMatchId = `bracket_${flow.nextMatch}`;
+          const nextRef = doc(db, "matches", nextMatchId);
+          const updateData = {};
+          if (flow.slot === "local") {
+            updateData.equipo_local = winner;
+          } else {
+            updateData.equipo_visitante = winner;
+          }
+          batch.update(nextRef, updateData);
+
+          // Si hay perdedor (en Semis), mandarlo al Tercer Puesto
+          if (flow.loserMatch && flow.loserSlot) {
+            const loserMatchId = `bracket_${flow.loserMatch}`;
+            const loserRef = doc(db, "matches", loserMatchId);
+            const updateLoserData = {};
+            if (flow.loserSlot === "local") {
+              updateLoserData.equipo_local = loser;
+            } else {
+              updateLoserData.equipo_visitante = loser;
+            }
+            batch.update(loserRef, updateLoserData);
+          }
+
+          await batch.commit();
+          console.log(`➡️ [Bracket] Ganador ${winner} (y perdedor ${loser}) avanzado desde ${bracketId}.`);
+        } catch (err) {
+          console.error("Error al avanzar el cuadro:", err);
+        }
+      }
+
+      window.initManualBracketEditor = function() {
+        const container = document.getElementById("admin-manual-bracket-matches");
+        if (!container) return;
+
+        // Obtener listado ordenado de selecciones
+        const countries = [];
+        if (window.GRUPOS_MUNDIAL) {
+          window.GRUPOS_MUNDIAL.forEach(g => {
+            g.equipos.forEach(eq => {
+              countries.push(eq);
+            });
+          });
+        }
+        countries.sort((a, b) => a.localeCompare(b));
+
+        let html = "";
+        for (let i = 1; i <= 16; i++) {
+          let localOptions = `<option value="">Selecciona Local...</option>`;
+          let visitOptions = `<option value="">Selecciona Visitante...</option>`;
+          
+          countries.forEach(c => {
+            const flag = getCountryFlag(c);
+            localOptions += `<option value="${c}">${flag} ${c}</option>`;
+            visitOptions += `<option value="${c}">${flag} ${c}</option>`;
+          });
+
+          html += `
+            <div class="glass-panel p-3 rounded-2xl border border-white/5 bg-slate-950/20 text-left space-y-2" data-match-index="${i}">
+              <div class="text-[9px] text-slate-500 font-extrabold uppercase">1/16 - Partido ${i}</div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[8px] font-bold text-slate-400 uppercase mb-0.5">Local</label>
+                  <select class="bracket-match-local-select glass-input w-full px-2 py-1 rounded text-xs bg-fonda-950 text-white font-bold border-purple-500/20">
+                    ${localOptions}
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[8px] font-bold text-slate-400 uppercase mb-0.5">Visitante</label>
+                  <select class="bracket-match-visit-select glass-input w-full px-2 py-1 rounded text-xs bg-fonda-950 text-white font-bold border-purple-500/20">
+                    ${visitOptions}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="block text-[8px] font-bold text-slate-400 uppercase mb-0.5">Fecha y Hora de Inicio</label>
+                <input type="datetime-local" class="bracket-match-kickoff-input glass-input w-full px-2 py-1 rounded text-xs bg-fonda-950 text-white font-bold border-purple-500/20">
+              </div>
+            </div>
+          `;
+        }
+
+        container.innerHTML = html;
+      };
+
+      window.renderKnockoutBracket = async function() {
+        const container = document.getElementById("bracket-tree-container");
+        if (!container) return;
+        
+        container.innerHTML = `<div class="py-12 text-center text-slate-500 font-bold w-full"><i class="w-6 h-6 animate-spin mx-auto block mb-2 text-gold"></i> Cargando cuadro del torneo...</div>`;
+
+        try {
+          const querySnap = await getDocs(collection(db, "matches"));
+          const bracketMatches = {};
+          querySnap.forEach(d => {
+            const m = d.data();
+            if (m.bracket_id) {
+              bracketMatches[m.bracket_id] = m;
+            }
+          });
+
+          // Definir las rondas y sus llaves correspondientes
+          const round32Keys = Array.from({ length: 16 }, (_, i) => `R32_${i + 1}`);
+          const round16Keys = Array.from({ length: 8 }, (_, i) => `R16_${i + 1}`);
+          const qfKeys = Array.from({ length: 4 }, (_, i) => `QF_${i + 1}`);
+          const sfKeys = Array.from({ length: 2 }, (_, i) => `SF_${i + 1}`);
+
+          // Helper para pintar un match card
+          const getMatchCardHtml = (bracketId, label) => {
+            const m = bracketMatches[bracketId];
+            if (!m) {
+              return `
+                <div class="glass-panel p-3.5 rounded-2xl border border-white/5 bg-slate-950/20 w-72 opacity-40">
+                  <div class="text-[8px] font-black uppercase text-slate-600 mb-1">${label}</div>
+                  <div class="text-xs font-bold text-slate-600 italic">No configurado</div>
+                </div>
+              `;
+            }
+
+            const localName = m.equipo_local || "Por confirmar";
+            const visitName = m.equipo_visitante || "Por confirmar";
+            const localFlag = getCountryFlag(localName);
+            const visitFlag = getCountryFlag(visitName);
+            const localScore = m.resuelto ? (m.resultado_local ?? 0) : "";
+            const visitScore = m.resuelto ? (m.resultado_visitante ?? 0) : "";
+            const matchDate = m.fecha || "Por confirmar";
+
+            // Resaltar ganadores si está resuelto
+            let localClass = "bg-white/5";
+            let visitClass = "bg-white/5";
+            let localTextClass = "text-slate-200";
+            let visitTextClass = "text-slate-200";
+
+            if (m.resuelto) {
+              const rL = m.resultado_local ?? 0;
+              const rV = m.resultado_visitante ?? 0;
+              let winner = "";
+              if (rL > rV) winner = "local";
+              else if (rV > rL) winner = "visitante";
+              else winner = m.ganador_bracket || "local";
+
+              if (winner === "local") {
+                localClass = "bg-emerald-500/10 border border-emerald-500/30";
+                localTextClass = "text-emerald-400 font-extrabold";
+                visitTextClass = "text-slate-500 line-through";
+              } else {
+                visitClass = "bg-emerald-500/10 border border-emerald-500/30";
+                visitTextClass = "text-emerald-400 font-extrabold";
+                localTextClass = "text-slate-500 line-through";
+              }
+            }
+
+            return `
+              <div class="glass-panel p-3.5 rounded-2xl border border-white/5 bg-slate-950/40 w-72 flex flex-col justify-between hover:border-gold/20 transition-all duration-300">
+                <div class="flex items-center justify-between text-[8px] font-black uppercase text-slate-500 tracking-wider mb-2">
+                  <span>${label}</span>
+                  <span class="text-amber-500 font-bold">${matchDate}</span>
+                </div>
+                <div class="space-y-2">
+                  <!-- Local -->
+                  <div class="flex items-center justify-between p-1.5 rounded-lg ${localClass}">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span class="text-sm shrink-0">${localFlag}</span>
+                      <span class="text-xs font-black truncate ${localTextClass}">${localName}</span>
+                    </div>
+                    <span class="text-xs font-black text-white">${localScore}</span>
+                  </div>
+                  <!-- Visitante -->
+                  <div class="flex items-center justify-between p-1.5 rounded-lg ${visitClass}">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span class="text-sm shrink-0">${visitFlag}</span>
+                      <span class="text-xs font-black truncate ${visitTextClass}">${visitName}</span>
+                    </div>
+                    <span class="text-xs font-black text-white">${visitScore}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          };
+
+          // Generar columnas
+          let html = "";
+
+          // Columna 1: Dieciseisavos (R32)
+          html += `<div class="flex flex-col justify-between gap-4 py-2 min-h-[1400px]">
+            <h4 class="text-[10px] font-black text-center text-slate-400 uppercase tracking-widest border-b border-white/5 pb-2">Dieciseisavos (1/16)</h4>
+            ${round32Keys.map(k => getMatchCardHtml(k, `Partido ${k.split("_")[1]}`)).join("")}
+          </div>`;
+
+          // Columna 2: Octavos (R16)
+          html += `<div class="flex flex-col justify-around gap-8 py-16 min-h-[1400px]">
+            <h4 class="text-[10px] font-black text-center text-slate-400 uppercase tracking-widest border-b border-white/5 pb-2">Octavos de Final</h4>
+            ${round16Keys.map(k => getMatchCardHtml(k, `Octavo ${k.split("_")[1]}`)).join("")}
+          </div>`;
+
+          // Columna 3: Cuartos (QF)
+          html += `<div class="flex flex-col justify-around gap-16 py-32 min-h-[1400px]">
+            <h4 class="text-[10px] font-black text-center text-slate-400 uppercase tracking-widest border-b border-white/5 pb-2">Cuartos de Final</h4>
+            ${qfKeys.map(k => getMatchCardHtml(k, `Cuartos ${k.split("_")[1]}`)).join("")}
+          </div>`;
+
+          // Columna 4: Semifinales (SF)
+          html += `<div class="flex flex-col justify-around gap-32 py-48 min-h-[1400px]">
+            <h4 class="text-[10px] font-black text-center text-slate-400 uppercase tracking-widest border-b border-white/5 pb-2">Semifinales</h4>
+            ${sfKeys.map(k => getMatchCardHtml(k, `Semi ${k.split("_")[1]}`)).join("")}
+          </div>`;
+
+          // Columna 5: Final & Tercer Puesto
+          html += `<div class="flex flex-col justify-center gap-16 py-64 min-h-[1400px]">
+            <div>
+              <h4 class="text-[10px] font-black text-center text-amber-400 uppercase tracking-widest border-b border-amber-500/20 pb-2 mb-4">🏆 Gran Final</h4>
+              ${getMatchCardHtml("Final", "Gran Final")}
+            </div>
+            <div class="mt-8">
+              <h4 class="text-[10px] font-black text-center text-slate-400 uppercase tracking-widest border-b border-white/5 pb-2 mb-4">🥉 Tercer Puesto</h4>
+              ${getMatchCardHtml("TercerPuesto", "Tercer Puesto")}
+            </div>
+          </div>`;
+
+          container.innerHTML = html;
+        } catch (err) {
+          console.error("Error al renderizar el cuadro:", err);
+          container.innerHTML = `<div class="py-8 text-center text-rose-400 font-bold text-xs w-full">Error al cargar el cuadro. Inténtalo de nuevo.</div>`;
+        }
       };
 
       window.renderGroupStandings = function() {
