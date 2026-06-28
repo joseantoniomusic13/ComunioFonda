@@ -897,6 +897,33 @@
                 </div>
               </div>
 
+              <!-- Editar Mercado del Sistema (Subastas) (Admin-only) -->
+              <div class="space-y-2 border-t border-white/5 pt-4">
+                <label class="block text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                  <i data-lucide="shopping-bag" class="w-3.5 h-3.5 text-purple-400 animate-pulse"></i> Editar Mercado de Subastas
+                </label>
+                <p class="text-[9px] text-slate-400 leading-relaxed mb-1">Añade o elimina directamente jugadores del mercado de subastas de la liga activa.</p>
+                <input type="text" id="admin-market-add-search" placeholder="🔍 Buscar jugador para añadir..." disabled
+                  class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20 disabled:opacity-40 disabled:cursor-not-allowed">
+                <select id="admin-market-add-select" disabled
+                  class="glass-input w-full px-3 py-2 rounded-xl text-xs bg-fonda-950 text-white font-bold border-purple-500/20">
+                  <!-- Cargado dinámicamente -->
+                </select>
+                <button id="btn-admin-market-add-player" disabled
+                  class="w-full bg-purple-500/20 hover:bg-purple-500 border border-purple-500/30 hover:border-transparent text-purple-300 hover:text-slate-950 font-extrabold py-2 rounded-xl text-xs transition cursor-pointer flex items-center justify-center gap-1 mt-1.5 shadow-lg shadow-purple-950/25">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Añadir al Mercado
+                </button>
+
+                <div class="pt-2">
+                  <label class="block text-[8px] font-bold text-slate-500 uppercase tracking-widest mb-1">Subastas actuales en el Tablón:</label>
+                  <div id="admin-market-active-list" class="space-y-1.5 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+                    <div class="py-2 text-center text-slate-500 text-[10px] font-bold">
+                      No hay jugadores activos en subasta.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Clausulazos Activos (Admin-only) -->
               <div class="space-y-2 border-t border-white/5 pt-4">
                 <label class="block text-xs font-bold uppercase tracking-wider text-amber-400 font-extrabold flex items-center gap-1">
@@ -5721,26 +5748,18 @@
             allPlayers.push({ id: snap.id, ...snap.data() });
           });
 
-          // Filtrar por equipos clasificados a eliminatorias (equipos_dieciseisavos) si existe en la liga
+          // Filtrar por equipos clasificados/activos en eliminatorias
           let activeTeams = [];
           const leagueData = leagueSnap.exists() ? leagueSnap.data() : {};
-          const equiposDieciseisavos = leagueData.equipos_dieciseisavos || [];
-          if (equiposDieciseisavos.length > 0) {
-            activeTeams = equiposDieciseisavos.map(t => normalizeCountry(t));
-            console.log(`📋 [seedSystemMarket] Filtrando mercado con equipos clasificados a eliminatorias:`, activeTeams);
-          } else if (currentJornada && !currentJornada.startsWith("Jornada")) {
+          if (currentJornada && !currentJornada.startsWith("Jornada")) {
             try {
               const matchesSnap = await getDocs(collection(db, "matches"));
-              const teamsSet = new Set();
+              const matchesList = [];
               matchesSnap.forEach(d => {
-                const data = d.data();
-                if (data.fase === currentJornada) {
-                  if (data.equipo_local) teamsSet.add(normalizeCountry(data.equipo_local));
-                  if (data.equipo_visitante) teamsSet.add(normalizeCountry(data.equipo_visitante));
-                }
+                matchesList.push({ id: d.id, ...d.data() });
               });
-              activeTeams = Array.from(teamsSet);
-              console.log(`📋 [seedSystemMarket] Fase eliminatoria "${currentJornada}". Equipos activos:`, activeTeams);
+              activeTeams = getQualifiedTeams(currentJornada, matchesList, leagueData);
+              console.log(`📋 [seedSystemMarket] Fase eliminatoria "${currentJornada}". Equipos activos/clasificados:`, activeTeams);
             } catch (err) {
               console.error("Error al obtener partidos activos en seedSystemMarket:", err);
             }
@@ -6027,26 +6046,18 @@
 
           const unownedPlayers = allPlayers.filter(p => !ownedPlayersInLeague.has(p.id));
 
-          // Filtrar por equipos clasificados a eliminatorias (equipos_dieciseisavos) si existe en la liga
+          // Filtrar por equipos clasificados/activos en eliminatorias
           const currentJornada = leagueData.jornada_activa || "Jornada 1";
           let activeTeams = [];
-          const equiposDieciseisavos = leagueData.equipos_dieciseisavos || [];
-          if (equiposDieciseisavos.length > 0) {
-            activeTeams = equiposDieciseisavos.map(t => normalizeCountry(t));
-            console.log(`📋 [Matching Engine] Filtrando mercado con equipos clasificados a eliminatorias:`, activeTeams);
-          } else if (!currentJornada.startsWith("Jornada")) {
+          if (!currentJornada.startsWith("Jornada")) {
             try {
               const matchesSnap = await getDocs(collection(db, "matches"));
-              const teamsSet = new Set();
+              const matchesList = [];
               matchesSnap.forEach(d => {
-                const data = d.data();
-                if (data.fase === currentJornada) {
-                  if (data.equipo_local) teamsSet.add(normalizeCountry(data.equipo_local));
-                  if (data.equipo_visitante) teamsSet.add(normalizeCountry(data.equipo_visitante));
-                }
+                matchesList.push({ id: d.id, ...d.data() });
               });
-              activeTeams = Array.from(teamsSet);
-              console.log(`📋 [Matching Engine] Fase eliminatoria "${currentJornada}". Equipos activos:`, activeTeams);
+              activeTeams = getQualifiedTeams(currentJornada, matchesList, leagueData);
+              console.log(`📋 [Matching Engine] Fase eliminatoria "${currentJornada}". Equipos activos/clasificados:`, activeTeams);
             } catch (err) {
               console.error("Error al obtener partidos activos en resolveAuctions:", err);
             }
@@ -6080,6 +6091,7 @@
           });
 
           showNotification("¡Día avanzado! Las subastas ciegas se han adjudicado y se renovó el tablón.");
+          if (window.renderAdminMarketList) window.renderAdminMarketList();
         } catch (err) {
           console.error("Error resolving auctions:", err);
           showNotification("Error en el Matching Engine al avanzar jornada.", "error");
@@ -7319,9 +7331,10 @@
           return;
         }
 
-        // 2. Calcular valores (40% de descuento -> 60% del valor real)
+        // 2. Calcular valores (40% de descuento -> 60% del valor real, reembolso 100% si está descalificado)
+        const isDisqualified = isPlayerDisqualified(player, window.matchesListGlobal || [], currentActiveLeagueData);
         const valorReal = player.precio || 0;
-        const precioCPU = Math.round(valorReal * 0.60);
+        const precioCPU = isDisqualified ? valorReal : Math.round(valorReal * 0.60);
 
         // Mostrar modal de confirmación personalizado
         const confirmed = await showSellToMachineModal(player, valorReal, precioCPU);
@@ -7383,7 +7396,8 @@
 
           // 6. Log en incidencias
           const updatedIncidencias = [...(currentActiveLeagueData.incidencias || [])];
-          updatedIncidencias.unshift(`🤖 [Máquina] ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} vendió a ${player.nombre} a la máquina por ${(precioCPU / 1000000).toFixed(2)}M$ (-40% de penalización).`);
+          const penaltyText = isDisqualified ? "(Reembolso 100% por descalificación)" : "(-40% de penalización)";
+          updatedIncidencias.unshift(`🤖 [Máquina] ${currentUserProfile.nombre_equipo || currentUserProfile.nombre_usuario} vendió a ${player.nombre} a la máquina por ${(precioCPU / 1000000).toFixed(2)}M$ ${penaltyText}.`);
 
           // Ejecutar actualizaciones en Firestore
           await updateDoc(userRef, {
@@ -7474,9 +7488,32 @@
           document.getElementById("stm-player-meta").textContent =
             `${player.posicion || ""}  ·  ${player.equipo || ""}`;
 
+          const isDisqualified = isPlayerDisqualified(player, window.matchesListGlobal || [], currentActiveLeagueData);
           const fmt = v => `${(v / 1e6).toFixed(2)}M€`;
           document.getElementById("stm-valor-real").textContent = fmt(valorReal);
-          document.getElementById("stm-penalizacion").textContent = `-${fmt(valorReal - precioCPU)}`;
+          
+          const penalizacionEl = document.getElementById("stm-penalizacion");
+          const penalizacionRow = penalizacionEl.parentElement;
+          const penalizacionLabel = penalizacionRow.querySelector("span");
+          
+          if (isDisqualified) {
+            if (penalizacionLabel) {
+              penalizacionLabel.innerHTML = `<i data-lucide="info" class="w-3.5 h-3.5"></i> Jugador Descalificado`;
+              penalizacionLabel.className = "text-xs text-emerald-400 font-bold flex items-center gap-1.5";
+            }
+            penalizacionRow.className = "flex items-center justify-between px-4 py-3 bg-emerald-950/20";
+            penalizacionEl.textContent = "Reembolso 100%";
+            penalizacionEl.className = "text-sm font-black text-emerald-400";
+          } else {
+            if (penalizacionLabel) {
+              penalizacionLabel.innerHTML = `<i data-lucide="trending-down" class="w-3.5 h-3.5"></i> Penalización Máquina (-40%)`;
+              penalizacionLabel.className = "text-xs text-rose-400 font-bold flex items-center gap-1.5";
+            }
+            penalizacionRow.className = "flex items-center justify-between px-4 py-3 bg-rose-950/20";
+            penalizacionEl.textContent = `-${fmt(valorReal - precioCPU)}`;
+            penalizacionEl.className = "text-sm font-black text-rose-400";
+          }
+          
           document.getElementById("stm-recibiras").textContent = fmt(precioCPU);
 
           // Botón de confirmación
@@ -9819,6 +9856,16 @@
           if (btnDelAccount2) btnDelAccount2.disabled = true;
           document.getElementById("btn-admin-resolve-auctions").disabled = true;
           document.getElementById("btn-admin-clear-community-market").disabled = true;
+          document.getElementById("admin-market-add-search").disabled = true;
+          document.getElementById("admin-market-add-select").disabled = true;
+          document.getElementById("btn-admin-market-add-player").disabled = true;
+          document.getElementById("admin-market-add-search").value = "";
+          document.getElementById("admin-market-add-select").innerHTML = "";
+          document.getElementById("admin-market-active-list").innerHTML = `
+            <div class="py-2 text-center text-slate-500 text-[10px] font-bold">
+              No hay jugadores activos en subasta.
+            </div>
+          `;
           const btnSync = document.getElementById("btn-admin-sync-league");
           if (btnSync) btnSync.disabled = true;
           document.getElementById("btn-admin-save-manual-bracket").disabled = true;
@@ -9852,6 +9899,25 @@
         if (btnDelAccount) btnDelAccount.disabled = true; // solo se activa cuando hay un user seleccionado
         document.getElementById("btn-admin-resolve-auctions").disabled = false;
         document.getElementById("btn-admin-clear-community-market").disabled = false;
+
+        document.getElementById("admin-market-add-search").disabled = false;
+        document.getElementById("admin-market-add-search").value = "";
+        document.getElementById("admin-market-add-select").disabled = false;
+        document.getElementById("btn-admin-market-add-player").disabled = false;
+
+        // Poblar el selector de añadir al mercado inicialmente
+        const selectAdd = document.getElementById("admin-market-add-select");
+        selectAdd.innerHTML = "";
+        const sortedPoolAdd = [...PLAYERS_POOL].sort((a, b) => a.nombre.localeCompare(b.nombre));
+        sortedPoolAdd.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = `${p.nombre} (${p.posicion.toUpperCase()} - ${(p.precio / 1000000).toFixed(1)}M$ - ${p.pais})`;
+          selectAdd.appendChild(opt);
+        });
+
+        // Cargar listado actual de subastas activas
+        renderAdminMarketList();
         const btnSync = document.getElementById("btn-admin-sync-league");
         if (btnSync) btnSync.disabled = false;
         document.getElementById("btn-admin-save-manual-bracket").disabled = false;
@@ -10556,6 +10622,177 @@
           showNotification("Error al otorgar carta de cromo.", "error");
         }
       });
+
+      // Admin: Filtrar selector de jugadores para añadir al mercado del sistema
+      document.getElementById("admin-market-add-search").addEventListener("input", (e) => {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        const selectEl = document.getElementById("admin-market-add-select");
+        if (!selectEl) return;
+
+        selectEl.innerHTML = "";
+        const sortedPool = [...PLAYERS_POOL]
+          .filter(p => p.nombre.toLowerCase().includes(searchTerm) || p.pais.toLowerCase().includes(searchTerm))
+          .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+        sortedPool.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = `${p.nombre} (${p.posicion.toUpperCase()} - ${(p.precio / 1000000).toFixed(1)}M$ - ${p.pais})`;
+          selectEl.appendChild(opt);
+        });
+      });
+
+      // Admin: Añadir jugador al mercado de subastas
+      document.getElementById("btn-admin-market-add-player").addEventListener("click", async () => {
+        if (!adminSelectedLeagueId) return;
+        const playerId = document.getElementById("admin-market-add-select").value;
+        if (!playerId) {
+          showNotification("Selecciona un futbolista válido.", "error");
+          return;
+        }
+
+        const player = PLAYERS_POOL.find(p => p.id === playerId) || firestorePlayersList.find(p => p.id === playerId);
+        if (!player) return;
+
+        const btn = document.getElementById("btn-admin-market-add-player");
+        btn.disabled = true;
+
+        try {
+          const leagueRef = doc(db, "leagues", adminSelectedLeagueId);
+          const snap = await getDoc(leagueRef);
+          if (!snap.exists()) {
+            btn.disabled = false;
+            return;
+          }
+
+          const data = snap.data();
+          const marketPlayers = data.market_players || [];
+
+          // 1. Validar si ya está en el mercado
+          if (marketPlayers.some(x => x.id === playerId)) {
+            showNotification("El jugador ya está publicado en el mercado de subastas.", "warning");
+            btn.disabled = false;
+            return;
+          }
+
+          // 2. Validar si ya tiene propietario en la liga
+          const participantes = data.participantes || [];
+          let alreadyOwned = false;
+          let ownerName = "";
+
+          for (const pUid of participantes) {
+            const teamSnap = await getDoc(doc(db, "user_teams", `${pUid}_${adminSelectedLeagueId}`));
+            if (teamSnap.exists()) {
+              const teamData = teamSnap.data();
+              const ownedIds = teamData.jugadores_ids || [];
+              if (ownedIds.includes(playerId)) {
+                alreadyOwned = true;
+                const userSnap = await getDoc(doc(db, "users", pUid));
+                ownerName = userSnap.exists() ? (userSnap.data().nombre_usuario || "otro mánager") : "otro mánager";
+                break;
+              }
+            }
+          }
+
+          if (alreadyOwned) {
+            showNotification(`El jugador ya pertenece a la plantilla de ${ownerName}.`, "error");
+            btn.disabled = false;
+            return;
+          }
+
+          // 3. Añadir al mercado de subastas
+          const updatedMarket = [...marketPlayers, {
+            id: playerId,
+            precio_base: player.precio || 10000000,
+            bids: []
+          }];
+
+          await updateDoc(leagueRef, { market_players: updatedMarket });
+          showNotification(`¡${player.nombre} ha sido añadido al mercado de subastas!`, "success");
+
+          if (currentActiveLeagueData && currentActiveLeagueData.id === adminSelectedLeagueId) {
+            currentActiveLeagueData.market_players = updatedMarket;
+          }
+          await renderAdminMarketList();
+          if (window.renderMarketTable) window.renderMarketTable();
+        } catch (err) {
+          console.error("Error adding player to market:", err);
+          showNotification("Error de base de datos al añadir el jugador al mercado.", "error");
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      // Admin: Renderizar listado de subastas activas
+      window.renderAdminMarketList = async function () {
+        const container = document.getElementById("admin-market-active-list");
+        if (!container || !adminSelectedLeagueId) return;
+
+        try {
+          const leagueRef = doc(db, "leagues", adminSelectedLeagueId);
+          const snap = await getDoc(leagueRef);
+          if (!snap.exists()) return;
+
+          const data = snap.data();
+          const marketPlayers = data.market_players || [];
+
+          if (marketPlayers.length === 0) {
+            container.innerHTML = `
+              <div class="py-2 text-center text-slate-500 text-[10px] font-bold">
+                No hay jugadores activos en subasta.
+              </div>
+            `;
+            return;
+          }
+
+          container.innerHTML = "";
+          marketPlayers.forEach(item => {
+            const player = PLAYERS_POOL.find(p => p.id === item.id) || firestorePlayersList.find(p => p.id === item.id);
+            const playerName = player ? player.nombre : item.id;
+            const playerPrice = player ? `${(player.precio / 1000000).toFixed(1)}M$` : `${(item.precio_base / 1000000).toFixed(1)}M$`;
+            const playerCountry = player ? player.pais : "";
+            const playerPos = player ? player.posicion.toUpperCase() : "";
+
+            const row = document.createElement("div");
+            row.className = "flex items-center justify-between p-2 rounded-xl bg-slate-900/40 border border-white/5 text-[10px] text-slate-300";
+            row.innerHTML = `
+              <div class="truncate mr-2 flex-1">
+                <strong class="text-white">${playerName}</strong> 
+                <span class="text-slate-400 text-[8px]">(${playerPos} · ${playerPrice} · ${playerCountry})</span>
+              </div>
+              <button class="px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-slate-950 border border-rose-500/20 text-[8px] uppercase font-black transition cursor-pointer flex items-center justify-center gap-0.5" title="Eliminar del mercado">
+                <i data-lucide="trash-2" class="w-3 h-3"></i> Quitar
+              </button>
+            `;
+
+            const removeBtn = row.querySelector("button");
+            removeBtn.addEventListener("click", async () => {
+              if (!confirm(`¿Estás seguro de que deseas quitar a ${playerName} del mercado de subastas?`)) return;
+              removeBtn.disabled = true;
+              try {
+                const updatedMarket = marketPlayers.filter(x => x.id !== item.id);
+                await updateDoc(leagueRef, { market_players: updatedMarket });
+                showNotification(`Se ha quitado a ${playerName} del mercado.`, "success");
+                
+                if (currentActiveLeagueData && currentActiveLeagueData.id === adminSelectedLeagueId) {
+                  currentActiveLeagueData.market_players = updatedMarket;
+                }
+                await renderAdminMarketList();
+                if (window.renderMarketTable) window.renderMarketTable();
+              } catch (err) {
+                console.error("Error removing player from market:", err);
+                showNotification("Error al quitar el jugador del mercado.", "error");
+                removeBtn.disabled = false;
+              }
+            });
+
+            container.appendChild(row);
+          });
+          lucide.createIcons();
+        } catch (err) {
+          console.error("Error rendering admin market list:", err);
+        }
+      };
 
       // Admin: Filtrar selector de jugadores
       document.getElementById("admin-player-mod-search").addEventListener("input", (e) => {
@@ -15216,12 +15453,91 @@
           
           // Cambiar jornada activa a Dieciseisavos
           const leagueRef = doc(db, "leagues", adminSelectedLeagueId);
+          
+          // 1. Obtener la liga y migrar alineaciones de todos los participantes
+          const lDoc = await getDoc(leagueRef);
+          if (lDoc.exists()) {
+            const participantesUids = lDoc.data().participantes || [];
+            showNotification(`Migrando alineaciones de la jornada siguiente para ${participantesUids.length} mánagers...`, "info");
+            for (const pUid of participantesUids) {
+              const teamDocId = `${pUid}_${adminSelectedLeagueId}`;
+              const teamRef = doc(db, "user_teams", teamDocId);
+              const teamSnap = await getDoc(teamRef);
+              if (teamSnap.exists()) {
+                const teamData = teamSnap.data();
+                let nextAl = teamData.siguiente_alineacion;
+                if (!nextAl) {
+                  nextAl = {
+                    titulares: teamData.alineacion?.titulares || { portero: [], defensas: [], mediocampistas: [], delanteros: [] },
+                    suplentes: teamData.alineacion?.suplentes || { portero: [], defensas: [], mediocampistas: [], delanteros: [] },
+                    capitan_id: teamData.capitan_id || "",
+                    formacion: teamData.formacion || "4-4-2"
+                  };
+                }
+
+                // Filtrar para que solo contengan jugadores que el usuario realmente posee en la actualidad (excluyendo fantasmas traspasados)
+                const ghostIds = teamData.ghost_players || [];
+                let ownedIds = teamData.jugadores_ids || [];
+                if (ghostIds.length > 0) {
+                  ownedIds = ownedIds.filter(id => !ghostIds.includes(id));
+                }
+
+                const newTitulares = {
+                  portero: (nextAl.titulares?.portero || []).filter(id => ownedIds.includes(id)),
+                  defensas: (nextAl.titulares?.defensas || []).filter(id => ownedIds.includes(id)),
+                  mediocampistas: (nextAl.titulares?.mediocampistas || []).filter(id => ownedIds.includes(id)),
+                  delanteros: (nextAl.titulares?.delanteros || []).filter(id => ownedIds.includes(id))
+                };
+                const newSuplentes = {
+                  portero: (nextAl.suplentes?.portero || []).filter(id => ownedIds.includes(id)),
+                  defensas: (nextAl.suplentes?.defensas || []).filter(id => ownedIds.includes(id)),
+                  mediocampistas: (nextAl.suplentes?.mediocampistas || []).filter(id => ownedIds.includes(id)),
+                  delanteros: (nextAl.suplentes?.delanteros || []).filter(id => ownedIds.includes(id))
+                };
+
+                let newCapitanId = nextAl.capitan_id || "";
+                const flatTitulares = [
+                  ...(newTitulares.portero || []),
+                  ...(newTitulares.defensas || []),
+                  ...(newTitulares.mediocampistas || []),
+                  ...(newTitulares.delanteros || [])
+                ];
+                if (newCapitanId && !flatTitulares.includes(newCapitanId)) {
+                  newCapitanId = "";
+                }
+
+                const newFormacion = nextAl.formacion || teamData.formacion || "4-4-2";
+
+                const updatedPlayers = buildPlayersArrayFromAlineacion(newTitulares, newSuplentes, ownedIds);
+
+                await updateDoc(teamRef, {
+                  jugadores_ids: ownedIds,
+                  ghost_players: [],
+                  alineacion: { titulares: newTitulares, suplentes: newSuplentes },
+                  capitan_id: newCapitanId,
+                  formacion: newFormacion,
+                  players: updatedPlayers,
+                  siguiente_alineacion: {
+                    titulares: JSON.parse(JSON.stringify(newTitulares)),
+                    suplentes: JSON.parse(JSON.stringify(newSuplentes)),
+                    capitan_id: newCapitanId,
+                    formacion: newFormacion
+                  }
+                });
+              }
+            }
+          }
+
+          // 2. Establecer la jornada en la liga
           await updateDoc(leagueRef, {
             jornada_activa: "Dieciseisavos de Final"
           });
           if (currentActiveLeagueData) {
             currentActiveLeagueData.jornada_activa = "Dieciseisavos de Final";
           }
+          
+          // 3. Recalcular puntos de todos los managers (establecerá puntos_jornada_actual a 0)
+          await recalculateAllManagersPoints(adminSelectedLeagueId);
           
           // Resetear selector de jornada del admin
           const selectJornada = document.getElementById("admin-select-jornada");
@@ -16513,6 +16829,115 @@
           .replace("bosnia-herzegovina", "bosnia y herzegovina")
           .replace("rd congo", "r.d. del congo")
           .replace("r. d. del congo", "r.d. del congo");
+      }
+
+      // --- OBTENER SELECCIONES CLASIFICADAS (ELIMINATORIAS) ---
+      function getQualifiedTeams(jornadaActiva, matchesList, leagueData) {
+        if (!jornadaActiva || jornadaActiva.startsWith("Jornada")) {
+          return []; // En fase de grupos no se filtra
+        }
+
+        const equiposDieciseisavos = leagueData.equipos_dieciseisavos || [];
+        if (equiposDieciseisavos.length === 0) {
+          return []; // Si no está sembrado, no se filtra
+        }
+
+        const qualifiedSet = new Set(equiposDieciseisavos.map(t => normalizeCountry(t)));
+
+        matchesList.forEach(m => {
+          if (m.resuelto && m.bracket_id) {
+            // Excepción: Los perdedores de Semifinales van al partido de Tercer Puesto, por lo que NO se descalifican aquí.
+            if (m.fase === "Semifinales") {
+              return;
+            }
+
+            let localWon = false;
+            let visitanteWon = false;
+            const resLocal = m.resultado_local ?? 0;
+            const resVisit = m.resultado_visitante ?? 0;
+
+            if (resLocal > resVisit) {
+              localWon = true;
+            } else if (resVisit > resLocal) {
+              visitanteWon = true;
+            } else {
+              const winner = m.ganador_bracket || "local";
+              if (winner === "local") localWon = true;
+              else visitanteWon = true;
+            }
+
+            const normLocal = normalizeCountry(m.equipo_local);
+            const normVisit = normalizeCountry(m.equipo_visitante);
+
+            if (localWon) {
+              qualifiedSet.delete(normVisit);
+            } else if (visitanteWon) {
+              qualifiedSet.delete(normLocal);
+            }
+          }
+        });
+
+        return Array.from(qualifiedSet);
+      }
+
+      // --- VERIFICAR SI UN JUGADOR ESTÁ DESCALIFICADO ---
+      function isPlayerDisqualified(player, matchesList, leagueData) {
+        if (!player || !player.pais) return false;
+        if (!leagueData || !matchesList || matchesList.length === 0) return false;
+
+        const jornadaActiva = leagueData.jornada_activa || "Jornada 1";
+        if (jornadaActiva.startsWith("Jornada")) {
+          return false;
+        }
+
+        const normPais = normalizeCountry(player.pais);
+        const equiposDieciseisavos = leagueData.equipos_dieciseisavos || [];
+        if (equiposDieciseisavos.length > 0) {
+          const qualifiedInBracket = equiposDieciseisavos.map(t => normalizeCountry(t));
+          if (!qualifiedInBracket.includes(normPais)) {
+            return true; // No clasificó a dieciseisavos
+          }
+        }
+
+        let disqualified = false;
+        matchesList.forEach(m => {
+          if (disqualified) return;
+          if (m.resuelto && m.bracket_id) {
+            if (m.fase === "Semifinales") {
+              return;
+            }
+
+            const normLocal = normalizeCountry(m.equipo_local);
+            const normVisit = normalizeCountry(m.equipo_visitante);
+
+            if (normLocal !== normPais && normVisit !== normPais) {
+              return;
+            }
+
+            let localWon = false;
+            let visitanteWon = false;
+            const resLocal = m.resultado_local ?? 0;
+            const resVisit = m.resultado_visitante ?? 0;
+
+            if (resLocal > resVisit) {
+              localWon = true;
+            } else if (resVisit > resLocal) {
+              visitanteWon = true;
+            } else {
+              const winner = m.ganador_bracket || "local";
+              if (winner === "local") localWon = true;
+              else visitanteWon = true;
+            }
+
+            if (normLocal === normPais && visitanteWon) {
+              disqualified = true;
+            } else if (normVisit === normPais && localWon) {
+              disqualified = true;
+            }
+          }
+        });
+
+        return disqualified;
       }
 
       // --- VALIDAR BLOQUEO DE JUGADOR POR HORARIO DE PARTIDO ---
